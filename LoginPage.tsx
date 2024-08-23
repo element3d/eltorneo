@@ -104,13 +104,13 @@ function LoginPage({ navigation }): JSX.Element {
               </View>
 
               <Image width={200} height={200} source={require('./assets/playstore.png')} style={{
-                width: 220, 
-                height: 220,
+                width: 280, 
+                height: 280,
                 borderRadius: 20,
                 marginBottom: 20
               }}></Image>
 
-              <Text style={{
+              {/* <Text style={{
                 color: '#8E8E93',
                 fontSize: 16,
                 // fontWeight: 'bold',
@@ -121,10 +121,10 @@ function LoginPage({ navigation }): JSX.Element {
                 marginBottom: 30
               }}>
                 {strings.app_desc}
-              </Text>
+              </Text> */}
         
               <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
-                width: 320,
+                width: 280,
                 height: 50,
                 borderRadius: 30,
                 justifyContent: 'center',

@@ -1,12 +1,14 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native";
 import authManager from "./AuthManager";
 import ProfileIcon from './assets/Profile2.svg'
 import SERVER_BASE_URL from "./AppConfig";
 import dataManager from "./DataManager";
 import strings from "./Strings";
 import { ESTAT_TOTAL } from "./ProfilePage";
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useEffect, useState } from "react";
 
-export default function MatchTop20PredictsPanel({top20Predicts, match, isMatchEnded, navigation}) {
+export default function MatchTop20PredictsPanel({top20Predicts, onUnlock, adLoaded, blockForAd, match, isMatchEnded, navigation}) {  
     function getBorderColor(p) {
         if (p.status == 0) return '#8E8E93'
         if (p.status == 1) return '#00C566'
@@ -35,6 +37,11 @@ export default function MatchTop20PredictsPanel({top20Predicts, match, isMatchEn
         })  
     }
 
+    function renderLock(predict) {
+      if (blockForAd && (predict.user.position == 1 || predict.user.position == 2 || predict.user.position == 3)) return true
+      return false
+    }
+
     return (
         <View>
             <Text style={{
@@ -44,15 +51,17 @@ export default function MatchTop20PredictsPanel({top20Predicts, match, isMatchEn
               marginBottom: 4,
             }}>{strings.top_20_predicts}</Text>
             {top20Predicts?.predicts.map((predict, i)=> {
-              return (<TouchableOpacity key={`match_predict_${i}`} onPress={()=>{onNavUser(predict.user)}} activeOpacity={.8}>
+              return (<TouchableOpacity key={`match_predict_${i}`} onPress={()=>{onNavUser(predict.user)}} activeOpacity={.8} style={{
+                backgroundColor: 'white',
+                  borderRadius: 20,
+                  marginBottom: 12,
+              }}>
                 <View style={{
                   width: '100%',
                   height: 80,
-                  backgroundColor: 'white',
-                  borderRadius: 20,
+                  paddingTop: 0,
                   paddingLeft: 10,
                   paddingRight: 10,
-                  marginBottom: 12,
                   flexDirection: 'row',
                   alignItems: 'center'
                 }}>
@@ -102,7 +111,7 @@ export default function MatchTop20PredictsPanel({top20Predicts, match, isMatchEn
                         justifyContent: 'center',
                         alignItems: 'flex-end'
                     }}>
-                    <View style={{
+                   { !renderLock(predict) ? <View style={{
                         // borderWidth: 1,
                         backgroundColor: getBgColor(predict),
                         borderColor: '#00000033',
@@ -116,7 +125,7 @@ export default function MatchTop20PredictsPanel({top20Predicts, match, isMatchEn
                           color: getBorderColor(predict),
                           fontFamily: 'NotoSansArmenian-Bold'
                         }}>{predict.team1_score} : {predict.team2_score}</Text>
-                    </View>
+                    </View> : <Icon color="black" size={20} name='lock'/> }
                     <View style={{
                         // borderWidth: 1,
                         backgroundColor: '#00000005',
@@ -133,6 +142,7 @@ export default function MatchTop20PredictsPanel({top20Predicts, match, isMatchEn
                     </View> 
                 </View>
                 </View>
+              
               </TouchableOpacity>)
             })}
         </View>

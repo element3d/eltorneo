@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
+  ActivityIndicator,
   Image,
   SafeAreaView,
   ScrollView,
@@ -20,7 +21,10 @@ import AppBar from './AppBar';
 import authManager from './AuthManager';
 import { ESTAT_TOTAL } from './ProfilePage';
 import CupIcon from './assets/Trophy.svg';
- 
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import adsManager from './AdsManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const ETABLE_GENERAL = 0
 const ETABLE_SCORE = 1
@@ -53,6 +57,8 @@ function TablesPage({ navigation, route }): JSX.Element {
     const [table, setTable] = useState([])
     const [selectedTable, setSelectedTable] = useState(ETABLE_GENERAL)
     const [selectedLeague, setSelectedLeague] = useState(null)
+    const [blockForAd, setBlockForAd] = useState(dataManager.getSettings().blockForAd)
+    const [adLoaded, setAdLoaded] = useState(false)
 
     const backgroundStyle = {
       backgroundColor: 'white',
@@ -60,6 +66,18 @@ function TablesPage({ navigation, route }): JSX.Element {
 
     useEffect(()=>{
       getTableByPoints()
+    }, [])
+
+    useEffect(()=>{
+      if (adsManager.isLoaded()) {
+        setAdLoaded(true)
+      } else {
+        adsManager.loadAd()
+        const unsub = adsManager.addLoadedListener(()=>{
+          unsub()
+          setAdLoaded(true)
+        })
+      }
     }, [])
 
     useEffect(()=>{
@@ -154,6 +172,70 @@ function TablesPage({ navigation, route }): JSX.Element {
       })  
   }
 
+  function renderTable() {
+    return table?.map((u, i)=>{
+      return (
+        <TouchableOpacity activeOpacity={.8} onPress={()=>{onNavUser(u)}} key={`player_${i}`} style={{
+          width: '100%',
+          height: 60,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          { i == 0 && selectedTable == ETABLE_GENERAL? <CupIcon width={50} height={26}/> : <Text style={{
+            width: 50,
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center'
+          }}>{i + 1}</Text> }
+          <Text style={{
+            // width: '90%',
+            flex: 1,
+            color: 'black',
+            fontWeight: 'bold',
+            // textAlign: 'flex-start',
+            paddingLeft: 10
+          }}>{u.name}</Text>
+          <Text style={{
+            width: 50,
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}>{u.totalPredictions}</Text>
+          <Text style={{
+            width: 50,
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}>{getRate(u)}</Text>
+        </TouchableOpacity>
+      )
+    })
+  }
+
+  function onUnlock() {
+    adsManager.showAd()
+
+    const successUnsub = adsManager.addSuccessListener(()=>{
+      successUnsub()
+      adsManager.setIsLoaded(false)
+      setBlockForAd(false)
+      AsyncStorage.setItem("lastAdTime", (new Date()).getTime().toString())
+      dataManager.getSettings().blockForAd = false
+    })
+
+    const closeUnsub = adsManager.addCloseListener(()=>{
+      closeUnsub()
+      adsManager.setIsLoaded(false)
+      adsManager.loadAd()
+      setAdLoaded(false)
+      const unsub = adsManager.addLoadedListener(()=>{
+        unsub()
+        setAdLoaded(true)
+      })
+    })
+  }
+
   return (
     <GestureHandlerRootView style={{flex: 1, backgroundColor: '#f7f7f7'}}>
 
@@ -168,7 +250,7 @@ function TablesPage({ navigation, route }): JSX.Element {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{
-            minHeight: '100%'
+            // minHeight: '100%'
           }}
           style={{flex: 1}}>
 
@@ -273,7 +355,7 @@ function TablesPage({ navigation, route }): JSX.Element {
               </View>
           </View>
 
-          <View style={{
+          { !blockForAd ? <View style={{
             width: '100%',
             // backgroundColor: 'red',
             padding: 15,
@@ -319,47 +401,37 @@ function TablesPage({ navigation, route }): JSX.Element {
               }}>{ selectedTable == ETABLE_GENERAL ? "Pts" : "Rate"}</Text>
             </View>
 
-            {table?.map((u, i)=>{
-              return (
-                <TouchableOpacity activeOpacity={.8} onPress={()=>{onNavUser(u)}} key={`player_${i}`} style={{
-                  width: '100%',
-                  height: 60,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  { i == 0 && selectedTable == ETABLE_GENERAL? <CupIcon width={50} height={26}/> : <Text style={{
-                    width: 50,
-                    color: 'black',
-                    fontWeight: 'bold',
-                    textAlign: 'center'
-                  }}>{i + 1}</Text> }
-                  <Text style={{
-                    // width: '90%',
-                    flex: 1,
-                    color: 'black',
-                    fontWeight: 'bold',
-                    // textAlign: 'flex-start',
-                    paddingLeft: 10
-                  }}>{u.name}</Text>
-                  <Text style={{
-                    width: 50,
-                    color: 'black',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                  }}>{u.totalPredictions}</Text>
-                  <Text style={{
-                    width: 50,
-                    color: 'black',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                  }}>{getRate(u)}</Text>
-                </TouchableOpacity>
-              )
-            })}
+            { renderTable() } 
           
           </View>
-        
+        : <View style={{
+          height: 40,
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          // backgroundColor: 'red'
+        }}>
+          <TouchableOpacity onPress={onUnlock} activeOpacity={.8} style={{
+            paddingLeft: 20,
+            paddingRight: 20,
+            height: 24,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 12,
+            backgroundColor: '#FF2882'
+          }} >
+            <Text style={{
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: 12,
+            }}>Unlock table</Text>
+            { adLoaded ? <Icon name='play-circle-filled' size={18} color='white' style={{
+              marginLeft: 4
+            }}/> : <ActivityIndicator size={'small'} color={'white'} style={{
+              marginLeft: 6
+            }} /> }
+          </TouchableOpacity>
+      </View> }
 
         </ScrollView>
           <BottomNavBar page={EPAGE_TABLES} navigation={navigation} />

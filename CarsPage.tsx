@@ -157,7 +157,6 @@ function CarsPage({ navigation, route }): JSX.Element {
       setLoading(true)
 
       const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${season}`
-      console.log(url)
       fetch(url, {
         method: 'GET',
         headers: { 

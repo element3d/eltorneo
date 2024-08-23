@@ -33,6 +33,15 @@ class AdsManager {
                 this.loaded = true
                 if (this.onLoad) this.onLoad()
             });
+
+            dataManager.checkBlockForAd()
+            .then((settings)=>{
+                if (settings.blockForAd) {
+                    this.loadAd()
+                }
+            })
+
+           
     
         })
     }

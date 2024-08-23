@@ -1,4 +1,5 @@
 // import adsManager from "./AdsManager";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import SERVER_BASE_URL from "./AppConfig";
 import strings from "./Strings";
 
@@ -10,7 +11,6 @@ class DataManager {
     }
 
     init() {
-     
 
         return fetch(`${SERVER_BASE_URL}/api/v1/settings`, {
             method: 'GET',
@@ -19,11 +19,66 @@ class DataManager {
             .then(response => response.json())
             .then(data => {
                 this.settings = data[0]
+                this.settings.blockForAd = false
+                if (!this.settings.enableAds) return
+
+                // AsyncStorage.getItem("lastAdTime")
+                // .then((time)=>{
+                //     let lastAdTime;
+                //     if (time) {
+                //         lastAdTime = new Date(parseInt(time)); 
+                //         const adDiffHours = 0//this.settings.adDiffHours
+                //         const currentTime = new Date();
+                //         const diffInMillis = currentTime - lastAdTime;
+                //         const diffInHours = diffInMillis / 3600000; // Convert milliseconds to hours
+                //         console.log(diffInHours)
+                //         if (diffInHours > adDiffHours) {
+                //             console.log(diffInHours)
+                //             console.log("BLOCK FOR AD =========================")
+                //             this.settings.blockForAd = true
+                //             AsyncStorage.setItem("lastAdTime", currentTime.getTime().toString())
+                //         } else {
+                //             this.settings.blockForAd = false
+                //         }
+                        
+                //     } else {
+                //         lastAdTime = new Date(Date.now() - 3600000); 
+                //         AsyncStorage.setItem("lastAdTime", lastAdTime.getTime().toString())
+                //         this.settings.blockForAd = false
+                //     }
+                // })
 
                 // adsManager.init()
             })
             .catch(error => console.error('Error fetching settings:', error));
+    }
 
+    checkBlockForAd() {
+        return AsyncStorage.getItem("lastAdTime")
+        .then((time)=>{
+            let lastAdTime;
+            if (time) {
+                lastAdTime = new Date(parseInt(time)); 
+                const adDiffHours = this.settings.adDiffHours
+                const currentTime = new Date();
+                const diffInMillis = currentTime - lastAdTime;
+                const diffInHours = diffInMillis / 3600000; 
+                console.log(diffInHours)
+                if (diffInHours > adDiffHours) {
+                    this.settings.blockForAd = true
+                    AsyncStorage.setItem("lastAdTime", currentTime.getTime().toString())
+                } else {
+                    this.settings.blockForAd = false
+                }
+                
+            } else {
+                lastAdTime = new Date(Date.now() - 3600000); 
+                AsyncStorage.setItem("lastAdTime", lastAdTime.getTime().toString())
+                this.settings.blockForAd = false
+            }
+
+            return this.settings
+        })
     }
 
     getWeekTitle(week) {

@@ -196,7 +196,7 @@ function MatchPage({ navigation, route }): JSX.Element {
     const [adClosed, setAdClosed] = useState(false)
     const [me, setMe] = useState(authManager.getMeSync())
     const [processing, setProcessing] = useState(false)
-
+    const [blockForAd, setBlockForAd] = useState(dataManager.getSettings().blockForAd)
     const [showAd, setShowAd] = useState(false)
 
     const backgroundStyle = {
@@ -222,6 +222,31 @@ function MatchPage({ navigation, route }): JSX.Element {
       }
     })
 
+    useEffect(()=>{
+      if (!dataManager.getSettings().enableAds) return
+
+      if (adsManager.isLoaded()) { 
+        setLoaded(true)
+      } else {
+        adsManager.loadAd()
+      }
+      adsManager.onLoad = () => {
+        setLoaded(true)
+      }
+
+      const errorUnsubscribe = adsManager.addErrorListener((err) => {
+        errorUnsubscribe()
+        adsManager.setIsLoaded(false)
+        setShowAd(false)
+      });
+
+      // const closeUnsubscribe = adsManager.addCloseListener((err) => {
+      //   closeUnsubscribe()
+      //   adsManager.setIsLoaded(false)
+      //   setShowAd(false)
+      // });
+    }, [])
+
     useEffect(() => {
       if (!dataManager.getSettings().enableAds) return
 
@@ -239,81 +264,10 @@ function MatchPage({ navigation, route }): JSX.Element {
           setLoaded(adsManager.isLoaded())
 
           if (!adsManager.isLoaded()) {
-            adsManager.onLoad = () => {
-              setLoaded(true)
-            }
             adsManager.loadAd()
-
-            const errorUnsubscribe = adsManager.addErrorListener((err) => {
-              errorUnsubscribe()
-              adsManager.setIsLoaded(false)
-              setShowAd(false)
-              // onAddSuccess()
-              
-              // AsyncStorage.getItem('numActions')
-              // .then((d)=>{
-              //   let numActions = Number.parseInt(d)
-              //   if (!numActions) numActions = 0;
-                
-              //   ++numActions;
-              //   AsyncStorage.setItem('numActions', numActions.toString());
-              // });
-            });
           }
         }
-      });
-  
-     
-
-     
-
-      // const successUnsub = adsManager.addSuccessListener(()=>{
-      //   adsManager.setIsLoaded(false)
-
-      //   console.log("============ SUCCESS ===========")
-      //   console.log(id)
-      //   console.log(team1Score)
-      //   const requestOptions = {
-      //     method: 'POST',
-      //     headers: { 
-      //       'Content-Type': 'application/json',
-      //       'Authentication': authManager.getToken()
-      //     },
-      //     body: JSON.stringify({ 
-      //       match: id,
-      //       team1_score: Number.parseInt(team1Score),
-      //       team2_score: Number.parseInt(team2Score)
-      //      })
-      //   };
-  
-      //   fetch(`${SERVER_BASE_URL}/api/v1/predicts`, requestOptions)
-      //     .then(response => {
-      //         if (response.status == 200) {
-      //             return response.text()
-      //         }
-  
-      //         setPredict({
-      //           team1_score: team1Score,
-      //           team2_score: team2Score,
-      //           march_id: match.id
-      //         })
-      //         // unsub()
-      //         return null
-      //     })
-      //     .then(data => {
-      //         // if (!data) return    
-      //         // unsub()       
-      //     });
-  
-      //     setPredict({
-      //       team1_score: team1Score,
-      //       team2_score: team2Score,
-      //       march_id: match.id,
-      //       status: 1
-      //     })
-      // })
-
-     
+      });    
 
       // Unsubscribe from events on unmount
       return () => {
@@ -460,6 +414,26 @@ function MatchPage({ navigation, route }): JSX.Element {
       setAdClosed(true)
       setTeam1Score('')
       setTeam2Score('')
+    }
+
+
+    function onUnlock() {
+      adsManager.showAd()
+
+      const successUnsub = adsManager.addSuccessListener(()=>{
+        successUnsub()
+        adsManager.setIsLoaded(false)
+        setBlockForAd(false)
+        AsyncStorage.setItem("lastAdTime", (new Date()).getTime().toString())
+        dataManager.getSettings().blockForAd = false
+      })
+
+      const closeUnsub = adsManager.addCloseListener(()=>{
+        closeUnsub()
+        adsManager.setIsLoaded(false)
+        adsManager.loadAd()
+        setLoaded(true)
+      })
     }
 
     function onPredict() {
@@ -809,8 +783,8 @@ function MatchPage({ navigation, route }): JSX.Element {
             width: '90%',
             marginTop: 30
           }}>
-            {predicts && predicts.numPredicts? <MatchPredictsSummaryPanel predicts={predicts}/> : null }
-            {top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel match={match} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts}/> : null }
+            {predicts && predicts.numPredicts? <MatchPredictsSummaryPanel onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}/> : null }
+            {top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts}/> : null }
             {predictsReqFinished && !predicts?.numPredicts ? <Text style={{
               color: '#8E8E93',
               fontSize: 14,

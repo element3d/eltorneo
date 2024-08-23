@@ -1,7 +1,8 @@
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import strings from "./Strings";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-export default function MatchPredictsSummaryPanel({predicts}) {
+export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForAd, adLoaded}) {
     function getPredictPercent(numPredicts) {
         const percent = numPredicts / predicts.numPredicts * 100
         if (percent <= 0) return "" 
@@ -22,66 +23,106 @@ export default function MatchPredictsSummaryPanel({predicts}) {
               borderRadius: 20,
               paddingLeft: 10,
               paddingRight: 10,
-              height: 100,
               marginBottom: 20,
-              flexDirection: 'row'
             }}>
               <View style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center'
+                marginTop: blockForAd ? 5 : 0,
+                height: blockForAd ? 80 : 100,
+                // backgroundColor: 'red'
+                flexDirection: 'row'
               }}>
-                <Text style={{
-                  fontSize: 16,
-                  color: '#8E8E93',
-                  fontWeight: 'bold'
-                }}>1</Text>
-                {predicts ? <Text style={{
-                  fontSize: 20,
-                  color: 'black',
-                  fontWeight: 'bold'
+                <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
-                  {predicts?.numP1}{getPredictPercent(predicts?.numP1)}
-                  </Text> : null }
+                  <Text style={{
+                    fontSize: 16,
+                    color: '#8E8E93',
+                    fontWeight: 'bold'
+                  }}>1</Text>
+                  {!blockForAd ? <Text style={{
+                    fontSize: 20,
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}>
+                    {predicts?.numP1}{getPredictPercent(predicts?.numP1)}
+                    </Text> : <Icon color="black" size={30} name='lock' style={{
+                      marginTop: 4
+                    }}/> }
+                </View>
+
+                <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Text style={{
+                    fontSize: 16,
+                    color: '#8E8E93',
+                    fontWeight: 'bold'
+                  }}>X</Text>
+                  {!blockForAd ? <Text style={{
+                    fontSize: 20,
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}>
+                    {predicts?.numDraw}{getPredictPercent(predicts?.numDraw)}
+                    </Text> : <Icon color="black" size={30} name='lock' style={{
+                      marginTop: 4
+                    }}/> }
+                </View>
+
+                <View style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Text style={{
+                    fontSize: 16,
+                    color: '#8E8E93',
+                    fontWeight: 'bold'
+                  }}>2</Text>
+                  {!blockForAd ? <Text style={{
+                    fontSize: 20,
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}>
+                    {predicts?.numP2}{getPredictPercent(predicts?.numP2)}
+                    </Text> : <Icon color="black" size={30} name='lock' style={{
+                      marginTop: 4
+                    }}/> }
+                </View>
               </View>
 
-              <View style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Text style={{
-                  fontSize: 16,
-                  color: '#8E8E93',
-                  fontWeight: 'bold'
-                }}>X</Text>
-                {predicts ? <Text style={{
-                  fontSize: 20,
-                  color: 'black',
-                  fontWeight: 'bold'
+              {blockForAd ? <View style={{
+                  height: 40,
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  // backgroundColor: 'red'
                 }}>
-                  {predicts?.numDraw}{getPredictPercent(predicts?.numDraw)}
-                  </Text> : null }
-              </View>
-
-              <View style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Text style={{
-                  fontSize: 16,
-                  color: '#8E8E93',
-                  fontWeight: 'bold'
-                }}>2</Text>
-                {predicts ? <Text style={{
-                  fontSize: 20,
-                  color: 'black',
-                  fontWeight: 'bold'
-                }}>
-                  {predicts?.numP2}{getPredictPercent(predicts?.numP2)}
-                  </Text> : null }
-              </View>
+                  <TouchableOpacity onPress={onUnlock} activeOpacity={.8} style={{
+                    paddingLeft: 20,
+                    paddingRight: 20,
+                    height: 24,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 12,
+                    backgroundColor: '#FF2882'
+                  }} >
+                    <Text style={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: 12,
+                    }}>Unlock all</Text>
+                    { adLoaded ? <Icon name='play-circle-filled' size={18} color='white' style={{
+                      marginLeft: 4
+                    }}/> : <ActivityIndicator size={'small'} color={'white'} style={{
+                      marginLeft: 6
+                    }} /> }
+                  </TouchableOpacity>
+              </View> : null }
             </View>
         </View>
     )

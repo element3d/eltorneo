@@ -25,6 +25,8 @@ import dataManager from './DataManager';
 import LeagueChip from './LeagueChip';
 import UserMatchesList from './UserMatchesList';
 import strings from './Strings';
+import adsManager from './AdsManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const ESTAT_TOTAL = 0
 const ESTAT_SCORE = 1
@@ -185,6 +187,8 @@ function ProfilePage({ navigation, route }): JSX.Element {
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(true);
     const [hasNext, setHasNext] = useState(false)
+    const [blockForAd, setBlockForAd] = useState(dataManager.getSettings().blockForAd && !isMe)
+    const [adLoaded, setAdLoaded] = useState(false)
 
     const user = isMe ? authManager.getMeSync() : authManager.getActiveUser()
     const backgroundStyle = {
@@ -202,6 +206,18 @@ function ProfilePage({ navigation, route }): JSX.Element {
       }
 
     }, []);
+
+    useEffect(()=>{
+      if (adsManager.isLoaded()) {
+        setAdLoaded(true)
+      } else {
+        adsManager.loadAd()
+        const unsub = adsManager.addLoadedListener(()=>{
+          unsub()
+          setAdLoaded(true)
+        })
+      }
+    }, [])
 
     useEffect(() => {
       // if (page == (globalPage - 1) * 5 + 1) return
@@ -444,6 +460,29 @@ function ProfilePage({ navigation, route }): JSX.Element {
       )
     }
 
+    function onUnlock() {
+      adsManager.showAd()
+  
+      const successUnsub = adsManager.addSuccessListener(()=>{  
+        successUnsub()
+        adsManager.setIsLoaded(false)
+        setBlockForAd(false)
+        AsyncStorage.setItem("lastAdTime", (new Date()).getTime().toString())
+        dataManager.getSettings().blockForAd = false
+      })
+  
+      const closeUnsub = adsManager.addCloseListener(()=>{
+        closeUnsub()
+        adsManager.setIsLoaded(false)
+        adsManager.loadAd()
+        setAdLoaded(false)
+        const unsub = adsManager.addLoadedListener(()=>{
+          unsub()
+          setAdLoaded(true)
+        })
+      })
+    }
+
   return (
     <GestureHandlerRootView style={{flex: 1, backgroundColor: '#f7f7f7'}}>
 
@@ -461,25 +500,52 @@ function ProfilePage({ navigation, route }): JSX.Element {
           justifyContent: 'space-between'
           }}>
           
-          {!predicts.length ? 
+          {!predicts.length || blockForAd ? 
             <View style={{
               width: '100%',
               flex: 1,
             }}>
               {renderTopPart()}
-              <View style={{
+              {!blockForAd ? <View style={{
                 flex: 1,
                 height: 200,
                 // backgroundColor: 'red',
                 paddingTop: 30
               }}>
                {loading ? <ActivityIndicator color={'#FF2882'} size="large"/> : <Text style={{
-              color: '#8E8E93',
-              fontSize: 14,
-              fontWeight: 'bold',
-              alignSelf: 'center'
-            }}>{strings.no_predicts}</Text> }
-              </View>
+                  color: '#8E8E93',
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  alignSelf: 'center'
+                }}>{strings.no_predicts}</Text> }
+              </View> : <View style={{
+                  height: 80,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  // backgroundColor: 'red'
+                }}>
+                  <TouchableOpacity onPress={onUnlock} activeOpacity={.8} style={{
+                    paddingLeft: 20,
+                    paddingRight: 20,
+                    height: 24,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 12,
+                    backgroundColor: '#FF2882'
+                  }} >
+                    <Text style={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                      fontSize: 12,
+                    }}>Unlock predictions</Text>
+                    { adLoaded ? <Icon name='play-circle-filled' size={18} color='white' style={{
+                      marginLeft: 4
+                    }}/> : <ActivityIndicator size={'small'} color={'white'} style={{
+                      marginLeft: 6
+                    }} /> }
+                  </TouchableOpacity>
+              </View> }
             </View> : 
             <UserMatchesList navigation={navigation} loading={loading} selectedStat={selectedStat} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} predicts={predicts} selectedLeague={selectedLeague}/>
           } 
