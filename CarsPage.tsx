@@ -103,7 +103,6 @@ function CarsPage({ navigation, route }): JSX.Element {
     }, []);
 
     function getLeagues() {
-      console.log()
       fetch(`${SERVER_BASE_URL}/api/v1/leagues`, {
         method: 'GET',
         // headers: { 'Content-Type': 'application/json' },

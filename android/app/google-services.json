@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "234839053775",
-    "project_id": "ridersmobile-dbf0b",
-    "storage_bucket": "ridersmobile-dbf0b.appspot.com"
+    "project_number": "584089996699",
+    "project_id": "el-torneo-bc127",
+    "storage_bucket": "el-torneo-bc127.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:234839053775:android:f4b4da0cf4ff4623362eba",
+        "mobilesdk_app_id": "1:584089996699:android:a4cfde6516bcd79f16e53e",
         "android_client_info": {
           "package_name": "com.eltorneo"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCoIbW2N0FCRr3DE4NtL2ovt66PEHRoDmw"
+          "current_key": "AIzaSyALFTMHxfdOwCkRLrLSqO7zKSrBLNJ9GyU"
         }
       ],
       "services": {

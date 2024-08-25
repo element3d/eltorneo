@@ -63,7 +63,8 @@ const strings = new LocalizedStrings({
     "oct": "Oct",
     "nov": "Nov",
     "dec": "Dec",
-    "app_desc": "Experience the thrill of the world’s largest football fan tournament! Compete with fans worldwide in a one-of-a-kind challenge that puts your football knowledge to the test. Predict match outcomes, earn points, and rise through the ranks to become the ultimate football champion."
+    "app_desc": "Experience the thrill of the world’s largest football fan tournament! Compete with fans worldwide in a one-of-a-kind challenge that puts your football knowledge to the test. Predict match outcomes, earn points, and rise through the ranks to become the ultimate football champion.",
+    "in_all_leagues": "In all leagues"
   },
   es:{
     "new_version_msg": "Nueva versión disponible.",
@@ -124,8 +125,8 @@ const strings = new LocalizedStrings({
     "oct": "Oct",
     "nov": "Nov",
     "dec": "Dic",
-    "app_desc": "Vive la emoción del torneo de fútbol más grande del mundo. Compite con fanáticos de todo el mundo en un desafío único que pone a prueba tus conocimientos sobre fútbol. Predice resultados de partidos, gana puntos y asciende en la clasificación para convertirte en el campeón de fútbol definitivo."
-
+    "app_desc": "Vive la emoción del torneo de fútbol más grande del mundo. Compite con fanáticos de todo el mundo en un desafío único que pone a prueba tus conocimientos sobre fútbol. Predice resultados de partidos, gana puntos y asciende en la clasificación para convertirte en el campeón de fútbol definitivo.",
+    "in_all_leagues": "En todas las ligas"
   },
   fr:{
     "new_version_msg": "Nouvelle version disponible.",
@@ -186,7 +187,8 @@ const strings = new LocalizedStrings({
     "oct": "Oct",
     "nov": "Nov",
     "dec": "Déc",
-    "app_desc": "Vivez le frisson du plus grand tournoi de fans de football au monde ! Affrontez des fans du monde entier dans un défi unique qui met vos connaissances du football à l'épreuve. Prédisez les résultats des matchs, gagnez des points et gravissez les échelons pour devenir le champion de football ultime." 
+    "app_desc": "Vivez le frisson du plus grand tournoi de fans de football au monde ! Affrontez des fans du monde entier dans un défi unique qui met vos connaissances du football à l'épreuve. Prédisez les résultats des matchs, gagnez des points et gravissez les échelons pour devenir le champion de football ultime." ,
+    "in_all_leagues": "Dans toutes les ligues"
 
   },
   it:{
@@ -248,7 +250,8 @@ const strings = new LocalizedStrings({
     "oct": "Ott",
     "nov": "Nov",
     "dec": "Dic",
-    "app_desc": "Vivi l'emozione del più grande torneo di tifosi di calcio del mondo! Sfida i tifosi di tutto il mondo in una sfida unica nel suo genere che mette alla prova la tua conoscenza del calcio. Prevedi i risultati delle partite, guadagna punti e scala le classifiche per diventare il campione di calcio definitivo."
+    "app_desc": "Vivi l'emozione del più grande torneo di tifosi di calcio del mondo! Sfida i tifosi di tutto il mondo in una sfida unica nel suo genere che mette alla prova la tua conoscenza del calcio. Prevedi i risultati delle partite, guadagna punti e scala le classifiche per diventare il campione di calcio definitivo.",
+    "in_all_leagues": "In tutti i campionati"
   },
 
   ru:{
@@ -310,7 +313,8 @@ const strings = new LocalizedStrings({
     "oct": "Окт",
     "nov": "Ноя",
     "dec": "Дек",
-    "app_desc": "Испытайте острые ощущения на крупнейшем в мире турнире футбольных фанатов! Соревнуйтесь с болельщиками по всему миру в уникальном испытании, которое проверяет ваши футбольные знания. Предсказывайте результаты матчей, зарабатывайте очки и поднимайтесь по карьерной лестнице, чтобы стать абсолютным чемпионом по футболу."
+    "app_desc": "Испытайте острые ощущения на крупнейшем в мире турнире футбольных фанатов! Соревнуйтесь с болельщиками по всему миру в уникальном испытании, которое проверяет ваши футбольные знания. Предсказывайте результаты матчей, зарабатывайте очки и поднимайтесь по карьерной лестнице, чтобы стать абсолютным чемпионом по футболу.",
+    "in_all_leagues": "Во всех лигах"
   },
   pt:{
     "new_version_msg": "Nova versão disponível.",
@@ -371,7 +375,8 @@ const strings = new LocalizedStrings({
     "oct": "Out",
     "nov": "Nov",
     "dec": "Dez",
-    "app_desc": "Experimente a emoção do maior torneio de fãs de futebol do mundo! Compita com fãs do mundo todo em um desafio único que coloca seu conhecimento de futebol à prova. Preveja resultados de partidas, ganhe pontos e suba na classificação para se tornar o campeão de futebol definitivo." 
+    "app_desc": "Experimente a emoção do maior torneio de fãs de futebol do mundo! Compita com fãs do mundo todo em um desafio único que coloca seu conhecimento de futebol à prova. Preveja resultados de partidas, ganhe pontos e suba na classificação para se tornar o campeão de futebol definitivo." ,
+    "in_all_leagues": "Em todas as ligas"
   },
   de:{
     "new_version_msg": "Neue Version verfügbar.",
@@ -432,8 +437,8 @@ const strings = new LocalizedStrings({
     "oct": "Okt",
     "nov": "Nov",
     "dec": "Dez",
-    "app_desc": "Erleben Sie den Nervenkitzel des größten Fußballfan-Turniers der Welt! Messen Sie sich mit Fans aus aller Welt in einer einzigartigen Herausforderung, bei der Sie Ihr Fußballwissen auf die Probe stellen. Sagen Sie Spielergebnisse voraus, sammeln Sie Punkte und steigen Sie in den Rängen auf, um der ultimative Fußballmeister zu werden."
-
+    "app_desc": "Erleben Sie den Nervenkitzel des größten Fußballfan-Turniers der Welt! Messen Sie sich mit Fans aus aller Welt in einer einzigartigen Herausforderung, bei der Sie Ihr Fußballwissen auf die Probe stellen. Sagen Sie Spielergebnisse voraus, sammeln Sie Punkte und steigen Sie in den Rängen auf, um der ultimative Fußballmeister zu werden.",
+    "in_all_leagues": "In allen Ligen"
   },
   hr:{
     "new_version_msg": "Dostupna nova verzija.",
@@ -494,7 +499,8 @@ const strings = new LocalizedStrings({
     "oct": "Lis",
     "nov": "Stu",
     "dec": "Pro",
-    "app_desc": "Doživite uzbuđenje najvećeg svjetskog turnira nogometnih navijača! Natječite se s navijačima diljem svijeta u jedinstvenom izazovu koji stavlja vaše nogometno znanje na test. Predvidite ishode utakmica, zaradite bodove i napredujte u ljestvici kako biste postali ultimativni nogometni prvak."
+    "app_desc": "Doživite uzbuđenje najvećeg svjetskog turnira nogometnih navijača! Natječite se s navijačima diljem svijeta u jedinstvenom izazovu koji stavlja vaše nogometno znanje na test. Predvidite ishode utakmica, zaradite bodove i napredujte u ljestvici kako biste postali ultimativni nogometni prvak.",
+    "in_all_leagues": "U svim ligama"
   },
   
 

@@ -179,7 +179,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
     const [predictsJson, setPredictsJson] = useState(null)
     const [predicts, setPredicts] = useState([])
     const [selectedLeague, setSelectedLeague] = useState(null)
-    const [stats, setStats] = useState(ESTAT_TOTAL)
+    const [stats, setStats] = useState(null)
     // const [selectedStat, setSelectedStat] = useState(ESTAT_TOTAL)
     // const [user, setUser] = useState(isMe ? authManager.getMeSync() : authManager.getActiveUser())
     const [predictsReqFinished, setPredictsReqFinished] = useState(false)
@@ -197,6 +197,8 @@ function ProfilePage({ navigation, route }): JSX.Element {
 
   
     useEffect(() => {
+      getStats()
+
       const leagues = dataManager.getLeagues()
       for (const l of leagues) {
         if (l.id == routeSelectedLeague) {
@@ -204,6 +206,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
           return
         }
       }
+
 
     }, []);
 
@@ -232,12 +235,12 @@ function ProfilePage({ navigation, route }): JSX.Element {
 
  
     function getStats() {
-      if (!authManager.getToken()) return
+      // if (!authManager.getToken()) return
 
-      fetch(`${SERVER_BASE_URL}/api/v1/user/stats?user_id=${user.id}`, {
+      fetch(`${SERVER_BASE_URL}/api/v1/user/stats?user_id=${user.id}&league_id=${routeSelectedLeague || -1}`, {
         method: 'GET',
         headers: { 
-          'Authentication': authManager.getToken()
+          // 'Authentication': authManager.getToken()
         },
       })
       .then(response => response.json())
@@ -370,7 +373,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
         routeSelectedLeague: lid
       }
 
-      navigation.navigate({name: 'Profile', params: p, key: `profile_page_${globalPage + 1}_stat_${ESTAT_TOTAL}_league_${lid}`})    
+      navigation.navigate({name: 'Profile', params: p, key: `profile_page_${1}_stat_${ESTAT_TOTAL}_league_${lid}_user=${user.id}`})    
     }
 
     function getScorePredictsValue() {
@@ -403,60 +406,133 @@ function ProfilePage({ navigation, route }): JSX.Element {
 
     function renderTopPart() {
       return (
-        <View style={{
-          width: "100%",
-          // height: 500,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'white',
-          paddingBottom: 20
-        }}>
-          <AppBar navigation={navigation}/>
-          <UserPanel navigation={navigation} user={user} place={place} isMe={isMe}/>
+        <View>
+          <View style={{
+            width: "100%",
+            // height: 500,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'white',
+            paddingBottom: 20
+          }}>
+            <AppBar navigation={navigation}/>
+            <UserPanel navigation={navigation} user={user} place={place} isMe={isMe}/>
 
-          {predictsJson?.totalPredicts || routeSelectedLeague >= 1  ? <ScrollView 
-            horizontal={true}
-            // contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{
-              paddingLeft: 10,
-              alignItems: 'center',
-              // minHeight: '100%',
-               height: 60,
-              // backgroundColor: 'blue',
-            }}
-            showsHorizontalScrollIndicator={ false}
-            style={{
-              // flex: 1,
-              marginTop: 20,
-              minHeight: 50,
-            }}>
-              <ProfileCheap onPress={()=>{onStatChange(ESTAT_TOTAL)}} selected={selectedStat == ESTAT_TOTAL} title={strings.total} value={predictsJson?.totalPredicts}/>
-              <ProfileCheap onPress={()=>{onStatChange(ESTAT_SCORE)}} selected={selectedStat == ESTAT_SCORE} title={strings.score_predicted} value={getScorePredictsValue()}/>
-              <ProfileCheap onPress={()=>{onStatChange(ESTAT_WINNER)}} selected={selectedStat == ESTAT_WINNER} title={strings.winner_or_draw_predicted} value={getWinnerPredictsValue()}/>
+            {predictsJson?.totalPredicts || routeSelectedLeague >= 1  ? <ScrollView 
+              horizontal={true}
+              // contentInsetAdjustmentBehavior="automatic"
+              contentContainerStyle={{
+                paddingLeft: 10,
+                alignItems: 'center',
+                // minHeight: '100%',
+                height: 60,
+                // backgroundColor: 'blue',
+              }}
+              showsHorizontalScrollIndicator={ false}
+              style={{
+                // flex: 1,
+                marginTop: 20,
+                minHeight: 50,
+              }}>
+                <ProfileCheap onPress={()=>{onStatChange(ESTAT_TOTAL)}} selected={selectedStat == ESTAT_TOTAL} title={strings.total} value={predictsJson?.totalPredicts}/>
+                <ProfileCheap onPress={()=>{onStatChange(ESTAT_SCORE)}} selected={selectedStat == ESTAT_SCORE} title={strings.score_predicted} value={getScorePredictsValue()}/>
+                <ProfileCheap onPress={()=>{onStatChange(ESTAT_WINNER)}} selected={selectedStat == ESTAT_WINNER} title={strings.winner_or_draw_predicted} value={getWinnerPredictsValue()}/>
+            </ScrollView> : null }
+
+            {predictsJson?.totalPredicts || routeSelectedLeague >= 1 ? <ScrollView
+              horizontal={true}
+              contentInsetAdjustmentBehavior="automatic"
+              contentContainerStyle={{
+                // minHeight: '100%',
+                height: 60,
+                alignItems: 'center',
+                // backgroundColor: 'green',
+              }}
+              showsHorizontalScrollIndicator={ false}
+              style={{
+                // flex: 1,
+                // maxHeight: 120,
+              }}
+            >
+              <LeagueChip league={null} selected={ !routeSelectedLeague || routeSelectedLeague < 1} onPress={()=> {onLeaguePress(null)}}/>
+              { dataManager.getLeagues().map((l)=>{
+                  return (<LeagueChip key={l.name} league={l} selected={l == selectedLeague} onPress={()=> {onLeaguePress(l)}}/>)
+              })}
           </ScrollView> : null }
+          </View>
 
-          {predictsJson?.totalPredicts || routeSelectedLeague >= 1 ? <ScrollView
-            horizontal={true}
-            contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{
-              // minHeight: '100%',
-              height: 60,
-              alignItems: 'center',
-              // backgroundColor: 'green',
-            }}
-            showsHorizontalScrollIndicator={ false}
-            style={{
-              // flex: 1,
-              // maxHeight: 120,
-            }}
-          >
-            <LeagueChip league={null} selected={ routeSelectedLeague < 1} onPress={()=> {onLeaguePress(null)}}/>
-            { dataManager.getLeagues().map((l)=>{
-                return (<LeagueChip key={l.name} league={l} selected={l == selectedLeague} onPress={()=> {onLeaguePress(l)}}/>)
-            })}
-        </ScrollView> : null }
+          {stats && !loading ? <View style={{
+            marginTop: 20,
+            width: '90%',
+            alignSelf: 'center',
+            // height: 200,
+            borderRadius: 20,
+            padding: 20,
+            backgroundColor: 'white'
+          }}>
+            { !selectedLeague ? <Text style={{
+              color: 'black',
+              fontWeight: 'bold',
+              fontSize: 16,
+              marginBottom: 10
+            }}>{strings.in_all_leagues}</Text> :
 
-       </View>
+            <View style={{
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  marginBottom: 10
+                }}>
+                  <Image src={`${SERVER_BASE_URL}/data/leagues/${selectedLeague.name}_colored.png`} style={{
+                    width: 22,
+                    height: 22,
+                    marginRight: 6
+                  }}/>
+                  <Text style={{
+                    fontSize: 16,
+                    color: 'black',
+                    fontWeight: 'bold'
+                  }}>{selectedLeague.name}</Text>
+                </View> }
+
+           
+
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text>{strings.total_short}: </Text><Text style={{
+                color: 'black',
+                fontWeight: 'bold'
+              }}>{stats.total_predictions}</Text>
+            </View>
+
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text>{strings.score_predicted}: </Text><Text style={{
+                color: 'black',
+                fontWeight: 'bold'
+              }}>{stats.score_predicted}</Text>
+            </View>
+
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text>{strings.winner_or_draw_predicted}: </Text><Text style={{
+                color: 'black',
+                fontWeight: 'bold'
+              }}>{stats.winner_predicted}</Text>
+            </View>
+
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text>{strings.prediction_was_failed}: </Text><Text style={{
+                color: 'black',
+                fontWeight: 'bold'
+              }}>{stats.failed}</Text>
+            </View>
+          </View> : null }
+        </View>
       )
     }
 

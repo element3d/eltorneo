@@ -63,7 +63,6 @@ class DataManager {
                 const currentTime = new Date();
                 const diffInMillis = currentTime - lastAdTime;
                 const diffInHours = diffInMillis / 3600000; 
-                console.log(diffInHours)
                 if (diffInHours > adDiffHours) {
                     this.settings.blockForAd = true
                     AsyncStorage.setItem("lastAdTime", currentTime.getTime().toString())
