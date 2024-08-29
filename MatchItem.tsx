@@ -58,6 +58,7 @@ export default function MatchItem({onPress, match, showLeague}) {
     }
 
     function isMatchLive() {
+      if (match.status == 'PST') return false
       if (isMatchEnded()) return false
       if (match.date < new Date().getTime()) {
          return true
@@ -65,8 +66,14 @@ export default function MatchItem({onPress, match, showLeague}) {
       return false
     }
 
+    function getStatusText(m) {
+      if (m.status == 'HT' || m.status == 'FT') return m.status
+      
+      return '  ' + m.elapsed + " '"
+    }
+
     return (
-          <TouchableOpacity onPress={onPress} activeOpacity={.8} style={{
+          <TouchableOpacity onPress={ match.status == 'PST' ? null : onPress} activeOpacity={.8} style={{
             width: '100%',
             shadowColor: "#00000011",
             shadowOffset: {
@@ -147,49 +154,94 @@ export default function MatchItem({onPress, match, showLeague}) {
                     height: 36
                   }}/>
                 </View>
-                {!isMatchEnded() ? <View style={{
-                  // width: '10%',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '100%',
-                  marginLeft: 10,
-                  marginRight: 10
-                  
-                }}>
-                  {match.team1_score < 0 || match.team2_score < 0 ? <View style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#34C75918',
-                    // padding: 4,
-                    paddingLeft: 8, 
-                    paddingRight: 8,
-                    height: 30,
-                    borderRadius: 12
-                  }}>
-                 
+                {!isMatchEnded() ? 
+                    <View style={{
+                      // width: '10%',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
+                      marginLeft: 10,
+                      marginRight: 10
+                      
+                    }}>
+                      { match.team1_score < 0 || match.team2_score < 0 ? 
+                      <View>
+                        { isMatchLive() ? <View style={{
+                          alignItems: 'center',
+                          // marginBottom: 5,
+                          justifyContent: 'center'
+                        }}>
+                            <View style={{
+                              paddingLeft: 6,
+                              paddingRight: 6,
+                              borderRadius: 6,
+                              backgroundColor: '#34C75918',
+                            }}>
+                              <Text style={{
+                                fontFamily: 'OpenSans-Bold',
+                                fontSize: 10,
+                                color: '#00C566'
+                                // color: '#ff7539'
+                              }}>{ getStatusText(match)}</Text> 
+                            </View>
+                            <Text style={{
+                            fontSize: 18,
+                            fontFamily: 'OpenSans-Bold',
+                            color: 'black',
+                            }}>{match.team1_score_live} : {match.team2_score_live}</Text> 
+                          </View> : null }
+                          { match.status != 'PST' && !isMatchLive() ? <View style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#34C75918',
+                          // padding: 4,
+                          paddingLeft: 8, 
+                          paddingRight: 8,
+                          height: 30,
+                          borderRadius: 12
+                        }}>
+                          <Text style={{
+                            fontFamily: 'OpenSans-Bold',
+                            fontSize: 12,
+                            color: '#00C566'
+                            // color: '#ff7539'
+                          }}>{ getTime(match.date)}</Text> 
+                        </View> : !isMatchLive() ? <View style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: '#FF474719',
+                          // padding: 4,
+                          paddingLeft: 8, 
+                          paddingRight: 8,
+                          height: 30,
+                          borderRadius: 12
+                        }}>
+                          <Text style={{
+                            fontFamily: 'OpenSans-Bold',
+                            fontSize: 12,
+                            color: '#FF4747'
+                            // color: '#ff7539'
+                          }}>{'PST'}</Text> 
+                        </View> : null }
+                      </View>: 
+                        <Text style={{
+                          fontSize: 20,
+                          fontFamily: 'OpenSans-Bold',
+                          color: 'black'
+                          }}>{match.team1_score} : {match.team2_score}</Text> 
+                      }
+                    </View> : 
                     <Text style={{
+                      marginLeft: 12,
+                      marginRight: 12,
+                      fontSize: 20,
                       fontFamily: 'OpenSans-Bold',
-                      fontSize: 12,
-                      color: '#00C566'
-                      // color: '#ff7539'
-                    }}>{ isMatchLive() ? 'LIVE' : getTime(match.date)}</Text>
-                  </View> : <Text style={{
-                    //  marginLeft: 12,
-                    //  marginRight: 12,
-                     fontSize: 20,
-                     fontFamily: 'OpenSans-Bold',
-                     color: 'black'
-                    }}>{match.team1_score} : {match.team2_score}</Text> }
-                </View> : <Text style={{
-                     marginLeft: 12,
-                     marginRight: 12,
-                     fontSize: 20,
-                     fontFamily: 'OpenSans-Bold',
-                     color: 'black'
-                }}>
-                {match.team1_score} : {match.team2_score}
-                </Text>}
+                      color: 'black'
+                    }}>
+                      {match.team1_score} : {match.team2_score}
+                    </Text>
+                }
 
                 <View style={{
                   width: '40%',

@@ -101,10 +101,11 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
                   justifyContent: 'flex-start',
                   // backgroundColor: 'red'
                 }}>
-                  <TouchableOpacity onPress={onUnlock} activeOpacity={.8} style={{
+                  <TouchableOpacity onPress={onUnlock} disabled={!adLoaded} activeOpacity={.8} style={{
                     paddingLeft: 20,
                     paddingRight: 20,
                     height: 24,
+                    opacity: adLoaded ? 1 : .8,
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -115,7 +116,7 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: 12,
-                    }}>Unlock all</Text>
+                    }}>{strings.unlock_all}</Text>
                     { adLoaded ? <Icon name='play-circle-filled' size={18} color='white' style={{
                       marginLeft: 4
                     }}/> : <ActivityIndicator size={'small'} color={'white'} style={{

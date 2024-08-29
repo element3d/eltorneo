@@ -57,9 +57,19 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
 
     function onNavMatch(match) {
       
-      navigation.navigate("Match", {
-        id: match.id
+      navigation.navigate({ 
+        name: 'Match', 
+        params: {
+          id: match.id, 
+        }, 
+        key: match.id
       })
+    }
+
+    function getStatusText(m) {
+      if (m.status == 'HT' || m.status == 'FT') return m.status
+      
+      return m.elapsed + " '"
     }
 
   return (
@@ -159,23 +169,51 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                             flexDirection: 'row'
                         }}>
                             <TeamItem team={m.team1} isHome={true} compact={true}/>
-                            <View style={{
-                                marginBottom: 27,
-                                height: 30,
-                                paddingLeft: 15,
-                                paddingRight: 15,
-                                borderWidth: 1.5,
-                                borderColor: '#00C566',
+                            <View>
+                              <View style={{
+                                flexDirection: 'row',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                borderRadius: 20,
-                                backgroundColor: '#34C75944'
-                            }}>
+                                marginTop: 20,
+                                marginBottom: 5
+                              }}>
                                 <Text style={{
-                                    fontSize: 16,
-                                    color: '#00C566',
-                                    fontWeight: 'bold'
-                                }}>LIVE</Text>
+                                  color: 'white',
+                                  fontSize: 24,
+                                  fontWeight: 'bold',
+                                  marginRight: 10
+                                }}>{m.team1_score_live}</Text>
+                                <Text style={{
+                                  color: 'white',
+                                  fontSize: 20,
+                                  fontWeight: 'bold'
+                                }}>:</Text>
+                                <Text style={{
+                                  color: 'white',
+                                  fontSize: 24,
+                                  fontWeight: 'bold',
+                                  marginLeft: 10
+                                }}>{m.team2_score_live}</Text>
+                              </View>
+                              <View style={{
+                                  marginBottom: 27,
+                                  height: 30,
+                                  paddingLeft: 15,
+                                  paddingRight: 15,
+                                  borderWidth: 1.5,
+                                  borderColor: '#00C566',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRadius: 20,
+                                  backgroundColor: '#34C75944'
+                              }}>
+                                  <Text style={{
+                                      fontSize: 16,
+                                      color: '#00C566',
+                                      fontWeight: 'bold',
+                                      marginLeft: 5,
+                                  }}>{getStatusText(m)}</Text>
+                              </View>
                             </View>
                             <TeamItem team={m.team2} compact={true}/>
 

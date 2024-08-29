@@ -149,6 +149,7 @@ function TablesPage({ navigation, route }): JSX.Element {
 
     function getRate(u) {
       if (selectedTable == ETABLE_GENERAL) return u.predictions
+      if (isNaN(Number.parseInt(u.rate))) return 0
       return `${u.predictions}(${Number.parseInt(u.rate)}%)`
     }
 
@@ -203,7 +204,7 @@ function TablesPage({ navigation, route }): JSX.Element {
             textAlign: 'center',
           }}>{u.totalPredictions}</Text>
           <Text style={{
-            width: 50,
+            width: 60,
             color: 'black',
             fontWeight: 'bold',
             textAlign: 'center',
@@ -303,7 +304,8 @@ function TablesPage({ navigation, route }): JSX.Element {
           </View>
 
           <View style={{
-            padding: 20
+            padding: 20,
+            paddingBottom: 10,
           }}>
               <View style={{
                 flexDirection: 'row'
@@ -324,7 +326,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                   width: 60,
                   color: 'black',
                   fontWeight: 'bold'
-                }}>TP</Text>
+                }}>Tp</Text>
                 <Text style={{
                   color: '#8E8E93'
                 }}>{strings.total_short}</Text>
@@ -392,9 +394,9 @@ function TablesPage({ navigation, route }): JSX.Element {
                 color: 'black',
                 fontWeight: 'bold',
                 textAlign: 'center',
-              }}>TP</Text>
+              }}>Tp</Text>
               <Text style={{
-                width: 50,
+                width: 60,
                 color: 'black',
                 fontWeight: 'bold',
                 textAlign: 'center',
@@ -410,10 +412,11 @@ function TablesPage({ navigation, route }): JSX.Element {
           justifyContent: 'flex-start',
           // backgroundColor: 'red'
         }}>
-          <TouchableOpacity onPress={onUnlock} activeOpacity={.8} style={{
+          <TouchableOpacity onPress={onUnlock} disabled={!adLoaded} activeOpacity={.8} style={{
             paddingLeft: 20,
             paddingRight: 20,
             height: 24,
+            opacity: adLoaded ? 1 : .8,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
@@ -424,7 +427,7 @@ function TablesPage({ navigation, route }): JSX.Element {
               color: 'white',
               fontWeight: 'bold',
               fontSize: 12,
-            }}>Unlock table</Text>
+            }}>{strings.unlock_table}</Text>
             { adLoaded ? <Icon name='play-circle-filled' size={18} color='white' style={{
               marginLeft: 4
             }}/> : <ActivityIndicator size={'small'} color={'white'} style={{

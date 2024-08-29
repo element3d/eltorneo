@@ -74,6 +74,9 @@ function LeagueTitleItem({league, week}) {
   )
 }
 
+const ETAB_MATCHES = 1
+const ETAB_TABLE = 2
+
 function CarsPage({ navigation, route }): JSX.Element {
     const [leagues, setLeagues] = useState([])
     const [selectedLeague, setSelectedLeague] = useState(null)
@@ -84,8 +87,8 @@ function CarsPage({ navigation, route }): JSX.Element {
     const [matchesReqFinished, setMatchesReqFinished] = useState(false)
     const [isFirstScroll, setIsFirstScroll] = useState(true)
     const [loading, setLoading] = useState(true)
-
-
+    const [tab, setTab] = useState(ETAB_MATCHES)
+    const [table, setTable] = useState([])
 
     const weeksScrollRef = useRef(null)
     const currentWeekRef = useRef(null)
@@ -101,6 +104,20 @@ function CarsPage({ navigation, route }): JSX.Element {
       // strings.setLanguage('en')
       getLeagues()
     }, []);
+
+    function getTable(league) {
+      fetch(`${SERVER_BASE_URL}/api/v1/league/table?league_id=${league.id}`, {
+        method: 'GET',
+        // headers: { 'Content-Type': 'application/json' },
+      })
+        .then(response => response.json())
+        .then(data => {
+          setTable(data)
+        })
+        .catch(error => { 
+          console.error('Error fetching leagues:', error)
+        });
+    }
 
     function getLeagues() {
       fetch(`${SERVER_BASE_URL}/api/v1/leagues`, {
@@ -120,25 +137,19 @@ function CarsPage({ navigation, route }): JSX.Element {
             setWeeks([])
             return
           }
-          // const indices = Array.from({ length: Math.min(week + 5, l.num_weeks) }, (_, index) => index + 1);
 
           let weeks = []
           if (league.type == 0) {
             weeks = Array.from({ length: Math.min(league.week + NUM_NEXT_WEEKS, league.num_weeks) }, (_, index) => {return {week: index + 1, type: 0}});
             setWeeks(weeks)
           } else {
-            // For other types, show the next 5 weeks starting from league.week
-            // const currentWeekIndex = league.weeks.findIndex(w => w.week === league.week);
-            // console.log(currentWeekIndex)
-            // weeks = league.weeks.slice(currentWeekIndex, currentWeekIndex + 6);
-
             weeks = league.weeks.slice(0, league.week + NUM_NEXT_WEEKS);
-
             setWeeks(weeks);
           }
 
           setSelectedWeek(weeks[league.week - 1])
           getMatches(league, league.week, selectedSeason)
+          getTable(league)
         })
         .catch(error => { 
           SplashScreen.hide();
@@ -228,6 +239,9 @@ function CarsPage({ navigation, route }): JSX.Element {
       }
       setSelectedWeek(weeks[week - 1])
       getMatches(l, week, selectedSeason)
+      setTab(ETAB_MATCHES)
+      getTable(l)
+
     }
 
     function onSeasonPress(s) {
@@ -310,6 +324,198 @@ function CarsPage({ navigation, route }): JSX.Element {
     );
   };
 
+  function renderTable() {
+    return <View style={{
+      width: '100%',
+      // backgroundColor: 'blue',
+      alignItems: 'center'
+    }}>
+        <View style={{
+          // backgroundColor: 'red',
+          width: '100%',
+          padding: 10,
+          paddingTop: 0,
+          paddingBottom: 20,
+        }}>
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text style={{
+                width: 60,
+                color: 'black',
+                fontWeight: 'bold'
+              }}>Pos</Text>
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.pos}</Text>
+            </View>
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text style={{
+                width: 60,
+                color: 'black',
+                fontWeight: 'bold'
+              }}>Mp</Text>
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.matches_played}</Text>
+            </View>
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text style={{
+                width: 60,
+                color: 'black',
+                fontWeight: 'bold'
+              }}>Gd</Text>
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.goal_diff}</Text>
+            </View>
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text style={{
+                width: 60,
+                color: 'black',
+                fontWeight: 'bold'
+              }}>Pts</Text>
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.pts}</Text>
+            </View>
+        </View>
+
+        <View style={{
+          width: '100%',
+          height: 60,
+          backgroundColor: '#F0F0F0',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Text style={{
+            width: 50,
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center'
+          }}>Pos</Text>
+          <Text style={{
+            // width: '90%',
+            flex: 1,
+            color: 'black',
+            fontWeight: 'bold',
+            paddingLeft: 10
+          }}>{strings.team}</Text>
+          <Text style={{
+            width: 40,
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}>Mp</Text>
+          <Text style={{
+            width: 40,
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}>Gd</Text>
+          <Text style={{
+            width: 40,
+            color: 'black',
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}>{ "Pts"}</Text>
+        </View>
+
+      {table?.map((team, index)=>{
+        return <View key={team.team.name} style={{
+          width: '100%',
+          height: 60,
+          alignItems: 'center',
+          flexDirection: 'row'
+        }}>
+          <Text style={{
+            width: 50,
+            color: 'black', 
+            fontSize: 16,
+            fontWeight: 'bold',
+            textAlign: 'center',
+            // backgroundColor: 'red'
+          }}>
+            {index + 1}
+          </Text>
+          <View style={{
+            flex: 1,
+            // paddingLeft: 5,
+            flexDirection: 'row',
+            alignItems: 'center'
+          }}>
+            <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${team.team.name}.png`} style={{
+              width: 30,
+              height: 30,
+              // marginLeft: 5>
+            }}></Image>
+            <Text style={{
+              color: 'black',
+              fontWeight: 'bold',
+              marginLeft: 10
+            }}>
+              {team.team.short_name}
+            </Text>
+          </View>
+          <Text style={{
+            width: 40,
+            textAlign: 'center',
+            color: 'black',
+            fontWeight: 'bold'
+          }}>
+            {team.matches_played}
+          </Text>
+          <Text style={{
+            width: 40,
+            textAlign: 'center',
+            color: 'black',
+            fontWeight: 'bold'
+          }}>
+            {team.goal_difference}
+          </Text>
+          <Text style={{
+            textAlign: 'center',
+            width: 40,
+            color: 'black',
+            fontWeight: 'bold'
+          }}>
+            {team.points}
+          </Text>
+        </View>
+    })}
+    </View>
+  
+  }
+
+  function compareVersions(serverVersion, currentVersion) {
+    if (!serverVersion || ! currentVersion || !serverVersion.length || !currentVersion.length) return false
+
+    const serverParts = serverVersion.split('.').map(Number);
+    const currentParts = currentVersion.split('.').map(Number);
+
+    for (let i = 0; i < Math.max(serverParts.length, currentParts.length); i++) {
+        const serverPart = serverParts[i] || 0;
+        const currentPart = currentParts[i] || 0;
+
+        if (serverPart > currentPart) {
+            return true; // Server version is newer
+        } else if (serverPart < currentPart) {
+            return false; // Current version is up-to-date
+        }
+    }
+
+    return false; // Versions are identical
+}
+
   return (
     <GestureHandlerRootView style={{flex: 1, backgroundColor: '#f7f7f7'}}>
 
@@ -335,7 +541,7 @@ function CarsPage({ navigation, route }): JSX.Element {
           }}>
             <AppBar showLang={true} showBack={false} navigation={navigation}/>
 
-            { dataManager.getSettings()?.version.length && DeviceInfo.getVersion() != dataManager.getSettings().version ? <View style={{
+            { compareVersions(dataManager.getSettings()?.version, DeviceInfo.getVersion()) ? <View style={{
               width: '100%',
               alignItems: 'center',
               justifyContent: 'center',
@@ -487,53 +693,91 @@ function CarsPage({ navigation, route }): JSX.Element {
             width: '100%',
             // backgroundColor: 'red',
             padding: 15,
-            marginTop: 20,
+            marginTop: 10,
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
 
-            {loading ? <ActivityIndicator color={'#FF2882'} size={'large'}></ActivityIndicator> : null }
-            
-            {!loading && matches.length && selectedLeague ? <LeagueTitleItem league={selectedLeague} week={selectedWeek} /> : null }
+            {selectedLeague ? <LeagueTitleItem league={selectedLeague} week={selectedWeek} /> : null }
 
-            { !loading ? matches.map((m, i)=>{
 
-              let renderTime = false;
-              if (currMatchDate == null) {
-                renderTime = true;
-                currMatchDate = new Date(m.date);
-              } else if (!isSameDay(new Date(currMatchDate), new Date(m.date))) {
-                renderTime = true;
-                currMatchDate = new Date(m.date);
-              }
-
-              return <View key={`match_${i}`}>
-                {renderTime ? <View style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: 10,
-                  marginTop: i == 0 ? 0 : 20
-                }}>
-                  <CalendarIcon width={26} height={26}/>
-                  <Text style={{
-                    marginLeft: 10,
-                    fontWeight: 'bold',
-                    color: 'black'
-                  }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')} </Text>
-                </View> : null }
-                <MatchItem onPress={()=>{onNavMatch(m)}} match={m}/>
-              </View>
-            }) : null}
-
-            {!matches.length && matchesReqFinished ? <Text style={{
-              fontWeight: 'bold',
-              color: "#8E8E93",
+            <View style={{
+              width: '100%',
+              height: 50,
+              padding: 4,
+              marginBottom: 30,
+              backgroundColor: '#F0F0F0',
+              borderRadius: 30,
+              flexDirection: 'row'
             }}>
-              {strings.no_matches_found}
-            </Text>: null}
+              <TouchableOpacity activeOpacity={.6} onPress={()=>{setTab(ETAB_MATCHES)}} style={{
+                flex: 1,
+                backgroundColor: tab == ETAB_MATCHES ? 'white' : 'transparent',
+                borderRadius: 30,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  color: 'black',
+                  fontWeight: 'bold'
+                }}>{strings.matches}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity activeOpacity={.6} onPress={()=>{setTab(ETAB_TABLE)}} style={{
+                flex: 1,
+                 alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: tab == ETAB_TABLE ? 'white' : 'transparent',
+                borderRadius: 30
+              }}>
+                 <Text style={{
+                  color: 'black',
+                  fontWeight: 'bold'
+                }}>{strings.table}</Text>
+              </TouchableOpacity>
+            </View>
 
-          </View>
+            {loading ? <ActivityIndicator color={'#FF2882'} size={'large'}></ActivityIndicator> : null }
+            { tab == ETAB_MATCHES ? <View>
+              {/* {!loading && matches.length && selectedLeague ? <LeagueTitleItem league={selectedLeague} week={selectedWeek} /> : null } */}
+
+              { !loading ? matches.map((m, i)=>{
+
+                let renderTime = false;
+                if (currMatchDate == null) {
+                  renderTime = true;
+                  currMatchDate = new Date(m.date);
+                } else if (!isSameDay(new Date(currMatchDate), new Date(m.date))) {
+                  renderTime = true;
+                  currMatchDate = new Date(m.date);
+                }
+
+                return <View key={`match_${i}`}>
+                  {renderTime ? <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 10,
+                    marginTop: i == 0 ? 0 : 20
+                  }}>
+                    <CalendarIcon width={26} height={26}/>
+                    <Text style={{
+                      marginLeft: 10,
+                      fontWeight: 'bold',
+                      color: 'black'
+                    }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')} </Text>
+                  </View> : null }
+                  <MatchItem onPress={()=>{onNavMatch(m)}} match={m}/>
+                </View>
+              }) : null}
+
+              {!matches.length && matchesReqFinished ? <Text style={{
+                fontWeight: 'bold',
+                color: "#8E8E93",
+              }}>
+                {strings.no_matches_found}
+              </Text>: null}
+            </View> : !loading ? renderTable() : null } 
+          </View> 
         
 
         </ScrollView>

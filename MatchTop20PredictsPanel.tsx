@@ -100,6 +100,7 @@ export default function MatchTop20PredictsPanel({top20Predicts, onUnlock, adLoad
                     }}>{predict.user.name}</Text>
                     <Text style={{
                       fontSize: 12,
+                      color: '#8E8E93',
                       // marginBottom: 10,
                       fontFamily: 'NotoSansArmenian-Bold'
                     }}>{strings.place_in_el_torneo}: { /*dataManager.findUserPosition(predict.user.id)}*/predict.user.position}, {strings.points}: {predict.user.points}</Text>

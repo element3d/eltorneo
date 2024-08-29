@@ -26,6 +26,8 @@ import strings from './Strings';
 import adsManager from './AdsManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import MatchStatisticsPanel from './MatchStatisticsPanel';
+import MatchEventsPanel from './MatchEventsPanel';
 
 function TeamItemEmpty() {
   return (
@@ -180,6 +182,28 @@ function MatchDatePanel({match, isShowTopMatchTime, predictReqFinished}) {
   }
 }
 
+function ViewChip({title, selected, onClick}) {
+  return <TouchableOpacity onPress={onClick} activeOpacity={.8} style={{
+    height: 40,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: selected ? 0 : 2,
+    borderColor: '#EAEDF1',
+    backgroundColor: selected ? '#FF2882' : 'transparent',
+    paddingLeft: 20,
+    paddingRight: 20,
+    marginRight: 10,
+  }}>
+    <Text style={{
+      fontWeight: 'bold',
+      color: selected ? 'white' : '#8E8E93'
+    }}>
+      {title}
+    </Text>
+  </TouchableOpacity>
+}
+
 
 function MatchPage({ navigation, route }): JSX.Element {
     const { id } = route.params;
@@ -198,6 +222,17 @@ function MatchPage({ navigation, route }): JSX.Element {
     const [processing, setProcessing] = useState(false)
     const [blockForAd, setBlockForAd] = useState(dataManager.getSettings().blockForAd)
     const [showAd, setShowAd] = useState(false)
+    const [statistics, setStatistics] = useState(null)
+    const [events, setEvents] = useState(null)
+
+    const [renderChips, setRenderChips] = useState(false)
+    const [header, setHeader] = useState(null)
+
+    const EVIEW_PREDICTIONS = 1
+    const EVIEW_STATISTICS = 2
+    const EVIEW_EVENTS = 3
+
+    const [view, setView] = useState(EVIEW_PREDICTIONS)
 
     const backgroundStyle = {
       backgroundColor: '#37003C',
@@ -221,6 +256,32 @@ function MatchPage({ navigation, route }): JSX.Element {
         setTeam2Score(pp.team2_score.toString())
       }
     })
+
+    useEffect(() => {
+      if (view == EVIEW_STATISTICS) {
+        fetch(`${SERVER_BASE_URL}/api/v1/match/statistics?match_id=${match.id}`, {
+          method: 'GET',
+        })
+        .then(response => response.json())
+        .then(data => {
+          setStatistics(data)
+        })
+        .catch(error => { 
+          setStatistics(null)
+        });
+      } else if (view == EVIEW_EVENTS) {
+        fetch(`${SERVER_BASE_URL}/api/v1/match/events?match_id=${match.id}`, {
+          method: 'GET',
+        })
+        .then(response => response.json())
+        .then(data => {
+          setEvents(data)
+        })
+        .catch(error => { 
+          setEvents(null)
+        });
+      }
+    }, [view])
 
     useEffect(()=>{
       if (!dataManager.getSettings().enableAds) return
@@ -278,7 +339,23 @@ function MatchPage({ navigation, route }): JSX.Element {
       }
     }, []);
 
-  
+    function getHeader(id) {
+      fetch(`${SERVER_BASE_URL}/api/v1/match/header?match_id=${id}`, {
+        method: 'GET',
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.statistics || data.events) {
+          setRenderChips(true)
+          setHeader(data)
+        }
+        else setRenderChips(false)
+      })
+      .catch(error => { 
+        setRenderChips(false)
+      });
+    }
+
     useEffect(() => {
       getMatch()
       getPredict()
@@ -364,6 +441,7 @@ function MatchPage({ navigation, route }): JSX.Element {
         .then(response => response.json())
         .then(data => {
           setMatch(data[0])
+          getHeader(data[0].id)
         })
         .catch(error => console.error('Error fetching leagues:', error));
     }
@@ -556,6 +634,12 @@ function MatchPage({ navigation, route }): JSX.Element {
       return false
     }
 
+    function getStatusText() {
+      if (match.status == 'HT' || match.status == 'FT') return match.status
+
+      return '  ' + match.elapsed + " '"
+    }
+
   return (
     <GestureHandlerRootView style={{flex: 1, backgroundColor: '#F7F7F7'}}>
 
@@ -617,7 +701,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                 // width: '50%',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bottom: 55
+                bottom: isMatchLive() ? 30 : 55
               }}>
                 {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
                   width: 45,
@@ -642,25 +726,60 @@ function MatchPage({ navigation, route }): JSX.Element {
                   fontFamily: 'OpenSans-Bold'
                 }}>{match?.team1_score}</Text> : null }
 
-                {isMatchLive() ?  <View style={{
-                  marginTop: 4,
-                  backgroundColor: '#00C56619',
-                  borderWidth: 1,
-                  borderColor: '#00C566',
-                  paddingLeft: 8,
-                  paddingRight: 8,
-                  marginBottom: 8,
-                  height: 30,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 15
+                {isMatchLive() ?  
+                
+                <View style={{
+                  marginTop: 20
                 }}>
-                  <Text style={{
-                    fontFamily: 'NotoSansArmenian-Bold',
-                    fontSize: 14,
-                    color: '#00C566'
-                  }}>{'LIVE'}</Text>
-                </View> : null }
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    // marginTop: 20,
+                    marginBottom: 5
+                  }}>
+                    <Text style={{
+                      color: 'black',
+                      fontSize: 24,
+                      fontWeight: 'bold',
+                      marginRight: 10
+                    }}>{match.team1_score_live}</Text>
+                    <Text style={{
+                      color: 'black',
+                      fontSize: 20,
+                      fontWeight: 'bold'
+                    }}>:</Text>
+                    <Text style={{
+                      color: 'black',
+                      fontSize: 24,
+                      fontWeight: 'bold',
+                      marginLeft: 10
+                    }}>{match.team2_score_live}</Text>
+                  </View>
+                  <View style={{
+                    // marginTop: 4,
+                    backgroundColor: '#00C56619',
+                    borderWidth: 1,
+                    borderColor: '#00C566',
+                    paddingLeft: 8,
+                    paddingRight: 8,
+                    marginBottom: 8,
+                    height: 30,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 15
+                  }}>
+                    <Text style={{
+                      width: 40,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: 'NotoSansArmenian-Bold',
+                      fontSize: 14,
+                      color: '#00C566',
+                      textAlign: 'center'
+                    }}>{getStatusText()}</Text>
+                  </View> 
+                </View>: null }
                 { (!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
                   fontSize: 30,
                   height: 50,
@@ -714,7 +833,7 @@ function MatchPage({ navigation, route }): JSX.Element {
               </View> 
             
             </View>
-            {(!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
+            {(!isMatchEnded() && !isMatchLive() && predictsReqFinished) || predict ? <View style={{
                 width: '100%',
                 height: 50,
                 // marginTop: 10,
@@ -734,7 +853,7 @@ function MatchPage({ navigation, route }): JSX.Element {
 
               </View> : null }
               
-              {isShowScoreInput() && predictReqFinished ?  <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
+              {isShowScoreInput() && predictReqFinished && predictsReqFinished ?  <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
                 opacity: !isPredictDisabled() ? 1 : .8
               }}>
                   <View style={{
@@ -779,18 +898,45 @@ function MatchPage({ navigation, route }): JSX.Element {
             </View> : null }
           </View>
 
+          { renderChips ? <ScrollView
+                horizontal={true}
+                contentInsetAdjustmentBehavior="automatic"
+                contentContainerStyle={{
+                  height: 50,
+                  marginTop: 20,
+                  paddingLeft: 20,
+                  // backgroundColor: 'green',
+                  alignItems: 'center',
+                }}
+                showsHorizontalScrollIndicator={false}>
+                
+                <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={()=>{setView(EVIEW_PREDICTIONS)}}/>
+                { header?.statistics ? <ViewChip title={strings.statistics} selected={view == EVIEW_STATISTICS} onClick={()=>{setView(EVIEW_STATISTICS)}}/> : null }
+                { header?.events ? <ViewChip title={strings.events} selected={view == EVIEW_EVENTS} onClick={()=>{setView(EVIEW_EVENTS)}}/> : null }
+            
+            </ScrollView> : null }
+
           <View style={{
             width: '90%',
-            marginTop: 30
+            // marginTop: 30
           }}>
-            {predicts && predicts.numPredicts? <MatchPredictsSummaryPanel onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}/> : null }
-            {top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts}/> : null }
-            {predictsReqFinished && !predicts?.numPredicts ? <Text style={{
-              color: '#8E8E93',
-              fontSize: 14,
-              fontWeight: 'bold',
-              alignSelf: 'center'
-            }}>{strings.no_pred_for_match}</Text> : null}
+          
+            
+            {view == EVIEW_PREDICTIONS ? <View style={{
+                marginTop: 20,
+            }}>
+              {predicts && predicts.numPredicts? <MatchPredictsSummaryPanel onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}/> : null }
+              {top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts}/> : null }
+              {predictsReqFinished && !predicts?.numPredicts ? <Text style={{
+                color: '#8E8E93',
+                fontSize: 14,
+                fontWeight: 'bold',
+                alignSelf: 'center'
+              }}>{strings.no_pred_for_match}</Text> : null}
+              {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null }
+            </View> : null }
+            {view == EVIEW_STATISTICS && statistics ? <MatchStatisticsPanel statistics={statistics} /> : view == EVIEW_STATISTICS ? <ActivityIndicator style={{marginTop: 20}} color={'#FF2882'} size={'large'}/> : null} 
+            {view == EVIEW_EVENTS && events ? <MatchEventsPanel events={events} /> : view == EVIEW_EVENTS ? <ActivityIndicator style={{marginTop: 20}} color={'#FF2882'} size={'large'}/> : null} 
 
           </View>
         

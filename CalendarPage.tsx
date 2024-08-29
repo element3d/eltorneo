@@ -62,8 +62,12 @@ function CalendarPage({ navigation, route }): JSX.Element {
     function onNavMatch(match) {
       if (match.week > match.currentWeek) return;
 
-      navigation.navigate("Match", {
-        id: match.id
+      navigation.navigate({ 
+        name: 'Match', 
+        params: {
+          id: match.id, 
+        }, 
+        key: match.id
       })
     }
 

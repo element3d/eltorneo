@@ -499,7 +499,9 @@ function ProfilePage({ navigation, route }): JSX.Element {
             <View style={{
               flexDirection: 'row'
             }}>
-              <Text>{strings.total_short}: </Text><Text style={{
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.total_short}: </Text><Text style={{
                 color: 'black',
                 fontWeight: 'bold'
               }}>{stats.total_predictions}</Text>
@@ -508,28 +510,34 @@ function ProfilePage({ navigation, route }): JSX.Element {
             <View style={{
               flexDirection: 'row'
             }}>
-              <Text>{strings.score_predicted}: </Text><Text style={{
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.score_predicted}: </Text><Text style={{
                 color: 'black',
                 fontWeight: 'bold'
-              }}>{stats.score_predicted}</Text>
+              }}>{stats.score_predicted} { stats.total_predictions > 0 ? `(${Number.parseInt(stats.score_predicted/stats.total_predictions*100)}%)` : null }</Text>
             </View>
 
             <View style={{
               flexDirection: 'row'
             }}>
-              <Text>{strings.winner_or_draw_predicted}: </Text><Text style={{
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.winner_or_draw_predicted}: </Text><Text style={{
                 color: 'black',
                 fontWeight: 'bold'
-              }}>{stats.winner_predicted}</Text>
+              }}>{stats.winner_predicted} { stats.total_predictions > 0 ? `(${Number.parseInt(stats.winner_predicted/stats.total_predictions*100)}%)` : null }</Text>
             </View>
 
             <View style={{
               flexDirection: 'row'
             }}>
-              <Text>{strings.prediction_was_failed}: </Text><Text style={{
+              <Text style={{
+                color: '#8E8E93'
+              }}>{strings.prediction_was_failed}: </Text><Text style={{
                 color: 'black',
                 fontWeight: 'bold'
-              }}>{stats.failed}</Text>
+              }}>{stats.failed}  { stats.total_predictions > 0 ? `(${Number.parseInt(stats.failed/stats.total_predictions*100)}%)` : null }</Text>
             </View>
           </View> : null }
         </View>
