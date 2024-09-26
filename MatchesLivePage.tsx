@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   ActivityIndicator,
   Image,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -19,6 +20,7 @@ import TeamItem from './TeamItem';
 import dataManager from './DataManager';
 import authManager from './AuthManager';
 import strings from './Strings';
+import { useFocusEffect } from '@react-navigation/native';
 
 function MatchesLivePage({ navigation, route }): JSX.Element {
     const [matches, setMatches] = useState([])
@@ -31,6 +33,21 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
     useEffect(()=> {
       getMatches()
     }, [])
+
+    useFocusEffect(
+      useCallback(() => {
+        getMatches()
+          const interval = setInterval(() => {
+            getMatches()
+          }, 60000);
+      
+          // Cleanup interval on focus loss or unmount
+          return () => {
+            clearInterval(interval)
+          };
+        
+      }, [])
+    );
 
     function getMatches() {
       const url = `${SERVER_BASE_URL}/api/v1/matches/live`
@@ -56,7 +73,10 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
     let currentLeague = null
 
     function onNavMatch(match) {
-      
+      match.leagueName= match.league_name
+      match.weekType = match.week_type
+      dataManager.setMatch(match)
+
       navigation.navigate({ 
         name: 'Match', 
         params: {
@@ -88,6 +108,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
           contentContainerStyle={{
             minHeight: '100%'
           }}
+        
           style={{flex: 1}}>
 
           <View style={{
@@ -106,7 +127,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
             width: '100%',
             // backgroundColor: 'red',
             padding: 15,
-            marginTop: 20,
+            marginTop: 10,
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center'

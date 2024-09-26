@@ -86,7 +86,7 @@ export default function MatchItem({onPress, match, showLeague}) {
           }}>
             <View style={{
               borderRadius: 20,
-              backgroundColor: 'white',
+              backgroundColor: '#ffffffcc',
               alignItems: 'center',
               justifyContent: 'center',
               paddingTop: 10,
@@ -106,8 +106,9 @@ export default function MatchItem({onPress, match, showLeague}) {
                   flexDirection: 'row'
                 }}>
                   <Image src={`${SERVER_BASE_URL}/data/leagues/${match.league.name}_colored.png`} style={{
-                    width: 22,
+                    width: 30,
                     height: 22,
+                    objectFit: 'contain',
                     marginRight: 6
                   }}/>
                   <Text style={{

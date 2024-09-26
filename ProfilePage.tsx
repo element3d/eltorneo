@@ -67,8 +67,8 @@ function UserPanel({navigation, place, user, isMe}) {
         paddingLeft: 15,
         paddingRight: 15,
         alignItems: 'center',
-        marginBottom: 20,
-        marginTop: 10,
+        // marginBottom: 20,
+        // marginTop: 10,
         flexDirection: 'row'
       }}>
         <View style={{
@@ -187,10 +187,12 @@ function ProfilePage({ navigation, route }): JSX.Element {
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(true);
     const [hasNext, setHasNext] = useState(false)
-    const [blockForAd, setBlockForAd] = useState(dataManager.getSettings().blockForAd && !isMe)
-    const [adLoaded, setAdLoaded] = useState(false)
 
     const user = isMe ? authManager.getMeSync() : authManager.getActiveUser()
+    const place = user ? dataManager.findUserPosition(user.id) : 0
+    const [blockForAd, setBlockForAd] = useState(place <=3 && place >=1 && dataManager.getSettings()?.blockForAd && !isMe)
+    const [adLoaded, setAdLoaded] = useState(false)
+
     const backgroundStyle = {
       backgroundColor: 'white',
     };
@@ -211,9 +213,13 @@ function ProfilePage({ navigation, route }): JSX.Element {
     }, []);
 
     useEffect(()=>{
+      if (!dataManager.getSettings()) return
+      if (!dataManager.getSettings().enableAds || !dataManager.getSettings().blockForAd) return
+
       if (adsManager.isLoaded()) {
         setAdLoaded(true)
       } else {
+        setBlockForAd(false)
         adsManager.loadAd()
         const unsub = adsManager.addLoadedListener(()=>{
           unsub()
@@ -231,11 +237,11 @@ function ProfilePage({ navigation, route }): JSX.Element {
     }, [page]);
 
   
-      const place = dataManager.findUserPosition(user.id)
 
  
     function getStats() {
       // if (!authManager.getToken()) return
+      if (!user) return
 
       fetch(`${SERVER_BASE_URL}/api/v1/user/stats?user_id=${user.id}&league_id=${routeSelectedLeague || -1}`, {
         method: 'GET',
@@ -412,8 +418,8 @@ function ProfilePage({ navigation, route }): JSX.Element {
             // height: 500,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'white',
-            paddingBottom: 20
+            backgroundColor: '#ffffffcc',
+            paddingBottom: 10
           }}>
             <AppBar navigation={navigation}/>
             <UserPanel navigation={navigation} user={user} place={place} isMe={isMe}/>
@@ -454,21 +460,21 @@ function ProfilePage({ navigation, route }): JSX.Element {
                 // maxHeight: 120,
               }}
             >
-              <LeagueChip league={null} selected={ !routeSelectedLeague || routeSelectedLeague < 1} onPress={()=> {onLeaguePress(null)}}/>
+              <LeagueChip compact={false} league={null} selected={ !routeSelectedLeague || routeSelectedLeague < 1} onPress={()=> {onLeaguePress(null)}}/>
               { dataManager.getLeagues().map((l)=>{
-                  return (<LeagueChip key={l.name} league={l} selected={l == selectedLeague} onPress={()=> {onLeaguePress(l)}}/>)
+                  return (<LeagueChip compact={false} key={l.name} league={l} selected={l == selectedLeague} onPress={()=> {onLeaguePress(l)}}/>)
               })}
           </ScrollView> : null }
           </View>
 
-          {stats && !loading ? <View style={{
+          {stats ? <View style={{
             marginTop: 20,
             width: '90%',
             alignSelf: 'center',
             // height: 200,
             borderRadius: 20,
             padding: 20,
-            backgroundColor: 'white'
+            backgroundColor: '#ffffffcc'
           }}>
             { !selectedLeague ? <Text style={{
               color: 'black',
@@ -559,6 +565,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
         closeUnsub()
         adsManager.setIsLoaded(false)
         adsManager.loadAd()
+
         setAdLoaded(false)
         const unsub = adsManager.addLoadedListener(()=>{
           unsub()
@@ -622,7 +629,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: 12,
-                    }}>Unlock predictions</Text>
+                    }}>{strings.see_predictions}</Text>
                     { adLoaded ? <Icon name='play-circle-filled' size={18} color='white' style={{
                       marginLeft: 4
                     }}/> : <ActivityIndicator size={'small'} color={'white'} style={{

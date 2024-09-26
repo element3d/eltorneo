@@ -42,22 +42,29 @@ export default function ConfirmDialog({title, description, onYes, onNo}) {
                 height: 55
             }}>
                 <TouchableOpacity activeOpacity={.6} onPress={onNo} style={{
-                    flex: 1,
+                    // flex: 1,
                     alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
-                    <Text style={{
-                        color: '#8E8E93',
-                        fontWeight: 'bold'
-                    }}>{strings.no}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity activeOpacity={.6} onPress={onYes} style={{
-                    flex: 1,
-                    alignItems: 'center',
+                    // backgroundColor: 'red',
+                    height: 40,
+                    width: '40%',
                     justifyContent: 'center'
                 }}>
                     <Text style={{
                         color: '#FF2882',
+                        fontWeight: 'bold'
+                    }}>{strings.no}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity activeOpacity={.8} onPress={onYes} style={{
+                    // flex: 1,
+                    backgroundColor: '#FF2882',
+                    alignItems: 'center',
+                    height: 30,
+                    borderRadius: 20,
+                    width: '40%',
+                    justifyContent: 'center'
+                }}>
+                    <Text style={{
+                        color: 'white',
                         fontWeight: 'bold'
                     }}>{strings.yes}</Text>
                 </TouchableOpacity>

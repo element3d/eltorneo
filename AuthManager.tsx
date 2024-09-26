@@ -14,6 +14,18 @@ class AuthManager {
         })
     }
 
+    refresh() {
+        AsyncStorage.getItem('token', (err, token) => {
+            if (!token) this.token = null
+            this.token = token
+
+            this.getMe(token)
+            ?.then((me) =>{
+                this.me = me
+            })
+        })
+    }
+
     userHandshake(id) {
         const requestOptions = {
             method: 'GET',

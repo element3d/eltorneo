@@ -45,7 +45,7 @@ function BottomNavBar({ navigation, page,  style = {} }): JSX.Element {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date()); // Update the state with the new time
-    }, 30000); // Set the interval to update every minute (60000 milliseconds)
+    }, 10000); // Set the interval to update every minute (60000 milliseconds)
 
     return () => clearInterval(timer); // Clean up the interval on component unmount
   }, []);
@@ -66,7 +66,7 @@ function BottomNavBar({ navigation, page,  style = {} }): JSX.Element {
   }
 
   function navTables() {
-    navigation.navigate('Tables')
+    navigation.navigate({name: 'Tables', params: {page: 1}, key: 1})
   }
 
 
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 70,
-    backgroundColor: 'white',
+    backgroundColor: '#ffffffaa',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',

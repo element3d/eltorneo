@@ -20,7 +20,8 @@ class DataManager {
             .then(data => {
                 this.settings = data[0]
                 this.settings.blockForAd = false
-                if (!this.settings.enableAds) return
+                
+                return this.settings
 
                 // AsyncStorage.getItem("lastAdTime")
                 // .then((time)=>{
@@ -50,10 +51,25 @@ class DataManager {
 
                 // adsManager.init()
             })
-            .catch(error => console.error('Error fetching settings:', error));
+            .catch(error => { 
+                
+                console.error('Error fetching settings:', error)
+                throw "Error"
+            });
+    }
+
+    setMatch(m) {
+        if (m.predict &&  (m.predict.team1_score < 0 || m.predict.team2_score < 0)) m.predict = null
+        this.match = m
+    }
+
+    getMatch() {
+        return this.match
     }
 
     checkBlockForAd() {
+        if (!this.settings.enableAds) return
+
         return AsyncStorage.getItem("lastAdTime")
         .then((time)=>{
             let lastAdTime;
@@ -65,7 +81,7 @@ class DataManager {
                 const diffInHours = diffInMillis / 3600000; 
                 if (diffInHours > adDiffHours) {
                     this.settings.blockForAd = true
-                    AsyncStorage.setItem("lastAdTime", currentTime.getTime().toString())
+                    // AsyncStorage.setItem("lastAdTime", currentTime.getTime().toString())
                 } else {
                     this.settings.blockForAd = false
                 }
@@ -165,6 +181,9 @@ class DataManager {
             })
             .then(data => {
                 this.table = data
+            })
+            .catch(() => {
+
             });
     }
 

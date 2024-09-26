@@ -26,37 +26,44 @@ PushNotification.createChannel(
   (created) => console.log(`CreateChannel returned '${created}'`)
 );
 
+function saveFcmToken(fcmToken, authToken) {
+  AsyncStorage.getItem('lang', (lang) => {
+    if (!lang) lang = strings.getLanguage()
+
+    if (authToken) authManager.setToken(authToken)
+    const json = {
+      os: fcmToken.os,
+      fcm_token: fcmToken.token,
+      lang: lang
+    }
+    fetch(`${SERVER_BASE_URL}/api/v1/me/fcm_token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authentication': authToken ? authToken : ''
+      },
+      body: JSON.stringify(json)
+    })
+    .then(response => {
+      // Handle the response here
+      if (response.ok) {
+        return response.text(); // or response.json() if expecting JSON
+      } else {
+        throw new Error('Post failed');
+      }
+    })
+    .catch((err)=>{
+      console.log(err)
+    })
+  })
+}
+
 PushNotification.configure({
     onRegister: function (fcmToken) {
       AsyncStorage.getItem('token', (err, token) => {
-        if (!token) return
-
-        AsyncStorage.getItem('lang', (lang) => {
-          if (!lang) lang = strings.getLanguage()
-
-          authManager.setToken(token)
-          const json = {
-            os: fcmToken.os,
-            fcm_token: fcmToken.token,
-            lang: lang
-          }
-          fetch(`${SERVER_BASE_URL}/api/v1/me/fcm_token`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authentication': token
-            },
-            body: JSON.stringify(json)
-          })
-          .then(response => {
-            // Handle the response here
-            if (response.ok) {
-              return response.text(); // or response.json() if expecting JSON
-            } else {
-              throw new Error('Post failed');
-            }
-          })
-        })
+        // if (!token) return
+        saveFcmToken(fcmToken, token)
+       
       })
     },
   

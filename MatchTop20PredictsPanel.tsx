@@ -52,7 +52,7 @@ export default function MatchTop20PredictsPanel({top20Predicts, onUnlock, adLoad
             }}>{strings.top_20_predicts}</Text>
             {top20Predicts?.predicts.map((predict, i)=> {
               return (<TouchableOpacity key={`match_predict_${i}`} onPress={()=>{onNavUser(predict.user)}} activeOpacity={.8} style={{
-                backgroundColor: 'white',
+                backgroundColor: '#ffffffcc',
                   borderRadius: 20,
                   marginBottom: 12,
               }}>
@@ -98,12 +98,18 @@ export default function MatchTop20PredictsPanel({top20Predicts, onUnlock, adLoad
                       marginBottom: 0,
                       fontFamily: 'NotoSansArmenian-ExtraBold'
                     }}>{predict.user.name}</Text>
-                    <Text style={{
+                    {predict.user.position > 0 && predict.user.position <= 20 && predict.user.points > 0 ? <Text style={{
                       fontSize: 12,
                       color: '#8E8E93',
                       // marginBottom: 10,
                       fontFamily: 'NotoSansArmenian-Bold'
-                    }}>{strings.place_in_el_torneo}: { /*dataManager.findUserPosition(predict.user.id)}*/predict.user.position}, {strings.points}: {predict.user.points}</Text>
+                    }}>{strings.place_in_el_torneo}: { predict.user.position}, {strings.points}: {predict.user.points}</Text>
+                    : <Text style={{
+                      fontSize: 12,
+                      color: '#8E8E93',
+                      // marginBottom: 10,
+                      fontFamily: 'NotoSansArmenian-Bold'
+                    }}>{strings.points}: {predict.user.points}</Text> }
                   </View>
                   <View style={{
                       height: '100%',

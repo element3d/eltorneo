@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
+  PermissionsAndroid,
+  Platform,
   StyleSheet,
   Text,
   useColorScheme,
 } from 'react-native';
 
-import {
-  Colors,
-} from 'react-native/Libraries/NewAppScreen';
 import CarsPage from './CarsPage';
 
 import 'react-native-screens';
@@ -25,6 +24,7 @@ import MatchesLivePage from './MatchesLivePage';
 import strings from './Strings';
 import LangPage from './LangPage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import changeNavigationBarColor from 'react-native-navigation-bar-color';
 
 // import { RewardedAd, TestIds, AdEventType, RewardedAdEventType } from 'react-native-google-mobile-ads';
 
@@ -38,10 +38,6 @@ const Stack = createNativeStackNavigator();
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [loaded, setLoaded] = useState(false);
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
 
   // strings.setLanguage('en')
 
@@ -57,7 +53,14 @@ function App(): JSX.Element {
   //   return unsubscribe;
   // }, []);
 
+  useEffect(() => {
+    changeNavigationBarColor('#aaffffff', true);  // Change to your desired color
+  }, []);
+
+
   useEffect(()=>{
+    requestNotificationPermission();
+
     AsyncStorage.getItem("lang")
     .then((l)=>{
       if (!l) return
@@ -66,6 +69,24 @@ function App(): JSX.Element {
     
     // strings.setLanguage('en')
   }, [])
+
+  async function requestNotificationPermission() {
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Notification permission granted');
+          // Proceed with setting up push notifications
+        } else {
+          console.log('Notification permission denied');
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+  }
 
  
   return (

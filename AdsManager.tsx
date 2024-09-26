@@ -7,7 +7,7 @@ import dataManager from './DataManager';
 
 class AdsManager {
     contructor() {
-       
+        this.isInitialized = false
     }
 
     isLoaded() {
@@ -19,8 +19,12 @@ class AdsManager {
     }
 
     init() {
-        dataManager.init()
-        .then(()=>{
+        return dataManager.init()
+        .then((settings)=>{
+            if (!settings) return
+            this.isInitialized = true
+            if (!settings.enableAds) return
+            
             const adUnitId = dataManager.getSettings().prodAds ? 'ca-app-pub-7041403371220271/3023099910' : TestIds.REWARDED
 
             this.rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
@@ -31,26 +35,40 @@ class AdsManager {
             this.onLoad = null
             this.rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, ()=>{
                 this.loaded = true
+                this.isLoading = false
                 if (this.onLoad) this.onLoad()
             });
 
-            dataManager.checkBlockForAd()
-            .then((settings)=>{
-                if (settings.blockForAd) {
-                    this.loadAd()
-                }
-            })
+            this.rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, ()=>{
+                this.rewarded = true
+            });
 
-           
-    
+            this.rewardedAd.addAdEventListener(AdEventType.ERROR, (e)=>{
+                this.loaded = false
+                this.isLoading = false
+                dataManager.getSettings().enableAds = false
+                dataManager.getSettings().blockForAd = false
+            });
+
+            const pr = dataManager.checkBlockForAd()
+            if (pr) pr
+                .then((settings)=>{
+                    if (settings.blockForAd) {
+                        this.loadAd()
+                    }
+                })
         })
     }
 
     loadAd() {
+        if (this.isLoading) return
+
+        this.isLoading = true
         this.rewardedAd.load()
     }
 
     showAd() {
+        this.rewarded = false 
         this.rewardedAd.show()
     }
    
@@ -68,6 +86,14 @@ class AdsManager {
 
     addCloseListener(listener) {
         return this.rewardedAd.addAdEventListener(AdEventType.CLOSED, listener);
+    }
+
+    setRewarded(rewarded) {
+        this.rewarded = rewarded
+    }
+
+    getRewarded() {
+        return this.rewarded
     }
 }
 

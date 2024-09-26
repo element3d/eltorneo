@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     color: '#AEAEB2', // Default text color
   },
   date: {
-    fontWeight: 'medium',
+    fontWeight: 'bold',
     fontSize: 14,
     color: 'black', // Default text color
   },

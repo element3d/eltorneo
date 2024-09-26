@@ -19,7 +19,7 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
             }}>{strings.summary} ({predicts?.numPredicts} {strings.predictions})</Text>
             <View style={{
               width: '100%',
-              backgroundColor: 'white',
+              backgroundColor: '#ffffffcc',
               borderRadius: 20,
               paddingLeft: 10,
               paddingRight: 10,
@@ -61,7 +61,7 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
                     fontSize: 16,
                     color: '#8E8E93',
                     fontWeight: 'bold'
-                  }}>X</Text>
+                  }}>{strings.draw}</Text>
                   {!blockForAd ? <Text style={{
                     fontSize: 20,
                     color: 'black',

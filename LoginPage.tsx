@@ -19,6 +19,7 @@ import strings from './Strings';
 import { useFocusEffect } from '@react-navigation/native';
 import gsingin from './GSignin';
 import BallIcon from './assets/ball.svg';
+import AwardsPanel from './AwardsPanel';
 
 function LoginPage({ navigation }): JSX.Element {
     const [lang, setLang] = useState('ru')
@@ -71,7 +72,7 @@ function LoginPage({ navigation }): JSX.Element {
               // height: '100%',
               alignItems: 'center',
               justifyContent: 'center',
-              // marginTop: 20,
+              marginTop: -30,
             }}>
                
                <View style={{
@@ -104,13 +105,13 @@ function LoginPage({ navigation }): JSX.Element {
               </View>
 
               <Image width={200} height={200} source={require('./assets/playstore.png')} style={{
-                width: 280, 
-                height: 280,
+                width: 160, 
+                height: 160,
                 borderRadius: 20,
                 marginBottom: 20
               }}></Image>
 
-              {/* <Text style={{
+              <Text style={{
                 color: '#8E8E93',
                 fontSize: 16,
                 // fontWeight: 'bold',
@@ -118,14 +119,17 @@ function LoginPage({ navigation }): JSX.Element {
                 marginTop: 0,
                 width: '80%',
                 minWidth: 320,
-                marginBottom: 30
+                marginBottom: 10
               }}>
-                {strings.app_desc}
-              </Text> */}
+                {strings.login_desc}
+              </Text>
+
+              <AwardsPanel />
         
               <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
-                width: 280,
+                width: 300,
                 height: 50,
+                marginTop: 20,
                 borderRadius: 30,
                 justifyContent: 'center',
                 alignItems: 'center',

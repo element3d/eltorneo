@@ -4,6 +4,8 @@ import moment from 'moment';
 import CalendarIcon from './assets/calendar_black.svg';
 import MatchItem from './MatchItem'; // Ensure you import your component correctly
 import strings from './Strings';
+import dataManager from './DataManager';
+import authManager from './AuthManager';
 
 const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, loading, hasNext, renderTopPart, page, setPage, predicts, selectedLeague}) => {
 
@@ -25,11 +27,13 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
   }
 
   const renderFooter = () => {
+    // return null
     if (hasNext || globalPage > 1) {
 
       return <View style={{
         flexDirection: 'row',
         alignItems: 'center',
+        // backgroundColor: 'blue',
         marginTop: 10,
         marginBottom: 10,
         justifyContent: 'center'
@@ -45,7 +49,7 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
           fontSize: 16,
           fontWeight:'bold',
           color: '#FF2882'
-        }}>{"< Previous"}</Text>
+        }}>{`< ${strings.prev}`}</Text>
       </TouchableOpacity> : null }
         { hasNext ? <TouchableOpacity onPress={onNext} activeOpacity={.6} style={{
         // width: 50,
@@ -58,12 +62,17 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
           fontSize: 16,
           fontWeight:'bold',
           color: '#FF2882'
-        }}>Next ></Text>
+        }}>{strings.next} ></Text>
       </TouchableOpacity> : null }
       </View> 
     }
     
-    if (!hasMore || !loading) return null;
+    if (!hasMore || !loading) return (
+      <View style={styles.footer}>
+        {/* <ActivityIndicator color={'#FF2882'} size="large" /> */}
+      </View>
+    );
+
     return (
       <View style={styles.footer}>
         <ActivityIndicator color={'#FF2882'} size="large" />
@@ -72,6 +81,14 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
   };
 
   function onNavMatch(match) {
+    match.leagueName = match.league.name
+    match.weekType = match.week_type
+    const me = authManager.getMeSync()
+    if (!me || (me?.id != user.id)) {
+      match.predict = null
+    }
+
+    dataManager.setMatch(match)
     navigation.navigate({ 
       name: 'Match', 
       params: {
@@ -133,8 +150,8 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
       ListHeaderComponent={renderTopPart}
       ListFooterComponentStyle={{
         width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center'
+        // alignItems: 'center',
+        // justifyContent: 'center'
       }}
     />
   );
@@ -157,7 +174,12 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   footer: {
-    paddingVertical: 20,
+    width: '100%',
+    // backgroundColor: 'red',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 60
+    // paddingVertical: 20,
   },
 });
 

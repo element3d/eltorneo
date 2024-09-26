@@ -3,13 +3,18 @@ import GoalIcon from './assets/goal.svg'
 import YellowCardIcon from './assets/yellow_card.svg'
 import RedCardIcon from './assets/red_card.svg'
 import VarIcon from './assets/var.svg'
+import SubstIcon from './assets/subst.svg'
+
 import strings from "./Strings";
 
-function Item({event, index, isLast}) {
+function Item({event, index, isLast, score}) {
 
     function getTypeString() {
-        if (event.type == "Goal") return strings.goal
+        if (event.type == 'Goal' && event.detail == "Missed Penalty") return strings.missed_penalty
+        if (event.type == "Goal") return `${strings.goal} (${score})`
         if (event.type == "Card") return strings.card
+        if (event.type == "Var" && event.detail == "Goal Disallowed - handball") return `Var: ${strings.handball}`
+        if (event.type == "subst") return event.assist
         return event.type
     }
 
@@ -21,13 +26,13 @@ function Item({event, index, isLast}) {
             <Text style={{
                 color: '#00C566',
                 fontWeight: 'bold',
-                marginBottom: 4,
+                // marginBottom: 4,
             }}>{event.elapsed}'{event.extra ? ' + ' + event.extra : null}</Text>
             <Text style={{
                 color: '#1C1C1E',
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: 'bold'
-            }}>{event.player}</Text>
+            }}>{  event.player}</Text>
              <Text style={{
                 color: '#8E8E93',
                 fontSize: 12,
@@ -55,12 +60,49 @@ function Item({event, index, isLast}) {
                 </View>
 
             }
+            if (event.detail == "Missed Penalty") 
+            {
+                return <View style={{
+                    alignItems: 'center',
+                    justifyContent: 'centers'
+                }}>
+                    <VarIcon color={'#1C1C1E'} width={30} height={30} />
+                    <Text style={{
+                        marginTop: -2,
+                        color: 'black',
+                        fontWeight: 'bold',
+                        fontSize: 8
+                    }}>PEN</Text>
+                </View>
+
+            }
+            else if (event.detail == "Own Goal") 
+            {
+                return <View style={{
+                    alignItems: 'center',
+                    justifyContent: 'centers'
+                }}>
+                    <GoalIcon color={'#1C1C1E'} width={30} height={30} />
+                    <Text style={{
+                        marginTop: -2,
+                        color: '#FF4747',
+                        fontWeight: 'bold',
+                        fontSize: 8
+                    }}>OG</Text>
+                </View>
+
+            }
+            
             return <GoalIcon color={'#1C1C1E'} width={40} height={40} />
         }
-        if (event.type == "Var" && (event.detail == 'Goal cancelled' || event.detail == 'Goal Disallowed - offside')) return <VarIcon width={40} height={40} />
+        if (event.type == "Var" && (event.detail == 'Goal cancelled' 
+            || event.detail == 'Goal Disallowed - offside'
+            || event.detail == 'Goal Disallowed - handball')) 
+            return <VarIcon width={40} height={40} />
 
         if (event.detail == "Yellow Card") return <YellowCardIcon width={40} height={40} />
         if (event.detail == "Red Card") return <RedCardIcon width={40} height={40} />
+        if (event.type == "subst") return <SubstIcon width={30} height={40} />
 
     }
 
@@ -76,7 +118,7 @@ function Item({event, index, isLast}) {
        <View style={{
         flex: 1,
         height: '100%',
-        marginRight: 20,
+        marginRight: 10,
         justifyContent: 'center',
         alignItems: 'flex-end'
        }}>
@@ -113,7 +155,7 @@ function Item({event, index, isLast}) {
        </View>
        <View style={{
         flex: 1,
-        marginLeft: 20,
+        marginLeft: 10,
         height: '100%',
         justifyContent: 'center',
         alignItems: 'flex-start'
@@ -124,10 +166,19 @@ function Item({event, index, isLast}) {
 }
 
 export default function MatchEventsPanel({events}) {
+    let t1Score = 0
+    let t2Score = 0
+
     return <View>
         {events.map((e, i)=>{
-            if (e.type == 'subst') return null
-            return <Item key={`${e.elapsed}_${e.player}`} index={i} event={e} isLast={i == events.length - 1}></Item>
+            // if (e.type == 'subst') return null
+            if (e.type == "Goal" && e.detail != "Missed Penalty") 
+            {
+                if (e.team == 1) t1Score++;
+                else t2Score++;
+            }
+            const score = `${t1Score}-${t2Score}`
+            return <Item key={`${i}_${e.elapsed}_${e.player}`} score={score} index={i} event={e} isLast={i == events.length - 1}></Item>
         })}
     </View>
 }
