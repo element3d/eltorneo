@@ -2,6 +2,7 @@ import { Image, Text, View } from "react-native"
 import strings from "./Strings"
 import SERVER_BASE_URL from "./AppConfig"
 import dataManager from "./DataManager"
+import Colors from "./Colors"
 
 export default function MatchTablePanel({ match, table }) {
     let currentGroup = 0
@@ -57,42 +58,42 @@ export default function MatchTablePanel({ match, table }) {
             }}>
                 <View style={{
                     width: '100%',
-                    height: 60,
-                    backgroundColor: '#F0F0F0',
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 20,
+                    height: 52,
+                    backgroundColor: Colors.gray800,
+                    borderTopLeftRadius: 12,
+                    borderTopRightRadius: 12,
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center'
                 }}>
                     <Text style={{
                         width: 50,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold',
                         textAlign: 'center'
                     }}>Pos</Text>
                     <Text style={{
                         // width: '90%',
                         flex: 1,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold',
                         paddingLeft: 10
                     }}>{strings.team}</Text>
                     <Text style={{
                         width: 40,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold',
                         textAlign: 'center',
                     }}>Mp</Text>
                     <Text style={{
                         width: 40,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold',
                         textAlign: 'center',
                     }}>Gd</Text>
                     <Text style={{
                         width: 40,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold',
                         textAlign: 'center',
                     }}>{"Pts"}</Text>
@@ -117,20 +118,20 @@ export default function MatchTablePanel({ match, table }) {
                     {renderGroupName ? <Text style={{
                         fontWeight: 'bold',
                         fontSize: 20,
-                        color: 'black',
+                        color: Colors.titleColor,
                         marginLeft: 15,
                         marginTop: 20
                     }}>{strings.group} {getGroupName(team.league_index, team.group_index)}</Text> : null}
                     <View style={{
                         width: '100%',
-                        height: 60,
-                        backgroundColor: team.team.id == match.team1.id || team.team.id == match.team2.id ? '#F0F0F0' : 'transparent',
+                        height: 52,
+                        backgroundColor: team.team.id == match.team1.id || team.team.id == match.team2.id ? Colors.gray800 : 'transparent',
                         alignItems: 'center',
                         flexDirection: 'row'
                     }}>
                         <Text style={{
                             width: 50,
-                            color: 'black',
+                            color: Colors.titleColor,
                             fontSize: 16,
                             fontWeight: 'bold',
                             textAlign: 'center',
@@ -150,7 +151,7 @@ export default function MatchTablePanel({ match, table }) {
                                 // marginLeft: 5>
                             }}></Image>
                             <Text style={{
-                                color: 'black',
+                                color: Colors.titleColor,
                                 fontWeight: 'bold',
                                 marginLeft: 10
                             }}>
@@ -160,7 +161,7 @@ export default function MatchTablePanel({ match, table }) {
                         <Text style={{
                             width: 40,
                             textAlign: 'center',
-                            color: 'black',
+                            color: Colors.titleColor,
                             fontWeight: 'bold'
                         }}>
                             {team.matches_played}
@@ -168,7 +169,7 @@ export default function MatchTablePanel({ match, table }) {
                         <Text style={{
                             width: 40,
                             textAlign: 'center',
-                            color: 'black',
+                            color: Colors.titleColor,
                             fontWeight: 'bold'
                         }}>
                             {team.goal_difference}
@@ -176,7 +177,7 @@ export default function MatchTablePanel({ match, table }) {
                         <Text style={{
                             textAlign: 'center',
                             width: 40,
-                            color: 'black',
+                            color: Colors.titleColor,
                             fontWeight: 'bold'
                         }}>
                             {team.points}
@@ -185,7 +186,7 @@ export default function MatchTablePanel({ match, table }) {
                 </View>
             })}
 
-            <View style={{
+            {/* <View style={{
                 // backgroundColor: 'red',
                 width: '100%',
                 padding: 10,
@@ -242,7 +243,7 @@ export default function MatchTablePanel({ match, table }) {
                         color: '#8E8E93'
                     }}>{strings.pts}</Text>
                 </View>
-            </View>
+            </View> */}
 
         </View>
     )

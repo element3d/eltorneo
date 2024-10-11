@@ -27,6 +27,7 @@ import UserMatchesList from './UserMatchesList';
 import strings from './Strings';
 import adsManager from './AdsManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Colors from './Colors';
 
 export const ESTAT_TOTAL = 0
 const ESTAT_SCORE = 1
@@ -41,8 +42,8 @@ function ProfileCheap({title, selected, onPress, value}) {
       borderRadius: 20,
       borderWidth: 1,
       marginRight: 10,
-      backgroundColor: selected ? '#FF2882' : '#F7F7F7',
-      borderColor: selected ? '#FF2882' : '#EAEDF1',
+      backgroundColor: selected ? '#FF2882' : Colors.bgColor,
+      borderColor: selected ? '#FF2882' : Colors.borderColor,
       alignItems: 'center',
       justifyContent: 'center'
     }}>
@@ -50,7 +51,7 @@ function ProfileCheap({title, selected, onPress, value}) {
         fontSize: 16,
         color: selected ? 'white' : '#8E8E93',
         fontWeight: 'bold'
-      }}>{title} {value}</Text>
+      }}>{title}</Text>
     </TouchableOpacity>
   )
 }
@@ -74,9 +75,9 @@ function UserPanel({navigation, place, user, isMe}) {
         <View style={{
             width: 70,
             height: 70,
-            borderColor: '#EAEDF1',
+            borderColor: Colors.borderColor,
             borderWidth: 2,
-            backgroundColor: '#F7F7F7',
+            backgroundColor: Colors.bgColor,
             borderRadius: 80,
             overflow: 'hidden',
             alignItems: 'center',
@@ -94,7 +95,7 @@ function UserPanel({navigation, place, user, isMe}) {
         }}>
           <Text style={{
               // marginTop: 10,
-              color: 'black',
+              color: Colors.titleColor,
               fontSize: 18,
               fontFamily: 'NotoSansArmenian-Bold'
           }}>{user.name}</Text>
@@ -279,6 +280,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
           return
         } 
         setLoading(false)
+     
         setPredicts((prevPredicts) => [...prevPredicts, ...data.predicts])
         setPredictsJson(data)
         setPredictsReqFinished(true)
@@ -385,14 +387,14 @@ function ProfilePage({ navigation, route }): JSX.Element {
     function getScorePredictsValue() {
       if (!predictsJson) return ''
       if (!predictsJson.totalScorePredicts) return '0'
-      return `${predictsJson.totalScorePredicts} (${Number.parseInt(predictsJson.totalScorePredicts/predictsJson.totalPredicts * 100)}%)`
+      return `${predictsJson.totalScorePredicts}`
     }
 
     function getWinnerPredictsValue() {
       if (!predictsJson) return ''
 
       if (!predictsJson.totalWinnerPredicts) return '0'
-      return `${predictsJson.totalWinnerPredicts} (${Number.parseInt(predictsJson.totalWinnerPredicts/predictsJson.totalPredicts * 100)}%)`
+      return `${predictsJson.totalWinnerPredicts}`
     }
 
     function onStatChange(stat) {
@@ -418,13 +420,13 @@ function ProfilePage({ navigation, route }): JSX.Element {
             // height: 500,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#ffffffcc',
+            backgroundColor: Colors.gray800,
             paddingBottom: 10
           }}>
             <AppBar navigation={navigation}/>
             <UserPanel navigation={navigation} user={user} place={place} isMe={isMe}/>
 
-            {predictsJson?.totalPredicts || routeSelectedLeague >= 1  ? <ScrollView 
+            {/* { (!loading || page != 1) && (predictsJson?.totalPredicts || routeSelectedLeague >= 1)  ? <ScrollView 
               horizontal={true}
               // contentInsetAdjustmentBehavior="automatic"
               contentContainerStyle={{
@@ -445,7 +447,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
                 <ProfileCheap onPress={()=>{onStatChange(ESTAT_WINNER)}} selected={selectedStat == ESTAT_WINNER} title={strings.winner_or_draw_predicted} value={getWinnerPredictsValue()}/>
             </ScrollView> : null }
 
-            {predictsJson?.totalPredicts || routeSelectedLeague >= 1 ? <ScrollView
+            {(!loading || page != 1) && (predictsJson?.totalPredicts || routeSelectedLeague >= 1) ? <ScrollView
               horizontal={true}
               contentInsetAdjustmentBehavior="automatic"
               contentContainerStyle={{
@@ -464,20 +466,20 @@ function ProfilePage({ navigation, route }): JSX.Element {
               { dataManager.getLeagues().map((l)=>{
                   return (<LeagueChip compact={false} key={l.name} league={l} selected={l == selectedLeague} onPress={()=> {onLeaguePress(l)}}/>)
               })}
-          </ScrollView> : null }
+          </ScrollView> : null } */}
           </View>
 
-          {stats ? <View style={{
+          {(!loading || page != 1) && stats ? <View style={{
             marginTop: 20,
             width: '90%',
             alignSelf: 'center',
             // height: 200,
-            borderRadius: 20,
+            borderRadius: 12,
             padding: 20,
-            backgroundColor: '#ffffffcc'
+            backgroundColor: Colors.gray800
           }}>
             { !selectedLeague ? <Text style={{
-              color: 'black',
+              color: Colors.titleColor,
               fontWeight: 'bold',
               fontSize: 16,
               marginBottom: 10
@@ -488,14 +490,20 @@ function ProfilePage({ navigation, route }): JSX.Element {
                   flexDirection: 'row',
                   marginBottom: 10
                 }}>
-                  <Image src={`${SERVER_BASE_URL}/data/leagues/${selectedLeague.name}_colored.png`} style={{
+                  { Colors.mode == 1 ? <Image src={`${SERVER_BASE_URL}/data/leagues/${selectedLeague.name}_colored.png${dataManager.getImageCacheTime()}`} style={{
                     width: 22,
                     height: 22,
+                    objectFit: 'contain',
                     marginRight: 6
-                  }}/>
+                  }}/> : <Image src={`${SERVER_BASE_URL}/data/leagues/${selectedLeague.name}.png${dataManager.getImageCacheTime()}`} style={{
+                    width: 22,
+                    height: 22,
+                    objectFit: 'contain',
+                    marginRight: 6
+                  }}/> }
                   <Text style={{
                     fontSize: 16,
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontWeight: 'bold'
                   }}>{selectedLeague.name}</Text>
                 </View> }
@@ -508,7 +516,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
               <Text style={{
                 color: '#8E8E93'
               }}>{strings.total_short}: </Text><Text style={{
-                color: 'black',
+                color: Colors.titleColor,
                 fontWeight: 'bold'
               }}>{stats.total_predictions}</Text>
             </View>
@@ -519,7 +527,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
               <Text style={{
                 color: '#8E8E93'
               }}>{strings.score_predicted}: </Text><Text style={{
-                color: 'black',
+                color: Colors.titleColor,
                 fontWeight: 'bold'
               }}>{stats.score_predicted} { stats.total_predictions > 0 ? `(${Number.parseInt(stats.score_predicted/stats.total_predictions*100)}%)` : null }</Text>
             </View>
@@ -530,7 +538,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
               <Text style={{
                 color: '#8E8E93'
               }}>{strings.winner_or_draw_predicted}: </Text><Text style={{
-                color: 'black',
+                color: Colors.titleColor,
                 fontWeight: 'bold'
               }}>{stats.winner_predicted} { stats.total_predictions > 0 ? `(${Number.parseInt(stats.winner_predicted/stats.total_predictions*100)}%)` : null }</Text>
             </View>
@@ -541,7 +549,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
               <Text style={{
                 color: '#8E8E93'
               }}>{strings.prediction_was_failed}: </Text><Text style={{
-                color: 'black',
+                color: Colors.titleColor,
                 fontWeight: 'bold'
               }}>{stats.failed}  { stats.total_predictions > 0 ? `(${Number.parseInt(stats.failed/stats.total_predictions*100)}%)` : null }</Text>
             </View>
@@ -575,13 +583,13 @@ function ProfilePage({ navigation, route }): JSX.Element {
     }
 
   return (
-    <GestureHandlerRootView style={{flex: 1, backgroundColor: '#f7f7f7'}}>
+    <GestureHandlerRootView style={{flex: 1, backgroundColor: Colors.bgColor}}>
 
-    <SafeAreaView style={{flex: 1, backgroundColor: '#f7f7f7'}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: Colors.bgColor}}>
       <StatusBar
-        barStyle={'dark-content'}
+        barStyle={Colors.statusBar}
         
-        backgroundColor={backgroundStyle.backgroundColor}
+        backgroundColor={Colors.gray800}
       />
    
         <View style={{

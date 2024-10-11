@@ -8,6 +8,7 @@ class DataManager {
         this.leagues = []
         this.firstSeasonStartYear = 2024
         this.getTableByPoints()
+        this.fetchTopScorers()
     }
 
     init() {
@@ -56,6 +57,10 @@ class DataManager {
                 console.error('Error fetching settings:', error)
                 throw "Error"
             });
+    }
+
+    getTopScorers() {
+        return this.topScorers
     }
 
     setMatch(m) {
@@ -165,6 +170,36 @@ class DataManager {
         return -1;
     }
 
+    getSpecialMatch() {
+        this.specialMatch
+    }
+
+    fetchSpecialMatch(lang, token) {
+        const requestOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authentication': token  || ''
+            },
+        };
+
+        return fetch(`${SERVER_BASE_URL}/api/v1/matches/special?lang=${lang}`, requestOptions)
+        .then(response => {
+            if (response.status == 200)
+                return response.json()
+            return null
+        })
+        .then(data => {
+            if (!data || !Object.keys(data).length) return null
+            this.specialMatch = data
+
+            return this.specialMatch
+        })
+        .catch(() => {
+
+        });
+    } 
+
     getTableByPoints() {
         const requestOptions = {
             method: 'GET',
@@ -187,12 +222,30 @@ class DataManager {
             });
     }
 
+    fetchTopScorers() {
+        fetch(`${SERVER_BASE_URL}/api/v1/top_scorers`, {
+          method: 'GET',
+          // headers: { 'Content-Type': 'application/json' },
+        })
+          .then(response => response.json())
+          .then(data => {
+            this.topScorers = data
+          })
+      }
+
     setPendingPredict(p) {
         this.pendingPredict = p
     }
 
     getPendingPredict() {
         return this.pendingPredict
+    }
+
+    getImageCacheTime() {
+        if (!this.imageCacheTime) {
+            this.imageCacheTime = `?timestamp=${new Date().getTime()}`
+        }
+        return this.imageCacheTime
     }
 
     getLangs() {
@@ -211,119 +264,9 @@ class DataManager {
         return this.langs;
     }
 
-    getTestTop20Predicts() {
-        return [
-            {
-                user: {
-                    name: "Lukas Müller",
-                    avatar: "",
-                    points: 438,
-                    position: 1,
-                },
-                team1_score: 2,
-                team2_score: 0,
-                status: 1
-            },
-            {
-                user: {
-                    name: "Mateo Rossi",
-                    avatar: "",
-                    points: 218,
-                    position: 2,
-                },
-                team1_score: 3,
-                team2_score: 1,
-                status: 1
-            },
-            {
-                user: {
-                    name: "Filip Kovacs",
-                    avatar: "",
-                    points: 124,
-                    position: 4,
-                },
-                team1_score: 1,
-                team2_score: 1,
-                status: 3
-            },
-            {
-                user: {
-                    name: "",
-                    avatar: "",
-                    points: 438,
-                    position: 1,
-                },
-                team1_score: 2,
-                team2_score: 0,
-                status: 1
-            }
-        ]
-    }
     
-    getTestTable() {
-        return [
-            {
-                name: "Lukas Müller",
-                avatar: "",
-                predictions: 438,
-                totalPredictions: 368,
-            },
-            {
-                name: "Mateo Rossi",
-                avatar: "",
-                predictions: 218,
-                totalPredictions: 437,
-            },
-            {
-                name: "Sebastian Novak",
-                avatar: "",
-                predictions: 243,
-                totalPredictions: 387,
-            },
-            {
-                name: "Filip Kovacs",
-                avatar: "",
-                predictions: 218,
-                totalPredictions: 320,
-            },
-            {
-                name: "Olivier Dupont",
-                avatar: "",
-                predictions: 175,
-                totalPredictions: 279,
-            },
-            {
-                name: "Jan Kowalski",
-                avatar: "",
-                predictions: 143,
-                totalPredictions: 320,
-            }
-            ,{
-                name: "Nikolai Petrov",
-                avatar: "",
-                predictions: 113,
-                totalPredictions: 227,
-            }
-            ,{
-                name: "Erik Johansson",
-                avatar: "",
-                predictions: 78,
-                totalPredictions: 147,
-            }
-            ,{
-                name: "Mariusz Nowak",
-                avatar: "",
-                predictions: 57,
-                totalPredictions: 89,
-            },
-            {
-                name: "Mariusz Nowak",
-                avatar: "",
-                predictions: 56,
-                totalPredictions: 368,
-            }
-        ]
-    }
+    
+    
 }
 
 const dataManager = new DataManager()

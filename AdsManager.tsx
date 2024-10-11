@@ -44,10 +44,11 @@ class AdsManager {
             });
 
             this.rewardedAd.addAdEventListener(AdEventType.ERROR, (e)=>{
+                // console.log(e)
                 this.loaded = false
                 this.isLoading = false
-                dataManager.getSettings().enableAds = false
-                dataManager.getSettings().blockForAd = false
+                // dataManager.getSettings().enableAds = false
+                // dataManager.getSettings().blockForAd = false
             });
 
             const pr = dataManager.checkBlockForAd()
@@ -62,7 +63,6 @@ class AdsManager {
 
     loadAd() {
         if (this.isLoading) return
-
         this.isLoading = true
         this.rewardedAd.load()
     }

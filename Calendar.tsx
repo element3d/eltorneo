@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import moment from 'moment';
 import strings from './Strings';
+import Colors from './Colors';
 
 const Calendar = ({setDate}) => {
   const [dates, setDates] = useState([]);
@@ -42,7 +43,8 @@ const Calendar = ({setDate}) => {
           </Text>
           <Text style={[
             styles.date,
-            selectedDate === date ? styles.selectedText : {}
+            selectedDate === date ? styles.selectedText : {},
+            { color: selectedDate === date ? "white" : Colors.titleColor }
           ]}>
             {moment(date).format('DD')}
           </Text>
@@ -55,6 +57,9 @@ const Calendar = ({setDate}) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    // backgroundColor: 'red',
+    paddingTop: 6,
+    paddingBottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
@@ -65,7 +70,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     // backgroundColor: '#f0f0f0',
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 10,
     // marginHorizontal: 5,
   },
@@ -80,10 +85,10 @@ const styles = StyleSheet.create({
   date: {
     fontWeight: 'bold',
     fontSize: 14,
-    color: 'black', // Default text color
+    color: Colors.titleColor, 
   },
   selectedText: {
-    color: 'white', // Text color for selected day
+    color: "#F9F7F7", // Text color for selected day
   },
 });
 

@@ -17,6 +17,7 @@ import AppBar from './AppBar';
 import dataManager from './DataManager';
 import strings from './Strings';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Colors from './Colors';
 
 
 function LangPage({ navigation, route }): JSX.Element {
@@ -32,12 +33,12 @@ function LangPage({ navigation, route }): JSX.Element {
     }
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: 'white' }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.gray800 }}>
 
-            <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+            <SafeAreaView style={{ flex: 1, backgroundColor: Colors.gray800 }}>
                 <StatusBar
-                    barStyle={'dark-content'}
-                    backgroundColor={backgroundStyle.backgroundColor}
+                    barStyle={Colors.statusBar}
+                    backgroundColor={Colors.gray800}
                 />
 
                 <View style={{ flex: 1 }}>
@@ -51,7 +52,7 @@ function LangPage({ navigation, route }): JSX.Element {
                         <View style={{
                             width: '100%',
                             paddingBottom: 20,
-                            backgroundColor: 'white'
+                            backgroundColor: Colors.gray800
                         }}>
                             <AppBar navigation={navigation}/>
                             {Object.keys(dataManager.getLangs()).map((l)=>{

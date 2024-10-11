@@ -25,6 +25,8 @@ import strings from './Strings';
 import LangPage from './LangPage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
+import Colors from './Colors';
+import AwardsInfoPage from './AwardsInfoPage';
 
 // import { RewardedAd, TestIds, AdEventType, RewardedAdEventType } from 'react-native-google-mobile-ads';
 
@@ -54,7 +56,7 @@ function App(): JSX.Element {
   // }, []);
 
   useEffect(() => {
-    changeNavigationBarColor('#aaffffff', true);  // Change to your desired color
+    changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
   }, []);
 
 
@@ -105,6 +107,7 @@ function App(): JSX.Element {
         <Stack.Screen name="ProfileEdit" component={ProfileEditPage} />
         <Stack.Screen name="MatchesLive" component={MatchesLivePage} />
         <Stack.Screen name="Langs" component={LangPage} />
+        <Stack.Screen name="AwardsInfo" component={AwardsInfoPage} />
 
       </Stack.Navigator>
 

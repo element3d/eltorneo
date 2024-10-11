@@ -1,5 +1,6 @@
 import { Text, TouchableOpacity, View } from "react-native"
 import strings from "./Strings"
+import Colors from "./Colors"
 
 export default function ConfirmDialog({title, description, onYes, onNo}) {
     return <View style={{
@@ -15,7 +16,7 @@ export default function ConfirmDialog({title, description, onYes, onNo}) {
             width: 320,
             height: 200,
             borderRadius: 30,
-            backgroundColor: 'white'
+            backgroundColor: Colors.gray800
         }}>
             <View style={{
                 flex: 1,
@@ -24,7 +25,7 @@ export default function ConfirmDialog({title, description, onYes, onNo}) {
                 justifyContent: 'center'
             }}>
                 <Text style={{
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontWeight: 'bold',
                     fontSize: 24,
                     // marginBottom: 10

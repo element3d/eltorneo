@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 import CalendarIcon from './assets/calendar_black.svg';
+import CalendarWhiteIcon from './assets/calendar_white.svg';
 import MatchItem from './MatchItem'; // Ensure you import your component correctly
 import strings from './Strings';
 import dataManager from './DataManager';
 import authManager from './AuthManager';
+import Colors from './Colors';
 
-const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, loading, hasNext, renderTopPart, page, setPage, predicts, selectedLeague}) => {
+const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, loading, hasNext, renderTopPart, page, setPage, predicts, selectedLeague }) => {
 
   const handleLoadMore = useCallback(() => {
     if (!hasMore || loading || page >= globalPage * 5 || predicts.length % 20 != 0) return;
@@ -16,10 +18,12 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
   }, [hasMore, loading, page, globalPage, setPage]);
 
   function onNext() {
-    navigation.navigate({name: 'Profile', params: { 
-      globalPage: globalPage + 1,
-      selectedStat: selectedStat
-    }, key: `profile_page_${globalPage + 1}`})
+    navigation.navigate({
+      name: 'Profile', params: {
+        globalPage: globalPage + 1,
+        selectedStat: selectedStat
+      }, key: `profile_page_${globalPage + 1}`
+    })
   }
 
   function onPrev() {
@@ -38,35 +42,35 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
         marginBottom: 10,
         justifyContent: 'center'
       }}>
-        { globalPage > 1 ? <TouchableOpacity onPress={onPrev} activeOpacity={.6} style={{
-        // width: 50,
-        flex: 1,
-        height: 50,
-        alignItems: 'center'
-        // backgroundColor: 'red'
-      }}>
-        <Text style={{
-          fontSize: 16,
-          fontWeight:'bold',
-          color: '#FF2882'
-        }}>{`< ${strings.prev}`}</Text>
-      </TouchableOpacity> : null }
-        { hasNext ? <TouchableOpacity onPress={onNext} activeOpacity={.6} style={{
-        // width: 50,
-        flex: 1,
-        alignItems: 'center',
-        height: 50,
-        // backgroundColor: 'red'
-      }}>
-        <Text style={{
-          fontSize: 16,
-          fontWeight:'bold',
-          color: '#FF2882'
-        }}>{strings.next} ></Text>
-      </TouchableOpacity> : null }
-      </View> 
+        {globalPage > 1 ? <TouchableOpacity onPress={onPrev} activeOpacity={.6} style={{
+          // width: 50,
+          flex: 1,
+          height: 50,
+          alignItems: 'center'
+          // backgroundColor: 'red'
+        }}>
+          <Text style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: '#FF2882'
+          }}>{`< ${strings.prev}`}</Text>
+        </TouchableOpacity> : null}
+        {hasNext ? <TouchableOpacity onPress={onNext} activeOpacity={.6} style={{
+          // width: 50,
+          flex: 1,
+          alignItems: 'center',
+          height: 50,
+          // backgroundColor: 'red'
+        }}>
+          <Text style={{
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: '#FF2882'
+          }}>{strings.next} ></Text>
+        </TouchableOpacity> : null}
+      </View>
     }
-    
+
     if (!hasMore || !loading) return (
       <View style={styles.footer}>
         {/* <ActivityIndicator color={'#FF2882'} size="large" /> */}
@@ -89,15 +93,15 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
     }
 
     dataManager.setMatch(match)
-    navigation.navigate({ 
-      name: 'Match', 
+    navigation.navigate({
+      name: 'Match',
       params: {
-        id: match.id, 
-      }, 
+        id: match.id,
+      },
       key: match.id
     })
   }
-  
+
   const isSameDay = (date1, date2) => {
     return (
       date1.getFullYear() === date2.getFullYear() &&
@@ -109,7 +113,7 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
   let currMatchDate = null;
   const renderMatch = useCallback(({ item, index }) => {
     let renderTime = false;
-   
+
     if (currMatchDate == null || !isSameDay(new Date(currMatchDate), new Date(item.date))) {
       renderTime = true;
       currMatchDate = item.date;
@@ -123,10 +127,14 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
       }}>
         {renderTime || index == 0 ? (
           <View style={styles.dateContainer}>
-            <CalendarIcon width={26} height={26} />
-            <Text style={styles.dateText}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
+            { Colors.mode == 1 ? <CalendarIcon width={26} height={26} /> : <CalendarWhiteIcon width={26} height={26} /> }
+            <Text style={{
+              marginLeft: 10,
+              fontWeight: 'bold',
+              color: Colors.titleColor,
+            }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
           </View>
-        ): null}
+        ) : null}
         <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} />
       </View>
     );
@@ -145,7 +153,7 @@ const UserMatchesList = ({navigation, user, selectedStat, hasMore, globalPage, l
       renderItem={renderMatch}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.1}
-      
+
       ListFooterComponent={renderFooter}
       ListHeaderComponent={renderTopPart}
       ListFooterComponentStyle={{

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   Image,
+  ImageBackground,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -29,6 +30,7 @@ import adsManager from './AdsManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AwardsPanel from './AwardsPanel';
 import { useFocusEffect } from '@react-navigation/native';
+import Colors from './Colors';
 
 
 const ETABLE_GENERAL = 0
@@ -44,13 +46,13 @@ function TableCheap({ title, selected, onPress }) {
       borderRadius: 20,
       borderWidth: 1,
       marginRight: 10,
-      backgroundColor: selected ? '#FF2882' : '#F7F7F7',
-      borderColor: selected ? '#FF2882' : '#EAEDF1',
+      backgroundColor: selected ? '#FF2882' : Colors.gray800,
+      borderColor: selected ? '#FF2882' : Colors.borderColor,
       alignItems: 'center',
       justifyContent: 'center'
     }}>
       <Text style={{
-        fontSize: 16,
+        fontSize: 14,
         color: selected ? 'white' : '#8E8E93',
         fontWeight: 'bold'
       }}>{title}</Text>
@@ -69,7 +71,7 @@ function TablesPage({ navigation, route }): JSX.Element {
   const [refreshing, setRefreshing] = useState(false)
 
   const backgroundStyle = {
-    backgroundColor: 'white',
+    backgroundColor: Colors.gray800,
   };
 
   useEffect(() => {
@@ -81,7 +83,7 @@ function TablesPage({ navigation, route }): JSX.Element {
       if (!adLoaded && !adsManager.isLoaded()) return setBlockForAd(false)
 
       setBlockForAd(dataManager.getSettings()?.blockForAd)
-      
+
       return () => {
 
       };
@@ -251,7 +253,7 @@ function TablesPage({ navigation, route }): JSX.Element {
 
     return <Text style={{
       width: 50,
-      color: 'black',
+      color: Colors.titleColor,
       fontWeight: 'bold',
       textAlign: 'center'
     }}>{i + 1}</Text>
@@ -262,8 +264,11 @@ function TablesPage({ navigation, route }): JSX.Element {
       return (
         <TouchableOpacity activeOpacity={.8} onPress={() => { onNavUser(u) }} key={`player_${i}`} style={{
           width: '100%',
-          height: 50,
+          height: 52,
+          
+          backgroundColor: authManager.getMeSync() && authManager.getMeSync().id == u.id ? Colors.gray800 : 'transparent',
           flexDirection: 'row',
+          // backgroundColor: 'blue',
           alignItems: 'center',
           justifyContent: 'center'
         }}>
@@ -271,20 +276,21 @@ function TablesPage({ navigation, route }): JSX.Element {
           <Text style={{
             // width: '90%',
             flex: 1,
-            color: 'black',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             // textAlign: 'flex-start',
             paddingLeft: 10
           }}>{u.name}</Text>
           <Text style={{
             width: 50,
-            color: 'black',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             textAlign: 'center',
           }}>{u.totalPredictions}</Text>
           <Text style={{
             width: 60,
-            color: 'black',
+            // backgroundColor: 'red',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             textAlign: 'center',
           }}>{getRate(u)}</Text>
@@ -338,16 +344,20 @@ function TablesPage({ navigation, route }): JSX.Element {
     setTableLoading(true)
   };
 
+  function onNavAwardsInfo() {
+    navigation.navigate('AwardsInfo')
+  }
+
 
   const showPrev = page != 1
   const showNext = table.length >= 20
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
         <StatusBar
-          barStyle={'dark-content'}
+          barStyle={Colors.statusBar}
 
           backgroundColor={backgroundStyle.backgroundColor}
         />
@@ -365,12 +375,12 @@ function TablesPage({ navigation, route }): JSX.Element {
 
             <View style={{
               width: '100%',
-              paddingBottom: 10,
-              backgroundColor: '#ffffffcc'
+              // paddingBottom: 10,
+              backgroundColor: Colors.gray800
             }}>
               <AppBar navigation={navigation} />
 
-              <ScrollView
+              {/* <ScrollView
                 horizontal={true}
                 contentInsetAdjustmentBehavior="automatic"
                 contentContainerStyle={{
@@ -410,7 +420,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                 {dataManager.getLeagues().map((l) => {
                   return (<LeagueChip compact={false} league={l} key={l.name} selected={l == selectedLeague} onPress={() => { onLeaguePress(l) }} />)
                 })}
-              </ScrollView> : null}
+              </ScrollView> : null} */}
             </View>
 
             <View style={{
@@ -419,12 +429,30 @@ function TablesPage({ navigation, route }): JSX.Element {
 
             {selectedTable == ETABLE_GENERAL ?
               <View style={{
-                paddingTop: 10,
+                padding: 20,
                 paddingVertical: 10,
-                marginBottom: 20,
-                backgroundColor: '#ffffffcc'
+                marginTop: 10,
+                marginBottom: 10,
+                // backgroundColor: Colors.gray800
               }}>
-                <AwardsPanel />
+                <TouchableOpacity activeOpacity={.9} onPress={onNavAwardsInfo} style={{
+                  borderRadius: 20,
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 230,
+                  overflow: 'hidden'
+                }}>
+                <ImageBackground width={200} height={200} source={require('./assets/throphy.png')} style={{
+
+                    width: '100%',
+                    height: 230,
+                    borderRadius: 20,
+                    // marginBottom: 20
+                  }}>
+                    <AwardsPanel />
+                  </ImageBackground>
+                </TouchableOpacity>
               </View>
               : null}
 
@@ -432,6 +460,7 @@ function TablesPage({ navigation, route }): JSX.Element {
               width: '100%',
               // backgroundColor: 'red',
               padding: 15,
+              paddingHorizontal: 20,
               paddingTop: 0,
               // marginTop: 20,
               flexDirection: 'column',
@@ -440,36 +469,37 @@ function TablesPage({ navigation, route }): JSX.Element {
             }}>
               <View style={{
                 width: '100%',
-                height: 60,
-                backgroundColor: '#F0F0F0',
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
+                height: 52,
+                backgroundColor: Colors.gray800,
+                borderTopLeftRadius: 12,
+                borderTopRightRadius: 12,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
                 <Text style={{
                   width: 50,
-                  color: 'black',
+                  color: Colors.titleColor,
                   fontWeight: 'bold',
                   textAlign: 'center'
                 }}>Pos</Text>
                 <Text style={{
                   // width: '90%',
                   flex: 1,
-                  color: 'black',
+                  color: Colors.titleColor,
                   fontWeight: 'bold',
                   paddingLeft: 10
                 }}>{strings.player}</Text>
                 <Text style={{
                   width: 50,
-                  color: 'black',
+                  color: Colors.titleColor,
                   fontWeight: 'bold',
                   textAlign: 'center',
                 }}>Tp</Text>
                 <Text style={{
                   width: 60,
-                  color: 'black',
+                  // backgroundColor: 'red',
+                  color: Colors.titleColor,
                   fontWeight: 'bold',
                   textAlign: 'center',
                 }}>{selectedTable == ETABLE_GENERAL ? "Pts" : "Rate"}</Text>
@@ -477,17 +507,21 @@ function TablesPage({ navigation, route }): JSX.Element {
 
               {tableLoading ? <ActivityIndicator size={'large'} color={'#FF2882'} style={{ marginTop: 20 }} />
                 :
-                <View>
+                <View style={{
+                  width: '100%',
+                }}>
                   {renderTable()}
                   {selectedTable == ETABLE_GENERAL ? <View style={{
-                    height: 80,
+                    height: 50,
+
+                    // backgroundColor: 'red',
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
                     {showPrev ? <TouchableOpacity onPress={onPrev} activeOpacity={.6} style={{
                       flex: 1,
-                      height: 50,
+                      // height: 50,
                       marginRight: 10,
                       alignItems: showNext ? 'flex-end' : 'center'
                     }}>
@@ -503,7 +537,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                       flex: 1,
                       marginLeft: 10,
                       alignItems: showPrev ? 'flex-start' : 'center',
-                      height: 50,
+                      // height: 50,
                       // backgroundColor: 'red'
                     }}>
                       <Text style={{
@@ -515,9 +549,9 @@ function TablesPage({ navigation, route }): JSX.Element {
                   </View> : null}
 
 
-                  <View style={{
+                  {/* <View style={{
                     padding: 20,
-                    backgroundColor: '#ffffffcc',
+                    // backgroundColor: '#ffffffcc',
                     borderRadius: 20,
                     // paddingBottom: 10,
                   }}>
@@ -526,7 +560,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                     }}>
                       <Text style={{
                         width: 60,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold'
                       }}>Pos</Text>
                       <Text style={{
@@ -538,7 +572,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                     }}>
                       <Text style={{
                         width: 60,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold'
                       }}>Tp</Text>
                       <Text style={{
@@ -550,7 +584,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                     }}>
                       <Text style={{
                         width: 60,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold'
                       }}>Pts</Text>
                       <Text style={{
@@ -562,14 +596,14 @@ function TablesPage({ navigation, route }): JSX.Element {
                     }}>
                       <Text style={{
                         width: 60,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold'
                       }}>Rate</Text>
                       <Text style={{
                         color: '#8E8E93'
                       }}>{strings.rate}</Text>
                     </View>
-                  </View>
+                  </View> */}
 
                 </View>}
 

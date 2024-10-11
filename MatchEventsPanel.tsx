@@ -1,11 +1,18 @@
 import { Text, View } from "react-native";
 import GoalIcon from './assets/goal.svg'
+import GoalDarkIcon from './assets/goal_dark.svg'
+
 import YellowCardIcon from './assets/yellow_card.svg'
+import YellowCardDarkIcon from './assets/yellow_card_dark.svg'
+
 import RedCardIcon from './assets/red_card.svg'
+import RedCardDarkIcon from './assets/red_card_dark.svg'
+
 import VarIcon from './assets/var.svg'
 import SubstIcon from './assets/subst.svg'
 
 import strings from "./Strings";
+import Colors from "./Colors";
 
 function Item({event, index, isLast, score}) {
 
@@ -29,7 +36,7 @@ function Item({event, index, isLast, score}) {
                 // marginBottom: 4,
             }}>{event.elapsed}'{event.extra ? ' + ' + event.extra : null}</Text>
             <Text style={{
-                color: '#1C1C1E',
+                color: Colors.titleColor,
                 fontSize: 14,
                 fontWeight: 'bold'
             }}>{  event.player}</Text>
@@ -50,10 +57,10 @@ function Item({event, index, isLast, score}) {
                     alignItems: 'center',
                     justifyContent: 'centers'
                 }}>
-                    <GoalIcon color={'#1C1C1E'} width={30} height={30} />
+                    { Colors.mode == 1 ? <GoalIcon color={'#1C1C1E'} width={30} height={30} /> : <GoalDarkIcon width={30} height={30} /> }
                     <Text style={{
                         marginTop: -2,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold',
                         fontSize: 8
                     }}>PEN</Text>
@@ -69,7 +76,7 @@ function Item({event, index, isLast, score}) {
                     <VarIcon color={'#1C1C1E'} width={30} height={30} />
                     <Text style={{
                         marginTop: -2,
-                        color: 'black',
+                        color: Colors.titleColor,
                         fontWeight: 'bold',
                         fontSize: 8
                     }}>PEN</Text>
@@ -82,7 +89,7 @@ function Item({event, index, isLast, score}) {
                     alignItems: 'center',
                     justifyContent: 'centers'
                 }}>
-                    <GoalIcon color={'#1C1C1E'} width={30} height={30} />
+                    { Colors.mode == 1 ? <GoalIcon color={'#1C1C1E'} width={30} height={30} /> : <GoalDarkIcon width={30} height={30} /> }
                     <Text style={{
                         marginTop: -2,
                         color: '#FF4747',
@@ -93,15 +100,16 @@ function Item({event, index, isLast, score}) {
 
             }
             
-            return <GoalIcon color={'#1C1C1E'} width={40} height={40} />
+            return Colors.mode == 1 ? <GoalIcon color={'#1C1C1E'} width={40} height={40} /> : <GoalDarkIcon width={40} height={40} /> 
+
         }
         if (event.type == "Var" && (event.detail == 'Goal cancelled' 
             || event.detail == 'Goal Disallowed - offside'
             || event.detail == 'Goal Disallowed - handball')) 
             return <VarIcon width={40} height={40} />
 
-        if (event.detail == "Yellow Card") return <YellowCardIcon width={40} height={40} />
-        if (event.detail == "Red Card") return <RedCardIcon width={40} height={40} />
+        if (event.detail == "Yellow Card") return Colors.mode == 1 ? <YellowCardIcon width={40} height={40} /> :  <YellowCardDarkIcon width={40} height={40} /> 
+        if (event.detail == "Red Card") return Colors.mode == 1 ? <RedCardIcon width={40} height={40} /> : <RedCardDarkIcon width={40} height={40} />
         if (event.type == "subst") return <SubstIcon width={30} height={40} />
 
     }
@@ -133,7 +141,7 @@ function Item({event, index, isLast, score}) {
         <View style={{  
             width: 2,
             flex: 1,
-            backgroundColor: index == 0 ? 'transparent' : '#EAEDF1'
+            backgroundColor: index == 0 ? 'transparent' : Colors.borderColor
         }}></View> 
         <View style={{
             width: 60,
@@ -141,16 +149,16 @@ function Item({event, index, isLast, score}) {
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: 30,
-            backgroundColor: 'white',
+            backgroundColor: Colors.gray800,
             borderWidth: 2,
-            borderColor: '#EAEDF1'
+            borderColor: Colors.borderColor
         }}>
             {getIcon()}
         </View>
         <View style={{  
             width: 2,
             flex: 1,
-            backgroundColor: isLast ? 'transparent' : '#EAEDF1'
+            backgroundColor: isLast ? 'transparent' : Colors.borderColor
         }}></View> 
        </View>
        <View style={{

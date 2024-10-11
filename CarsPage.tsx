@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -25,6 +25,8 @@ import SERVER_BASE_URL from './AppConfig';
 import ChampionsLeagueIcon from './assets/Champions League.svg';
 import BallIcon from './assets/ball.svg';
 import CalendarIcon from './assets/calendar_black.svg';
+import CalendarWhiteIcon from './assets/calendar_white.svg';
+
 import DeviceInfo from 'react-native-device-info';
 
 import MatchItem from './MatchItem';
@@ -35,58 +37,30 @@ import LeagueChip from './LeagueChip';
 import AppBar from './AppBar';
 import strings from './Strings';
 import adsManager from './AdsManager';
-// import changeNavigationBarColor from 'react-native-navigation-bar-color';
+import Colors from './Colors';
+import LiveMatchItem from './LiveMatchItem';
+import { useFocusEffect } from '@react-navigation/native';
+import changeNavigationBarColor from 'react-native-navigation-bar-color';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import EventCard from './EventCard';
 
 
 const NUM_NEXT_WEEKS = 3
 
 const windowWidth = Dimensions.get('window').width;  // Get the window width
 
-function LeagueTitleItem({ league, loading, week }) {
-  return (
-    <View style={{
-      marginBottom: 20,
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <View style={{
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        {loading ? <ActivityIndicator style={{
-          // marginTop: 30,
-        }} color={'#FF2882'} size={'large'}></ActivityIndicator> : <Image src={`${SERVER_BASE_URL}/data/leagues/${league.name}_colored.png`} style={{
-          width: 36,
-          height: 36,
-          objectFit: 'contain',
-          // marginRight: 10
-        }} />}
-
-        <Text style={{
-          color: 'black',
-          fontSize: 16,
-          fontWeight: 'bold'
-        }}>{league.name}</Text>
-      </View>
-      <Text style={{
-        fontSize: 10,
-        fontWeight: 'bold',
-        color: '#AEAEB2'
-      }}>{dataManager.getWeekTitle(week)}</Text>
-    </View>
-  )
-}
-
 const ETAB_MATCHES = 1
 const ETAB_TABLE = 2
+
+const EMODE_LIGHT = 1
+const EMODE_DARK = 2
 
 function CarsPage({ navigation, route }): JSX.Element {
   const [leagues, setLeagues] = useState([])
   const [selectedLeague, setSelectedLeague] = useState(null)
   const [matches, setMatches] = useState([])
   const [weeks, setWeeks] = useState([])
-  const [selectedWeek, setSelectedWeek] = useState({ week: 1 })
+  const [selectedWeek, setSelectedWeek] = useState({ week: -1 })
   const [selectedMiniLeague, setSelectedMiniLeague] = useState(0)
 
   const [selectedSeason, setSelectedSeason] = useState(dataManager.getSeasons()[dataManager.getSeasons().length - 1])
@@ -96,6 +70,10 @@ function CarsPage({ navigation, route }): JSX.Element {
   const [tab, setTab] = useState(ETAB_MATCHES)
   const [table, setTable] = useState([])
   const [refreshing, setRefreshing] = useState(false)
+  const [mathOfDay, setMatchOfDay] = useState(null)
+  const [mode, setMode] = useState(EMODE_LIGHT)
+  const [randomItem, setRandomItem] = useState(5)
+  const [specialMatch, setSpecialMatch] = useState(null)
 
   const weeksScrollRef = useRef(null)
   const currentWeekRef = useRef(null)
@@ -104,14 +82,38 @@ function CarsPage({ navigation, route }): JSX.Element {
   const isDarkMode = useColorScheme() === 'light';
 
   const backgroundStyle = {
-    backgroundColor: 'white',
+    backgroundColor: Colors.gray800,
   };
 
   useEffect(() => {
     // changeNavigationBarColor('#ff5733', true); // Set color and optional light/dark mode
 
     getLeagues()
+    AsyncStorage.getItem('specialMatchLastDate')
+    .then((storedDate) => {
+      const currentDate = moment();
+      const fiveHours = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
+
+      // If no date is stored, treat as if more than 5 minutes elapsed
+      if (!storedDate || currentDate.diff(moment(parseInt(storedDate)), 'milliseconds') > fiveHours) {
+        // Fetch the special match
+        dataManager.fetchSpecialMatch(strings.getLanguage(), authManager.getToken())
+          .then((m) => {
+            setSpecialMatch(m);
+  
+            // Store the current date after fetching
+            AsyncStorage.setItem('specialMatchLastDate', currentDate.valueOf().toString());
+          })
+          .catch((err) => {
+            console.log(err)
+          });
+      }
+    })
+    .catch(() => {});
+  
   }, []);
+
+  
 
   function onRefreshPage() {
     authManager.refresh()
@@ -130,6 +132,12 @@ function CarsPage({ navigation, route }): JSX.Element {
       }
     }, 500)
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
+    }, [mode])
+  );
 
   useEffect(() => {
     if (!selectedLeague) return
@@ -157,7 +165,26 @@ function CarsPage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
-        SplashScreen.hide();
+        AsyncStorage.getItem('mode')
+          .then((mode) => {
+            if (!mode) {
+              SplashScreen.hide();
+              return
+            }
+
+            if (Number.parseInt(mode) == 2) {
+              Colors.setNewMode(2)
+              setMode(2)
+            } else {
+              Colors.setNewMode(1)
+              setMode(1)
+            }
+            SplashScreen.hide();
+          })
+          .catch(() => {
+            SplashScreen.hide();
+          })
+
 
         setLeagues(data)
         dataManager.setLeagues(data)
@@ -194,9 +221,174 @@ function CarsPage({ navigation, route }): JSX.Element {
   //   getMatches(selectedLeague, selectedWeek)
   // }, [selectedWeek])
 
-  function getMatches(league, week, season) {
-    setMatchesReqFinished(false)
-    setLoading(true)
+  function TopScorerItem() {
+    const topScorers = dataManager.getTopScorers()[selectedLeague.id.toString()]
+    if (!topScorers) {
+      return <View style={{
+        width: '100%',
+        height: 180,
+        // paddingBottom: 20,
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginBottom: 20,
+
+        alignItems: 'flex-end',
+        backgroundColor: '#37003C'
+      }}>
+
+      </View>
+    }
+    return (
+      <TouchableOpacity onPress={() => {}} activeOpacity={.9} style={{
+        width: '100%',
+        height: 180,
+        // paddingBottom: 20,
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginBottom: 20,
+
+        alignItems: 'flex-end',
+        backgroundColor: '#37003C'
+      }}>
+        <Image src={`${SERVER_BASE_URL}/data/players/${topScorers.player_name}_banner.png${dataManager.getImageCacheTime()}`} style={{
+          width: '100%',
+          height: '100%',
+          // height: 250,
+          // backgroundColor: 'red',
+          top: 0,
+          position: 'absolute'
+        }} />
+        <View style={{
+          width: 230,
+          // backgroundColor: 'red',
+          alignSelf: 'flex-end',
+          flexDirection: 'row',
+          paddingTop: 12,
+          paddingRight: 20,
+          // height: 80,
+          alignItems: 'flex-start',
+          justifyContent: 'flex-end'
+          // backgroundColor: 'red',
+        }}>
+          <Text style={{
+            fontSize: Number.parseInt(topScorers.number / 10) > 0 ? 50 : 70,
+            lineHeight: Number.parseInt(topScorers.number / 10) > 0 ? 55 : 75,
+            // paddingBottom:,20,
+            // width: 100,
+            fontFamily: "Ranchers-Regular",
+            // fontWeight: 900,
+            // marginBottom: 20,
+            // textAlign: 'center ',
+            // backgroundColor: 'blue',
+            // textAlign: 'center',
+            color: '#FACC15',
+            marginRight: 10,
+          }}>{topScorers.number}</Text>
+
+          <View style={{
+            marginTop: 2
+          }}>
+            <Text style={{
+              fontSize: 14,
+              lineHeight: 18,
+              // fontWeight: 900,
+              fontFamily: 'Poppins-Bold',
+              color: 'white'
+            }}>{topScorers.firstname.toUpperCase()}</Text>
+            <Text style={{
+              fontSize: 18,
+              lineHeight: 20,
+              // fontWeight: 900,
+              fontFamily: 'Poppins-Bold',
+              color: 'white'
+            }}>{topScorers.lastname.toUpperCase()}</Text>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}>
+              <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${topScorers.team_name}.png`} style={{
+                width: 20,
+                height: 20
+              }}>
+
+              </Image>
+              <Text style={{
+                fontSize: 14,
+                lineHeight: 20,
+                marginLeft: 4,
+                // lineHeight: 2,
+                fontFamily: 'Poppins-Bold',
+                color: '#AEAEB2'
+              }}>{topScorers.team_short_name}</Text>
+            </View>
+
+            <Text style={{
+              marginTop: 10,
+              color: 'white',
+              fontWeight: 900
+            }}>{strings.top_goal_scorer}</Text>
+            <View style={{
+              marginTop: 4,
+              height: 14,
+              alignItems: 'center',
+              flexDirection: 'row'
+            }}>
+              <Text style={{
+                // marginTop: 10,
+                color: '#AEAEB2',
+                fontSize: 12,
+                lineHeight: 12,
+                // textAlign: 'center',
+                fontWeight: 900
+              }}>{strings.matches_played}:</Text>
+              <Text style={{
+                //  marginTop: 10,
+                 marginLeft: 5,
+                //  marginBottom: 3,
+                  fontSize: 14,
+                  lineHeight: 14,
+                 color: '#00C566',
+                 fontWeight: 900
+              }}>{topScorers.games}</Text>
+            </View>
+            <View style={{
+              marginTop: 1,
+              alignItems: 'center',
+              flexDirection: 'row'
+            }}>
+              <Text style={{
+                // marginTop: 10,
+                color: '#AEAEB2',
+                fontSize: 12,
+                lineHeight: 12,
+                fontWeight: 900,
+                // marginBottom: 4,
+              }}>{strings.goals}:</Text>
+              <Text style={{
+                //  marginTop: 10,
+                  fontSize: 14,
+                  marginLeft: 5,
+                  lineHeight: 14,
+                 color: '#FACC15',
+                 fontWeight: 900,
+                //  marginBottom: 4,
+              }}>{topScorers.goals}</Text>
+            </View>
+          </View>
+        </View>
+
+
+      </TouchableOpacity>
+    )
+  }
+
+  function getMatches(league, week, season, showPreload = true) {
+    if (week == -1) return
+
+    if (showPreload) {
+      setMatchesReqFinished(false)
+      setLoading(true)
+    }
 
     const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${season}`
     fetch(url, {
@@ -208,6 +400,11 @@ function CarsPage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
+        if (showPreload) {
+          setMatchOfDay(getRandomMatch(data))
+          const randomNumber = Math.floor(Math.random() * 6);
+          setRandomItem(randomNumber)
+        }
         setMatches(data)
         // weeksScrollRef.current.scrollTo({x: (selectedWeek - 1) * 80});
         setMatchesReqFinished(true)
@@ -255,6 +452,7 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   function onLeaguePress(l) {
+    this.effect = true
     setSelectedLeague(l)
     setIsFirstScroll(true)
     const week = isCurrentSeason(selectedSeason) ? l.week : l.num_weeks
@@ -270,10 +468,11 @@ function CarsPage({ navigation, route }): JSX.Element {
       // return
     }
     setSelectedWeek(weeks[week - 1])
-    getMatches(l, week, selectedSeason)
+    if (this.effect) {
+      getMatches(l, week, selectedSeason)
+    }
     setTab(ETAB_MATCHES)
     getTable(l)
-
   }
 
   function onSeasonPress(s) {
@@ -307,7 +506,25 @@ function CarsPage({ navigation, route }): JSX.Element {
     })
   }
 
+  function onEventClose() {
+    setSpecialMatch(null)
+  }
+
+  function onNavSpecialMatch() {
+    dataManager.setMatch(specialMatch.match)
+    setSpecialMatch(null)
+    AsyncStorage.setItem('specialMatchLastDate', (new Date().getTime().toString()))
+    navigation.navigate({
+      name: 'Match',
+      params: {
+        id: specialMatch.match.id,
+      },
+      key: specialMatch.match.id
+    })
+}
+
   function onWeekPress(week) {
+    this.effect = true
     setSelectedWeek(week)
     getMatches(selectedLeague, week.week, selectedSeason)
   }
@@ -346,16 +563,16 @@ function CarsPage({ navigation, route }): JSX.Element {
         width: 150,
         paddingRight: 15,
         margin: 5,
-        backgroundColor: item.index === selectedMiniLeague ? '#ff2882' : '#F7F7F7',
+        backgroundColor: item.index === selectedMiniLeague ? '#ff2882' : Colors.gray800,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: item.index === selectedMiniLeague || (selectedMiniLeague === 0 && item === 1) ? '#ff2882' : '#EAEDF1',
+        borderColor: item.index === selectedMiniLeague || (selectedMiniLeague === 0 && item === 1) ? '#ff2882' : Colors.borderColor,
       }}
     >
       <Text style={{ color: item.index === selectedMiniLeague ? 'white' : '#8E8E93', fontFamily: 'NotoSansArmenian-Bold' }}>
-        {`${strings.group} ${item.name}`}
+        {`${strings.league} ${item.name}`}
         {/* Quarter finals */}
       </Text>
     </TouchableOpacity>
@@ -369,20 +586,20 @@ function CarsPage({ navigation, route }): JSX.Element {
       activeOpacity={0.7}
       onPress={() => onWeekPress(item)}
       style={{
-        height: 30,
+        height: 32,
         // paddingLeft: 15,
-        width: 100,
+        width: 110,
         // paddingRight: 15,
         margin: 5,
-        backgroundColor: item.week === selectedWeek.week ? '#ff2882' : '#f7f7f7',
+        backgroundColor: item.week === selectedWeek.week ? '#ff2882' : Colors.bgColor,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: item.week === selectedWeek.week || item.week === selectedLeague.week || (selectedLeague.week === 0 && item.week === 1) ? '#ff2882' : '#EAEDF1',
+        borderColor: item.week === selectedWeek.week || item.week === selectedLeague.week || (selectedLeague.week === 0 && item.week === 1) ? '#ff2882' : Colors.borderColor,
       }}
     >
-      <Text style={{ color: item.week === selectedWeek.week ? 'white' : '#8E8E93', fontFamily: 'NotoSansArmenian-Bold' }}>
+      <Text style={{ fontSize: 12, color: item.week === selectedWeek.week ? 'white' : '#8E8E93', fontFamily: 'NotoSansArmenian-Bold' }}>
         {dataManager.getWeekTitle(item)}
         {/* Quarter finals */}
       </Text>
@@ -426,6 +643,7 @@ function CarsPage({ navigation, route }): JSX.Element {
   function renderTable() {
     return <View style={{
       width: '100%',
+      // paddingHorizontal: 10,
       // backgroundColor: 'blue',
       alignItems: 'center'
     }}>
@@ -452,47 +670,47 @@ function CarsPage({ navigation, route }): JSX.Element {
       </ScrollView> : null}
 
       <View style={{
-        paddingLeft: 15,
-        paddingRight: 15,
+        paddingLeft: 20,
+        paddingRight: 20,
       }}>
         <View style={{
           width: '100%',
-          height: 60,
-          backgroundColor: '#F0F0F0',
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          height: 52,
+          backgroundColor: Colors.gray800,
+          borderTopLeftRadius: 12,
+          borderTopRightRadius: 12,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center'
         }}>
           <Text style={{
             width: 50,
-            color: 'black',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             textAlign: 'center'
           }}>Pos</Text>
           <Text style={{
             // width: '90%',
             flex: 1,
-            color: 'black',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             paddingLeft: 10
           }}>{strings.team}</Text>
           <Text style={{
             width: 40,
-            color: 'black',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             textAlign: 'center',
           }}>Mp</Text>
           <Text style={{
             width: 40,
-            color: 'black',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             textAlign: 'center',
           }}>Gd</Text>
           <Text style={{
             width: 40,
-            color: 'black',
+            color: Colors.titleColor,
             fontWeight: 'bold',
             textAlign: 'center',
           }}>{"Pts"}</Text>
@@ -509,25 +727,26 @@ function CarsPage({ navigation, route }): JSX.Element {
         }
 
         return <View key={team.team.name} style={{
-          paddingLeft: 15,
-          paddingRight: 15,
+          paddingLeft: 20,
+          paddingRight: 20,
         }}>
           {renderGroupName ? <Text style={{
             fontWeight: 'bold',
             fontSize: 20,
-            color: 'black',
+            color: Colors.titleColor,
             marginLeft: 15,
             marginTop: 20
           }}>{strings.group} {getGroupName(team.league_index, team.group_index)}</Text> : null}
           <View style={{
             width: '100%',
-            height: 60,
+            height: 52,
+            // backgroundColor: 'red',
             alignItems: 'center',
             flexDirection: 'row'
           }}>
             <Text style={{
               width: 50,
-              color: 'black',
+              color: Colors.titleColor,
               fontSize: 16,
               fontWeight: 'bold',
               textAlign: 'center',
@@ -547,7 +766,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                 // marginLeft: 5>
               }}></Image>
               <Text style={{
-                color: 'black',
+                color: Colors.titleColor,
                 fontWeight: 'bold',
                 marginLeft: 10
               }}>
@@ -557,7 +776,7 @@ function CarsPage({ navigation, route }): JSX.Element {
             <Text style={{
               width: 40,
               textAlign: 'center',
-              color: 'black',
+              color: Colors.titleColor,
               fontWeight: 'bold'
             }}>
               {team.matches_played}
@@ -565,7 +784,7 @@ function CarsPage({ navigation, route }): JSX.Element {
             <Text style={{
               width: 40,
               textAlign: 'center',
-              color: 'black',
+              color: Colors.titleColor,
               fontWeight: 'bold'
             }}>
               {team.goal_difference}
@@ -573,7 +792,7 @@ function CarsPage({ navigation, route }): JSX.Element {
             <Text style={{
               textAlign: 'center',
               width: 40,
-              color: 'black',
+              color: Colors.titleColor,
               fontWeight: 'bold'
             }}>
               {team.points}
@@ -582,11 +801,11 @@ function CarsPage({ navigation, route }): JSX.Element {
         </View>
       })}
 
-      <View style={{
+      {/* <View style={{
         // backgroundColor: 'red',
         width: '100%',
         padding: 10,
-        paddingLeft: 25,
+        paddingLeft: 36,
         paddingRight: 25,
         paddingTop: 20,
         paddingBottom: 40,
@@ -639,7 +858,7 @@ function CarsPage({ navigation, route }): JSX.Element {
             color: '#8E8E93'
           }}>{strings.pts}</Text>
         </View>
-      </View>
+      </View> */}
 
     </View>
   }
@@ -670,23 +889,66 @@ function CarsPage({ navigation, route }): JSX.Element {
     getMatches(selectedLeague, selectedWeek.week, selectedSeason)
   };
 
-  const [scrollWidth, setScrollWidth] = useState(1500)
-  const [scrollHeight, setScrollHeight] = useState(6300)
-  const bg = require('./assets/gradient.jpg')
+  useEffect(()=>{
+    this.effect = true
+  }, [])
+
+  useFocusEffect(
+    useCallback(()=>{
+      return () =>{
+        this.effect = false
+      } 
+    }, [])
+  )
+
+  useFocusEffect(
+    useCallback(()=>{
+      if (!this.effect) {
+        if (tab != ETAB_MATCHES) return
+
+        getMatches(selectedLeague, selectedWeek.week, selectedSeason, false)
+      }
+
+
+      
+    }, [selectedLeague, selectedWeek])
+  )
+
+  function getRandomMatch(matches) {
+    const randomIndex = Math.floor(Math.random() * matches.length);  // Generate a random index
+    return matches[randomIndex];  // Return the match at that index
+  }
+
+  function renderCard() {
+    
+
+    if (!mathOfDay) return <TopScorerItem />
+
+    if (!dataManager.getTopScorers()) {
+      return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
+    } else if (!dataManager.getTopScorers()[selectedLeague.id.toString()]) {
+      return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
+    }
+    // return <TopScorerItem />
+
+    if (randomItem != 1 && randomItem != 3) return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
+
+    return <TopScorerItem />
+  }
+
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
         <StatusBar
-          barStyle={'dark-content'}
+          barStyle={Colors.statusBar}
 
           backgroundColor={backgroundStyle.backgroundColor}
         />
 
         <View style={{ flex: 1 }}>
           <ScrollView
-            onContentSizeChange={(w, h) => { setScrollWidth(w), setScrollHeight(h) }}
             contentInsetAdjustmentBehavior="automatic"
             contentContainerStyle={{
               // backgroundColor: 'red',
@@ -701,9 +963,9 @@ function CarsPage({ navigation, route }): JSX.Element {
             <View style={{
               width: '100%',
               paddingBottom: 10,
-              backgroundColor: '#ffffffcc'
+              backgroundColor: Colors.gray800
             }}>
-              <AppBar title={selectedLeague?.name} showLang={true} showLogo={false} showBack={false} navigation={navigation} />
+              <AppBar setMode={setMode} title={selectedLeague?.name} showMode={true} showLang={true} showLogo={false} showBack={false} navigation={navigation} />
 
               {compareVersions(dataManager.getSettings()?.version, DeviceInfo.getVersion()) ? <View style={{
                 width: '100%',
@@ -766,6 +1028,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                   contentContainerStyle={{
                     // width: '100%',
                     height: 70,
+                    marginBottom: 5,
                     paddingLeft: 5,
                     paddingRight: 8,
                     // backgroundColor: 'green',
@@ -870,14 +1133,14 @@ function CarsPage({ navigation, route }): JSX.Element {
                 marginTop: 20,
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderWidth: 2,
-                borderColor: '#EAEDF1'
+                borderWidth: 1,
+                borderColor: Colors.borderColor
                 // backgroundColor: '#FF2882'
               }}>
                 <Icon name='refresh' color='#8E8E93' size={36}></Icon>
               </TouchableOpacity>
             </View> : null}
-            
+
             {loading ? <ActivityIndicator style={{
               marginTop: 30,
             }} color={'#FF2882'} size={'large'}></ActivityIndicator> : null}
@@ -895,50 +1158,55 @@ function CarsPage({ navigation, route }): JSX.Element {
 
               {/* {selectedLeague ? <LeagueTitleItem loading={loading} league={selectedLeague} week={selectedWeek} /> : null} */}
 
-
               {!loading ? <View style={{
-                paddingLeft: 15,
-                paddingRight: 15,
+                width: '100%',
+                paddingLeft: 20,
+                paddingRight: 20,
               }}>
+                {renderCard()}
+                {/* <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} /> */}
+                {/* {topScorers ? <TopScorerItem /> : null} */}
                 <View style={{
                   width: '100%',
-                  height: 50,
+                  height: 46,
                   padding: 4,
                   marginBottom: 20,
-                  backgroundColor: '#F0F0F0',
-                  borderRadius: 30,
+                  backgroundColor: Colors.selectColor,
+                  borderRadius: 23,
                   flexDirection: 'row'
                 }}>
                   <TouchableOpacity activeOpacity={.6} onPress={() => { setTab(ETAB_MATCHES) }} style={{
                     flex: 1,
-                    backgroundColor: tab == ETAB_MATCHES ? '#ffffffcc' : 'transparent',
+                    height: 38,
+                    backgroundColor: tab == ETAB_MATCHES ? Colors.gray800 : 'transparent',
                     borderRadius: 30,
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
                     <Text style={{
-                      color: 'black',
+                      color: tab == ETAB_MATCHES ? Colors.titleColor : "#8E8E93",
                       fontWeight: 'bold'
                     }}>{strings.matches}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity activeOpacity={.6} onPress={() => { setTab(ETAB_TABLE) }} style={{
                     flex: 1,
+                    height: 38,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: tab == ETAB_TABLE ? '#ffffffcc' : 'transparent',
+                    backgroundColor: tab == ETAB_TABLE ? Colors.gray800 : 'transparent',
                     borderRadius: 30
                   }}>
                     <Text style={{
-                      color: 'black',
+                      color: tab == ETAB_TABLE ? Colors.titleColor : "#8E8E93",
                       fontWeight: 'bold'
                     }}>{strings.table}</Text>
                   </TouchableOpacity>
                 </View>
-              </View> : null }
+              </View> : null}
 
               {tab == ETAB_MATCHES ? <View style={{
-                paddingLeft: 15,
-                paddingRight: 15,
+                paddingLeft: 20,
+                paddingRight: 20,
               }}>
                 {/* {!loading && matches.length && selectedLeague ? <LeagueTitleItem league={selectedLeague} week={selectedWeek} /> : null } */}
 
@@ -960,11 +1228,12 @@ function CarsPage({ navigation, route }): JSX.Element {
                       marginBottom: 10,
                       marginTop: i == 0 ? 0 : 20
                     }}>
-                      <CalendarIcon width={26} height={26} />
+                      {Colors.mode == 1 ? <CalendarIcon width={26} height={26} /> : <CalendarWhiteIcon width={26} height={26} />}
                       <Text style={{
                         marginLeft: 10,
+                        fontSize: 14,
                         fontWeight: 'bold',
-                        color: 'black'
+                        color: Colors.titleColor
                       }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')} </Text>
                     </View> : null}
                     <MatchItem onPress={() => { onNavMatch(m) }} match={m} />
@@ -984,27 +1253,10 @@ function CarsPage({ navigation, route }): JSX.Element {
           </ScrollView>
           {!loading && !leagues.length ? null : <BottomNavBar page={EPAGE_HOME} navigation={navigation} />}
         </View>
+        { specialMatch ? <EventCard onPress={onNavSpecialMatch} onClose={onEventClose} match={specialMatch}/> : null }
       </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    width: "94%",
-    height: 50,
-    backgroundColor: 'white',
-    borderLeftWidth: 3,
-    marginTop: 20,
-    borderLeftColor: '#ff004a',
-    justifyContent: 'center',
-    paddingLeft: 20
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'Open Sans'
-  }
-});
 
 export default CarsPage;

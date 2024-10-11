@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import BallIcon from './assets/ball.svg';
-import strings from './Strings';
+import MoonIcon from './assets/moon.svg';
+import MoonDarkIcon from './assets/moon_dark.svg';
 
-function AppBar({navigation, title, showLang, showBack = true, showLogo = true}): JSX.Element {
+import strings from './Strings';
+import Colors, { ColorsClassDark } from './Colors';
+
+function AppBar({navigation, title, setMode,  showLang, showMode=false, showBack = true, showLogo = true}): JSX.Element {
 
   function onBack() {
     navigation.goBack()
@@ -12,6 +15,11 @@ function AppBar({navigation, title, showLang, showBack = true, showLogo = true})
 
   function onLang() {
     navigation.navigate({name: "Langs", key: strings.getLanguage()})
+  }
+
+  function onSetMode() {
+    Colors.swap()
+    setMode(Colors.mode)
   }
 
   return (
@@ -28,17 +36,40 @@ function AppBar({navigation, title, showLang, showBack = true, showLogo = true})
         width: 45,
         height: 45,
         borderRadius: 25,
-        borderColor: '#EAEDF1',
-        borderWidth: 2,
+        borderColor: Colors.borderColor,
+        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
         // backgroundColor: 'white'
       }}>
-        <Icon name={'arrow-back'} color='#1C1C1E' size={26}></Icon>
-      </TouchableOpacity> : <View style={{
+        <Icon name={'arrow-back'} color={Colors.titleColor} size={26}></Icon>
+      </TouchableOpacity> : 
+      // <View style={{
+      //   width: 45,
+      //   height: 45
+      // }}></View>
+      null
+      }
+
+      {showMode ? <TouchableOpacity activeOpacity={.6} onPress={onSetMode} style={{
         width: 45,
-        height: 45
-      }}></View>}
+        height: 45,
+        borderRadius: 25,
+        borderColor: Colors.borderColor,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // backgroundColor: 'white'
+      }}>
+        {Colors.mode == 1 ? <MoonIcon /> : <MoonDarkIcon />}
+      </TouchableOpacity> :
+      //  <View style={{
+      //   width: 45,
+      //   height: 45
+      // }}></View>
+      null
+      }
+
       {showLogo ? <View style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -46,38 +77,42 @@ function AppBar({navigation, title, showLang, showBack = true, showLogo = true})
       }}>
         <Text style={{
           marginRight: 5,
-          fontSize: 28,
-          color: '#575757',
-          fontFamily: 'OpenSans-Light'
+          fontSize: 26,
+          // fontWeight: 'bold',
+          color: Colors.titleColor,
+          fontFamily: 'OpenSans-Bold'
         }}>el</Text>
         <Text style={{
-          fontSize: 28,
-          color: '#575757',
+          fontSize: 26,
+          // fontWeight: 'bold',
+          color: Colors.titleColor,
           fontFamily: 'OpenSans-Bold'
-        }}>T</Text>
-        <BallIcon height={16} width={16} color='#ff2882' style={{
-          marginTop: 5,
-          marginLeft: 1,
-          marginRight: 1,
+        }}>To</Text>
+        {/* <BallIcon height={16} width={16} color='#ff2882' style={{
+          marginTop: 6,
+          marginLeft: 2,
+          marginRight: 3,
           color: '#ff2882'
-        }}/>
+        }}/> */}
         <Text style={{
-          fontSize: 28,
-          color: '#575757',
+          fontSize: 26,
+          color: Colors.titleColor,
+          // fontWeight: 'bold',
+
           fontFamily: 'OpenSans-Bold'
         }}>rneo</Text>
       </View> : null }
       {title ? <Text style={{
         fontWeight: 900,
         fontSize: 20,
-        color: '#1C1C1E'
+        color:  Colors.titleColor
       }}>{title}</Text> : null }
       {showLang ? <TouchableOpacity activeOpacity={.6} onPress={onLang} style={{
         width: 45,
         height: 45,
         borderRadius: 25,
-        borderColor: '#EAEDF1',
-        borderWidth: 2,
+        borderColor: Colors.borderColor,
+        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
         // backgroundColor: 'white'
@@ -85,7 +120,7 @@ function AppBar({navigation, title, showLang, showBack = true, showLogo = true})
         <Text style={{
           fontSize: 14,
           fontWeight: 'bold',
-          color: '#1C1C1E'
+          color: Colors.titleColor
         }}>{strings.getLanguage().toUpperCase()}</Text>
       </TouchableOpacity> : <View style={{
          width: 45,

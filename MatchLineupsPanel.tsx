@@ -2,8 +2,11 @@ import { Dimensions, Image, ImageBackground, Text, View } from "react-native";
 import SERVER_BASE_URL from "./AppConfig";
 import DropShadow from "react-native-drop-shadow";
 import strings from "./Strings";
+import Colors from "./Colors";
 
 const win = Dimensions.get('window');
+const pitch = require( './assets/pitch.png')
+const pitchDark = require('./assets/pitch_dark.png')
 
 export default function MatchLineupsPanel({ match, lineups }) {
 
@@ -103,6 +106,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
             }
         }
 
+
         return (
             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: '85%', flex: 1 }}>
                 {arr.map((item, rowIndex) => (
@@ -159,6 +163,9 @@ export default function MatchLineupsPanel({ match, lineups }) {
         return ""
     }
 
+    const pitchImage = Colors.mode == 1 ? pitch : pitchDark
+
+
     return (
         <View
             style={{
@@ -187,7 +194,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                         marginLeft: 5
                     }}>
                         <Text style={{
-                            color: '#1C1C1E',
+                            color: Colors.titleColor,
                             fontWeight: 'bold',
                             fontSize: 15
                         }}>{match.team1.shortName}</Text>
@@ -209,7 +216,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                         alignItems: 'flex-end'
                     }}>
                         <Text style={{
-                            color: '#1C1C1E',
+                            color: Colors.titleColor,
                             fontWeight: 'bold',
                             fontSize: 15
                         }}>{match.team2.shortName}</Text>
@@ -227,7 +234,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                 </View>
             </View>
             <ImageBackground
-                source={require('./assets/pitch.png')}
+                source={pitchImage}
                 style={{
                     marginTop: 10,
                     flexDirection: 'row',
@@ -337,7 +344,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                 <Text style={{
                     fontSize: 20,
                     fontWeight: 'bold',
-                    color: '#1C1C1E'
+                    color:  Colors.titleColor
                 }}>{strings.managers}</Text>
             </View>
             <View style={{
@@ -350,7 +357,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                     marginTop: 6,
                 }}>
                     <Text style={{
-                        color: '#3A3A3C',
+                        color: Colors.lineupName,
                         fontSize: 14,
                         fontWeight: 'bold'
                     }}>{lineups.team1.coach}</Text>
@@ -360,7 +367,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                     marginTop: 6,
                 }}>
                     <Text style={{
-                        color: '#3A3A3C',
+                        color: Colors.lineupName,
                         fontSize: 14,
                         fontWeight: 'bold'
                     }}>{lineups.team2.coach}</Text>
@@ -377,7 +384,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                 <Text style={{
                     fontSize: 20,
                     fontWeight: 'bold',
-                    color: '#1C1C1E'
+                    color: Colors.titleColor,
                 }}>{strings.lineups}</Text>
             </View>
             <View style={{
@@ -393,7 +400,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                             marginTop: 12,
                         }}>
                             <Text style={{
-                                color: '#3A3A3C',
+                                color: Colors.lineupName,
                                 fontSize: 14,
                                 fontWeight: 'bold'
                             }}>{p.number}. {p.name}</Text>
@@ -414,7 +421,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                             alignItems: 'flex-end'
                         }}>
                             <Text style={{
-                                color: '#3A3A3C',
+                                color: Colors.lineupName,
                                 fontSize: 14,
                                 fontWeight: 'bold'
                             }}>{p.number}. {p.name}</Text>
@@ -436,7 +443,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                 <Text style={{
                     fontSize: 20,
                     fontWeight: 'bold',
-                    color: '#1C1C1E'
+                    color: Colors.titleColor,
                 }}>{strings.substitutes}</Text>
             </View>
             <View style={{
@@ -452,7 +459,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                             marginTop: 12,
                         }}>
                             <Text style={{
-                                color: '#3A3A3C',
+                                color: Colors.lineupName,
                                 fontSize: 14,
                                 fontWeight: 'bold'
                             }}>{p.number}. {p.name}</Text>
@@ -473,7 +480,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                             alignItems: 'flex-end'
                         }}>
                             <Text style={{
-                                color: '#3A3A3C',
+                                color: Colors.lineupName,
                                 fontSize: 14,
                                 fontWeight: 'bold'
                             }}>{p.number}. {p.name}</Text>

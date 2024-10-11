@@ -7,8 +7,10 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Image
+  Image,
+  ImageBackground
 } from 'react-native';
+import changeNavigationBarColor from 'react-native-navigation-bar-color';
 
 
 import GoogleIcon from './assets/google.svg';
@@ -20,149 +22,171 @@ import { useFocusEffect } from '@react-navigation/native';
 import gsingin from './GSignin';
 import BallIcon from './assets/ball.svg';
 import AwardsPanel from './AwardsPanel';
+import Colors from './Colors';
 
 function LoginPage({ navigation }): JSX.Element {
-    const [lang, setLang] = useState('ru')
+  const [lang, setLang] = useState('ru')
 
-    const backgroundStyle = {
-      backgroundColor: '#f7f7f7'
-    };
-  
-    const handleSignIn = async () => {
-      gsingin.signin(navigation)
-    };
+  const backgroundStyle = {
+    backgroundColor: '#f7f7f7'
+  };
 
-    useFocusEffect(
-      React.useCallback(() => {
-    
-        if (strings.getLanguage() != lang) {
-          setLang(strings.getLanguage())
-        }
-        return () => {
-        
-        };
-      }, [])
-    );
+  const handleSignIn = async () => {
+    gsingin.signin(navigation)
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+
+      if (strings.getLanguage() != lang) {
+        setLang(strings.getLanguage())
+      }
+      return () => {
+
+      };
+    }, [])
+  );
+  useEffect(() => {
+    changeNavigationBarColor(Colors.bottomNavBarColor, false, true);  // Change to your desired color
+  }, []);
+
+
+  function onNavAwardsInfo() {
+    navigation.navigate("AwardsInfo")
+  }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor:  '#f7f7f7'}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
       <StatusBar
-        barStyle={'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+        barStyle={Colors.statusBar}
+        backgroundColor={Colors.bgColor}
       />
-   
-        <ScrollView
-          // onContentSizeChange={(w, h) => { setScrollWidth(w), setScrollHeight(h) }}
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{
+
+      <ScrollView
+        // onContentSizeChange={(w, h) => { setScrollWidth(w), setScrollHeight(h) }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          backgroundColor: Colors.bgColor,
+          // minHeight: '100%',
+          paddingBottom: 50
+        }}
+        style={{
+          flex: 1,
+        }}>
+
+        <AppBar showLogo={false} navigation={navigation} />
+
+        <View style={{
+          width: '100%',
+          // height: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginTop: 30,
+        }}>
+
+          <View style={{
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'flex-start',
-            backgroundColor: '#f7f7f7',
-            // minHeight: '100%',
-            paddingBottom: 50
-          }}
-          style={{
-            flex: 1,
+            justifyContent: 'center',
+            marginBottom: 10
           }}>
-          
-            <AppBar showLogo={false} navigation={navigation}/>
-            
-            <View style={{
-              width: '100%',
-              // height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginTop: -30,
+            <Text style={{
+              marginRight: 5,
+              fontSize: 34,
+              color: Colors.titleColor,
+              fontFamily: 'OpenSans-Bold'
+            }}>el</Text>
+            <Text style={{
+              fontSize: 34,
+              color: Colors.titleColor,
+              fontFamily: 'OpenSans-Bold'
+            }}>To</Text>
+            {/* <BallIcon height={18} width={20} color='#ff2882' style={{
+              marginTop: 8,
+              marginRight: 2,
+              marginLeft: 1,
+              color: '#ff2882'
+            }} /> */}
+            <Text style={{
+              fontSize: 34,
+              color: Colors.titleColor,
+              // fontWeight: 'bold'
+              fontFamily: 'OpenSans-Bold'
+            }}>rneo</Text>
+          </View>
+
+          <Text style={{
+            color: '#8E8E93',
+            fontSize: 16,
+            // fontWeight: 'bold',
+            textAlign: 'center',
+            marginTop: 0,
+            width: '80%',
+            minWidth: 320,
+            marginBottom: 20
+          }}>
+            {strings.login_desc}
+          </Text>
+
+          <TouchableOpacity activeOpacity={.9} onPress={onNavAwardsInfo} style={{
+            borderRadius: 20,
+            width: 320,
+            height: 250,
+            overflow: 'hidden'
+          }}>
+            <ImageBackground source={require('./assets/playstore.png')} style={{
+              width: 320,
+              height: 250,
+              borderRadius: 20,
+              // marginBottom: 20
             }}>
-               
-               <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 10
-              }}>
-                <Text style={{
-                  marginRight: 5,
-                  fontSize:34,
-                  color: '#575757',
-                  fontFamily: 'OpenSans-Light'
-                }}>el</Text>
-                <Text style={{
-                  fontSize: 34,
-                  color: '#575757',
-                  fontFamily: 'OpenSans-Bold'
-                }}>T</Text>
-                <BallIcon height={22} width={22} color='#ff2882' style={{
-                  marginTop: 8,
-                  color: '#ff2882'
-                }}/>
-                <Text style={{
-                  fontSize: 34,
-                  color: '#575757',
-                  // fontWeight: 'bold'
-                  fontFamily: 'OpenSans-Bold'
-                }}>rneo</Text>
-              </View>
+              <AwardsPanel overlay={true}/>
+            </ImageBackground>
+          </TouchableOpacity>
 
-              <Image width={200} height={200} source={require('./assets/playstore.png')} style={{
-                width: 160, 
-                height: 160,
-                borderRadius: 20,
-                marginBottom: 20
-              }}></Image>
 
-              <Text style={{
-                color: '#8E8E93',
-                fontSize: 16,
-                // fontWeight: 'bold',
-                textAlign: 'center',
-                marginTop: 0,
-                width: '80%',
-                minWidth: 320,
-                marginBottom: 10
-              }}>
-                {strings.login_desc}
-              </Text>
 
-              <AwardsPanel />
-        
-              <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
-                width: 300,
-                height: 50,
-                marginTop: 20,
-                borderRadius: 30,
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'row',
-                backgroundColor: '#FF2882',
-              }}>
-                <Text style={{
-                  fontSize: 20,
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}>
-                  {strings.join_now}
-                </Text>
-                <View  style={{
-                  width: 40,
-                  height: 40,
-                  position: 'absolute',
-                  right: 5,
-                  backgroundColor: 'white',
-                  borderRadius: 30,
-                  // marginTop: 20,
-                  // borderWidth: 3,
-                  borderColor: 'black',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <GoogleIcon width={32} height={32}/>
-                </View>
-              </TouchableOpacity>
+          {/* <AwardsPanel /> */}
+
+          <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
+            width: 320,
+            height: 50,
+            marginTop: 20,
+            borderRadius: 30,
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'row',
+            backgroundColor: '#FF2882',
+          }}>
+            <Text style={{
+              fontSize: 20,
+              color: 'white',
+              fontWeight: 'bold'
+            }}>
+              {strings.join_now}
+            </Text>
+            <View style={{
+              width: 40,
+              height: 40,
+              position: 'absolute',
+              right: 5,
+              backgroundColor: 'white',
+              borderRadius: 30,
+              // marginTop: 20,
+              // borderWidth: 3,
+              borderColor: 'black',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <GoogleIcon width={32} height={32} />
             </View>
-        </ScrollView>
-        <BottomNavBar navigation={navigation} />
-      </SafeAreaView>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      <BottomNavBar navigation={navigation} />
+    </SafeAreaView>
   );
 }
 

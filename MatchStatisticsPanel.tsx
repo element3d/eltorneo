@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 import strings from "./Strings";
+import Colors from "./Colors";
 
 function Item({title, stat, percent = false}) {
 
@@ -19,7 +20,7 @@ function Item({title, stat, percent = false}) {
             justifyContent: 'space-between'
         }}>
             <Text style={{
-                color: val1 > val2 ? '#FF2882' : 'black',
+                color: val1 > val2 ? '#FF2882' : Colors.titleColor,
                 fontSize: 16,
                 fontWeight: 'bold'
             }}>{intValues[0]}{percent ? '%': ''}</Text>
@@ -30,7 +31,7 @@ function Item({title, stat, percent = false}) {
             }}>{title}</Text>
             <Text style={{
                 fontSize: 16,
-                color: val2 > val1 ? '#FF2882' : 'black',
+                color: val2 > val1 ? '#FF2882' : Colors.titleColor,
                 fontWeight: 'bold'
             }}>{intValues[1]}{percent ? '%': ''}</Text>
         </View>
@@ -42,14 +43,14 @@ function Item({title, stat, percent = false}) {
                 flex: 1,
                 height: 10,
                 marginRight: 5,
-                backgroundColor: '#EAEDF1',
+                backgroundColor: Colors.statLine,
                 borderRadius: 10,
                 alignItems: 'flex-end'
             }}>
                 <View style={{
                     height: '100%',
                     borderRadius: 10,
-                    backgroundColor:  val1 > val2 ? '#FF2882' : 'black',
+                    backgroundColor:  val1 > val2 ? '#FF2882' : Colors.titleColor,
                     width: `${val1 / total * 100}%`
                 }}>
 
@@ -57,16 +58,17 @@ function Item({title, stat, percent = false}) {
             </View>
             <View style={{
                 flex: 1,
+                // width: 100,
                 height: 10,
                 marginLeft: 5,
-                backgroundColor: '#EAEDF1',
-                borderRadius: 10,
+                backgroundColor: Colors.statLine,
+                borderRadius: 5,
                 alignItems: 'flex-start'
             }}>
                 <View style={{
                     height: '100%',
                     borderRadius: 10,
-                    backgroundColor: val2 > val1 ? '#FF2882' : 'black',
+                    backgroundColor: val2 > val1 ? '#FF2882' : Colors.titleColor,
                     width: `${val2 / total * 100}%`
                 }}>
 

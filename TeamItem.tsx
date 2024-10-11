@@ -1,6 +1,7 @@
 import { Image, Text, View } from "react-native";
 import SERVER_BASE_URL from "./AppConfig";
 import strings from "./Strings";
+import Colors from "./Colors";
 
 export default function TeamItem({team, isHome, compact = false}) {
     return (
@@ -19,7 +20,7 @@ export default function TeamItem({team, isHome, compact = false}) {
               height: compact ? 70 : 60
           }}/>
           <Text style={{
-              color: compact ? 'white' : 'black',
+              color: compact ? 'white' : Colors.titleColor,
               marginTop: 10,
               fontSize: 16,
               fontFamily: 'OpenSans-Bold'

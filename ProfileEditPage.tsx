@@ -22,6 +22,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import strings from './Strings';
 import ConfirmDialog from './ConfirmDialog';
+import Colors from './Colors';
 
 function ProfileEditPage({ navigation, route }): JSX.Element {
  
@@ -178,13 +179,13 @@ function ProfileEditPage({ navigation, route }): JSX.Element {
     }
 
   return (
-    <GestureHandlerRootView style={{flex: 1, backgroundColor: 'white'}}>
+    <GestureHandlerRootView style={{flex: 1, backgroundColor: Colors.gray800}}>
 
-    <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: Colors.gray800}}>
       <StatusBar
-        barStyle={'dark-content'}
+        barStyle={Colors.statusBar}
         
-        backgroundColor={backgroundStyle.backgroundColor}
+        backgroundColor={Colors.gray800}
       />
    
         <View style={{flex: 1}}>
@@ -202,7 +203,7 @@ function ProfileEditPage({ navigation, route }): JSX.Element {
               width: "100%",
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: 'white',
+              backgroundColor: Colors.gray800,
               paddingBottom: 20
             }}>
                 <AppBar navigation={navigation}/>
@@ -211,9 +212,9 @@ function ProfileEditPage({ navigation, route }): JSX.Element {
                     <View style={{
                         width: 100,
                         height: 100,
-                        borderColor: '#EAEDF1',
+                        borderColor: Colors.borderColor,
                         borderWidth: 2,
-                        backgroundColor: '#F7F7F7',
+                        backgroundColor: Colors.bgColor,
                         borderRadius: 80,
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -270,11 +271,12 @@ function ProfileEditPage({ navigation, route }): JSX.Element {
                   <TextInput value={name} onChangeText={onChangeName} style={{
                     height: 40,
                     flex: 1,
+                    borderColor: Colors.titleColor,
                     borderBottomWidth: 1,
                     // paddingLeft: 20,
                     // paddingRight: 20,
                     // borderRadius: 20,
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontSize: 16,
                   }}/>
                   {/* <Text style={{

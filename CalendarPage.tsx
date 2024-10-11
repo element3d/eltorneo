@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_CALENDAR } from './BottomNavBar';
 import SERVER_BASE_URL from './AppConfig';
 import CalendarIcon from './assets/calendar_black.svg';
+import CalendarWhiteIcon from './assets/calendar_white.svg';
 
 import MatchItem from './MatchItem';
 import Calendar from './Calendar';
@@ -23,6 +24,7 @@ import strings from './Strings';
 import authManager from './AuthManager';
 import { useFocusEffect } from '@react-navigation/native';
 import dataManager from './DataManager';
+import Colors from './Colors';
 
 function CalendarPage({ navigation, route }): JSX.Element {
   const today = moment();
@@ -36,13 +38,27 @@ function CalendarPage({ navigation, route }): JSX.Element {
   };
 
   useEffect(()=> {
-    getMatches()
+    this.effect = true
+  
+    // getMatches()
   }, [date])
+
+  useFocusEffect(
+    useCallback(() => {
+      getMatches()
+      this.effect = false
+
+    }, [date])
+  );
+
 
   function getMatches() {
     if (!date) return;
-    setMatches([])
-    setMatchesReqFinished(false)
+
+    if (this.effect) {
+      setMatches([])
+      setMatchesReqFinished(false)
+    }
     fetch(`${SERVER_BASE_URL}/api/v1/matches/day?timestamp=${new Date(date).getTime()}`, {
       method: 'GET',
       headers: {
@@ -89,14 +105,20 @@ function CalendarPage({ navigation, route }): JSX.Element {
     getMatches()
   };
 
+  function getLeagueImageUrl(m) {
+    if (Colors.mode == 1) return `${SERVER_BASE_URL}/data/leagues/${m.league_name}_colored.png${dataManager.getImageCacheTime()}`
+
+    return `${SERVER_BASE_URL}/data/leagues/${m.league_name}_white.png${dataManager.getImageCacheTime()}`
+  }
+
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
         <StatusBar
-          barStyle={'dark-content'}
+          barStyle={Colors.statusBar}
 
-          backgroundColor={backgroundStyle.backgroundColor}
+          backgroundColor={Colors.gray800}
         />
 
         <View style={{ flex: 1 }}>
@@ -113,7 +135,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
             <View style={{
               width: '100%',
               paddingBottom: 10,
-              backgroundColor: '#ffffffcc'
+              backgroundColor: Colors.gray800
             }}>
               <AppBar navigation={navigation} />
 
@@ -123,11 +145,11 @@ function CalendarPage({ navigation, route }): JSX.Element {
                 alignItems: 'center',
                 justifyContent: 'flex-start'
               }}>
-                <CalendarIcon height={28} width={28} />
+                {Colors.mode == 1 ? <CalendarIcon height={28} width={28} /> : <CalendarWhiteIcon height={28} width={28} /> }
                 <Text style={{
                   marginLeft: 10,
                   fontWeight: 'bold',
-                  color: 'black',
+                  color: Colors.titleColor,
                   // fontWeight: 'semi-bold'
                 }}>{strings[moment(date).format('MMM').toLowerCase()]} {moment(date).format('D')}, {moment(date).format('yy')}</Text>
               </View>
@@ -140,6 +162,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
               width: '100%',
               // backgroundColor: 'red',
               padding: 15,
+              paddingHorizontal: 20,
               marginTop: 10,
               flexDirection: 'column',
               alignItems: 'center',
@@ -162,12 +185,12 @@ function CalendarPage({ navigation, route }): JSX.Element {
                   {renderLeague ? <View style={{
                     flexDirection: 'row',
                     marginBottom: 10,
-                    marginTop: i == 0 ? 0 : 20,
+                    marginTop: i == 0 ? 0 : 12,
                     alignItems: 'center'
                   }}>
-                    <Image resizeMode='contain' src={`${SERVER_BASE_URL}/data/leagues/${m.league_name}_colored.png`} style={{
-                      width: 40,
-                      height: 45
+                    <Image resizeMode='contain' src={getLeagueImageUrl(m)} style={{
+                      width: 30,
+                      height: 30
                     }}></Image>
                     <View style={{
                       marginLeft: 10,
@@ -175,7 +198,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
                       <Text style={{
                         fontSize: 16,
                         fontWeight: 'bold',
-                        color: 'black'
+                        color: Colors.titleColor
                       }}>{m.league_name}</Text>
                       <Text style={{
                         fontSize: 12,

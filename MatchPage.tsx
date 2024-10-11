@@ -32,6 +32,11 @@ import MatchEventsPanel from './MatchEventsPanel';
 import MatchLineupsPanel from './MatchLineupsPanel';
 import MatchH2HPanel from './MatchH2HPanel';
 import MatchTablePanel from './MatchTablePanel';
+import Colors from './Colors';
+import MatchPredictsSummaryPanel2 from './MatchPredictsSummaryPanel2';
+import GoogleIcon from './assets/google.svg';
+import gsingin from './GSignin';
+import SpecialAwardPanel from './SpecialAwardPanel';
 
 const EMODE_DEFAULT = 0
 const EMODE_EDIT = 1
@@ -73,7 +78,21 @@ function MatchAppBar({ match, navigation }) {
   )
 }
 
+
 function MatchDatePanel({ match, isShowTopMatchTime }) {
+  function getDate() {
+    const today = moment().startOf('day');
+    const tomorrow = moment().add(1, 'day').startOf('day');
+    const matchDate = moment(match.date); // Ensure it's in milliseconds
+
+    if (matchDate.isSame(today, 'day')) {
+        return strings.today;
+    } else if (matchDate.isSame(tomorrow, 'day')) {
+        return strings.tomorrow;
+    } else {
+        return `${matchDate.format('DD')} ${strings[matchDate.format('MMM').toLowerCase()]} ${matchDate.format('YYYY').toLowerCase()}`;
+    }
+}
 
   return (
     <View style={{
@@ -82,12 +101,12 @@ function MatchDatePanel({ match, isShowTopMatchTime }) {
       justifyContent: 'center'
     }}>
       <Text style={{
-        color: 'black',
-        fontSize: 18,
+        color: Colors.titleColor,
+        fontSize: 20,
         fontWeight: 'bold'
         // fontFamily: 'NotoSansArmenian-Bold',
         // color: 'black'
-      }}>{moment(match?.date).format('DD')} {strings[moment(match?.date).format('MMM').toLowerCase()]} {moment(match?.date).format('YYYY')}</Text>
+      }}>{getDate()}</Text>
       {isShowTopMatchTime ? <View style={{
         marginTop: 4,
         backgroundColor: '#00C56619',
@@ -125,9 +144,9 @@ function ViewChip({ title, selected, onClick }) {
     borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: selected ? 0 : 2,
-    borderColor: '#EAEDF1',
-    backgroundColor: selected ? '#FF2882' : 'transparent',
+    borderWidth: selected ? 0 : 1,
+    borderColor: Colors.borderColor,
+    backgroundColor: selected ? '#FF2882' : Colors.gray800,
     paddingLeft: 20,
     paddingRight: 20,
     marginRight: 10,
@@ -194,7 +213,7 @@ function MatchPage({ navigation, route }): JSX.Element {
     useCallback(() => {
       setBlockForAd(dataManager.getSettings()?.blockForAd && adsManager.isLoaded())
       setLoaded(adsManager.isLoaded())
-      
+
       if (dataManager.getPendingPredict()) {
         setMe(authManager.getMeSync());
         const pp = dataManager.getPendingPredict();
@@ -267,6 +286,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   }, [view])
 
   useEffect(() => {
+
     if (!dataManager.getSettings().enableAds) return
     if (!authManager.getMeSync() && !blockForAd) return
 
@@ -310,12 +330,20 @@ function MatchPage({ navigation, route }): JSX.Element {
           AsyncStorage.setItem('numActions', numActions.toString());
         }
 
-        if (numActions >= dataManager.getSettings().numMinAdActions) {
+        if (numActions >= dataManager.getSettings().numMinAdActions || match.is_special) {
           setShowAd(true)
           setLoaded(adsManager.isLoaded())
 
           if (!adsManager.isLoaded()) {
             adsManager.loadAd()
+            adsManager.addLoadedListener(() => {
+              setLoaded(true)
+              adsManager.setIsLoaded(true)
+            })
+
+            adsManager.addErrorListener(()=>{
+             
+            })
           }
         }
       });
@@ -349,8 +377,14 @@ function MatchPage({ navigation, route }): JSX.Element {
 
   useEffect(() => {
     getMatch()
-    getPredict()
+    // getPredict()
   }, []);
+
+  useFocusEffect(
+    useCallback(()=>{
+      getPredict()
+    }, [])
+  )
 
   useEffect(() => {
     // getPredicts(match)
@@ -515,7 +549,7 @@ function MatchPage({ navigation, route }): JSX.Element {
         setLoaded(true)
         adsManager.setIsLoaded(true)
       }
-    } else { 
+    } else {
       setAdClosed(false)
     }
 
@@ -613,7 +647,12 @@ function MatchPage({ navigation, route }): JSX.Element {
           team2_score: Number.parseInt(team2Score)
         })
       }
-      navigation.navigate('Login')
+      gsingin.signin(null, (me) => {
+        setMe(me)
+        getPredict()
+      })
+
+      // navigation.navigate('Login')
       return
     }
 
@@ -730,7 +769,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   }
 
   function getBorderColor(p) {
-    if (p.status == 0) return '#8E8E93'
+    if (p.status == 0) return "black"//'#8E8E93'
     if (p.status == 1) return '#00C566'
     if (p.status == 2) return '#ff7539'
     if (p.status == 3) return '#FF4747'
@@ -838,10 +877,15 @@ function MatchPage({ navigation, route }): JSX.Element {
     setMode(EMODE_EDIT)
   }
 
-  return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+  // function getSummaryPanel() {
+  //   if (true) return 
+  //   return <MatchPredictsSummaryPanel  match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}/>
+  // }
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F7F7F7' }}>
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
         <StatusBar
           barStyle={'light-content'}
 
@@ -859,7 +903,7 @@ function MatchPage({ navigation, route }): JSX.Element {
             style={{
               flex: 1,
             }}>
-            <Image resizeMode="cover" src={`${SERVER_BASE_URL}/data/leagues/${match?.leagueName}_banner.png`} style={{
+            <Image resizeMode="cover" src={`${SERVER_BASE_URL}/data/leagues/${match?.leagueName}_banner.png${dataManager.getImageCacheTime()}`} style={{
               position: 'absolute',
               width: '100%',
 
@@ -876,7 +920,8 @@ function MatchPage({ navigation, route }): JSX.Element {
             <View style={{
               width: '88%',
               borderRadius: 20,
-              backgroundColor: 'white',
+              
+              backgroundColor: Colors.gray800,
               paddingTop: 20,
               paddingBottom: 10
             }}>
@@ -907,8 +952,8 @@ function MatchPage({ navigation, route }): JSX.Element {
                     height: 50,
                     fontSize: 20,
                     textAlign: 'center',
-                    color: 'black',
-                    backgroundColor: '#00000011',
+                    color: Colors.titleColor,
+                    backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
                     borderRadius: 10,
                     fontFamily: 'OpenSans-Bold'
                   }}></TextInput> : null}
@@ -917,7 +962,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                     // marginRight: 4,
                     height: 50,
                     fontSize: 30,
-                    color: 'black',
+                    color: Colors.titleColor,
                     textAlign: 'center',
                     // backgroundColor: '#00000011',
                     // borderRadius: 10,
@@ -937,18 +982,18 @@ function MatchPage({ navigation, route }): JSX.Element {
                         marginBottom: 5
                       }}>
                         <Text style={{
-                          color: 'black',
+                          color: Colors.titleColor,
                           fontSize: 24,
                           fontWeight: 'bold',
                           marginRight: 10
                         }}>{match.team1_score_live}</Text>
                         <Text style={{
-                          color: 'black',
+                          color: Colors.titleColor,
                           fontSize: 20,
                           fontWeight: 'bold'
                         }}>:</Text>
                         <Text style={{
-                          color: 'black',
+                          color: Colors.titleColor,
                           fontSize: 24,
                           fontWeight: 'bold',
                           marginLeft: 10
@@ -981,7 +1026,12 @@ function MatchPage({ navigation, route }): JSX.Element {
                   {(!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
                     fontSize: 30,
                     height: 50,
-                    color: 'black'
+                    // backgroundColor: 'red',
+                    // alignItems: 'center',
+                    // justifyContent: 'center',
+                    textAlignVertical: isShowScoreInput() ? 'center' : 'top',
+                    paddingBottom: 6,
+                    color: Colors.titleColor
                   }}>:</Text> : null}
                   {!isMatchLive() && !isMatchEnded() && !isShowScoreInput() ? <View style={{
                     marginTop: 4,
@@ -1007,9 +1057,9 @@ function MatchPage({ navigation, route }): JSX.Element {
                     height: 50,
                     marginLeft: 4,
                     fontSize: 20,
-                    backgroundColor: '#00000011',
+                    backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
                     borderRadius: 10,
-                    color: 'black',
+                    color: Colors.titleColor,
                     textAlign: 'center',
                     // borderBottomColor: 'red',
                     // borderBottomWidth: 2,
@@ -1020,7 +1070,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                     // marginRight: 4,
                     height: 50,
                     fontSize: 30,
-                    color: 'black',
+                    color: Colors.titleColor,
                     textAlign: 'center',
                     // backgroundColor: '#00000011',
                     // borderRadius: 10,
@@ -1033,12 +1083,14 @@ function MatchPage({ navigation, route }): JSX.Element {
               </View>
               {(!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
                 width: '100%',
-                height: 50,
+                minHeight: 50,
                 // marginTop: 10,
                 alignItems: 'center',
                 justifyContent: 'center',
                 // backgroundColor: 'red'
               }}>
+
+                { match.is_special ? <SpecialAwardPanel /> : null }
 
                 {mode == EMODE_DEFAULT && isShowScoreInput() ? <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
                   opacity: !isPredictDisabled() ? 1 : .8
@@ -1046,7 +1098,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                   <View style={{
                     height: 30,
                     width: 'auto',
-                    paddingLeft: 20,
+                    paddingLeft: authManager.getMeSync() ? 20 : 10,
                     paddingRight: 20,
                     borderRadius: 20,
                     alignItems: 'center',
@@ -1054,11 +1106,27 @@ function MatchPage({ navigation, route }): JSX.Element {
                     backgroundColor: '#fb2781',
                     flexDirection: 'row'
                   }}>
+                    {!authManager.getMeSync() ? 
+                      <View style={{
+                        width: 20, 
+                        height: 20,
+                        marginRight: 6,
+                        backgroundColor: 'white',
+                        borderRadius: 12,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <GoogleIcon width={16} height={18} /> 
+                      </View>
+                      : null }
                     <Text style={{
                       color: 'white',
-                      fontFamily: 'NotoSansArmenian-Bold'
+                      marginTop: 2,
+                      // fontWeight: 'bold',
+                      fontFamily: 'Poppins-Bold'
                     }}>{authManager.getMeSync() ? strings.predict : strings.sign_in_to_predict}</Text>
-                    {showAd && loaded ? <Icon name='play-circle-filled' size={20} color='white' style={{
+                    
+                    {showAd && loaded && authManager.getMeSync() ? <Icon name='play-circle-filled' size={20} color='white' style={{
                       marginLeft: 4
                     }} /> : null}
                     {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
@@ -1081,6 +1149,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                     borderColor: getBorderColor(predict)
                   }}>
                     <Text style={{
+                      marginBottom: 2,
                       color: getBorderColor(predict),
                       fontFamily: 'NotoSansArmenian-Bold'
                     }}>{dataManager.getPredictTitle(predict)} {predict.team1_score} : {predict.team2_score}</Text>
@@ -1133,6 +1202,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                 height: 50,
                 marginTop: 20,
                 paddingLeft: 20,
+                paddingRight: 10,
                 // backgroundColor: 'green',
                 alignItems: 'center',
               }}
@@ -1149,15 +1219,16 @@ function MatchPage({ navigation, route }): JSX.Element {
             </ScrollView> : null}
 
             <View style={{
-              width: '90%',
+              width: '100%',
+              paddingHorizontal: 20,
+              // backgroundColor: 'red'
               // marginTop: 30
             }}>
-
 
               {view == EVIEW_PREDICTIONS ? <View style={{
                 marginTop: 20,
               }}>
-                {predictsReqFinished && predicts && predicts.numPredicts ? <MatchPredictsSummaryPanel match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts} /> : null}
+                {predictsReqFinished && predicts && predicts.numPredicts ? <MatchPredictsSummaryPanel2 match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}></MatchPredictsSummaryPanel2> : null}
                 {predictsReqFinished && top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts} /> : null}
                 {predictsReqFinished && !predicts?.numPredicts ? <Text style={{
                   color: '#8E8E93',

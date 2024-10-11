@@ -1,6 +1,7 @@
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import strings from "./Strings";
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Colors from "./Colors";
 
 export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForAd, adLoaded}) {
     function getPredictPercent(numPredicts) {
@@ -19,15 +20,15 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
             }}>{strings.summary} ({predicts?.numPredicts} {strings.predictions})</Text>
             <View style={{
               width: '100%',
-              backgroundColor: '#ffffffcc',
-              borderRadius: 20,
+              backgroundColor: Colors.gray800,
+              borderRadius: 12,
               paddingLeft: 10,
               paddingRight: 10,
               marginBottom: 20,
             }}>
               <View style={{
                 marginTop: blockForAd ? 5 : 0,
-                height: blockForAd ? 80 : 100,
+                height: blockForAd ? 80 : 80,
                 // backgroundColor: 'red'
                 flexDirection: 'row'
               }}>
@@ -43,11 +44,11 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
                   }}>1</Text>
                   {!blockForAd ? <Text style={{
                     fontSize: 20,
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontWeight: 'bold'
                   }}>
                     {predicts?.numP1}{getPredictPercent(predicts?.numP1)}
-                    </Text> : <Icon color="black" size={30} name='lock' style={{
+                    </Text> : <Icon color={Colors.titleColor} size={30} name='lock' style={{
                       marginTop: 4
                     }}/> }
                 </View>
@@ -64,7 +65,7 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
                   }}>{strings.draw}</Text>
                   {!blockForAd ? <Text style={{
                     fontSize: 20,
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontWeight: 'bold'
                   }}>
                     {predicts?.numDraw}{getPredictPercent(predicts?.numDraw)}
@@ -85,7 +86,7 @@ export default function MatchPredictsSummaryPanel({predicts, onUnlock, blockForA
                   }}>2</Text>
                   {!blockForAd ? <Text style={{
                     fontSize: 20,
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontWeight: 'bold'
                   }}>
                     {predicts?.numP2}{getPredictPercent(predicts?.numP2)}

@@ -3,10 +3,13 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native"
 import SERVER_BASE_URL from "./AppConfig"
 import authManager from "./AuthManager"
 import CalendarIcon from './assets/calendar_black.svg';
+import CalendarWhiteIcon from './assets/calendar_white.svg';
+
 import moment from 'moment';
 import MatchItem from "./MatchItem";
 import strings from "./Strings";
 import dataManager from "./DataManager";
+import Colors from "./Colors";
 
 
 export default function MatchH2HPanel({navigation, match}) {
@@ -90,22 +93,23 @@ export default function MatchH2HPanel({navigation, match}) {
     }}> 
         <View style={{
             width: '100%',
-            height: 50,
+            height: 46,
             padding: 4,
             marginTop: 20,
-            backgroundColor: '#F0F0F0',
+            backgroundColor: Colors.selectColor,
             borderRadius: 30,
             flexDirection: 'row'
         }}>
             <TouchableOpacity activeOpacity={.6} onPress={()=>{setTeam(match.team1.id)}} style={{
                 flex: 1,
-                backgroundColor: team == match.team1.id ? 'white' : 'transparent',
+                height: 38,
+                backgroundColor: team == match.team1.id ? Colors.gray800 : 'transparent',
                 borderRadius: 30,
                 alignItems: 'center',
                 justifyContent: 'center'
             }}>
                 <Text style={{
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontWeight: 'bold'
                 }}>{match.team1.shortName}</Text>
             </TouchableOpacity>
@@ -113,11 +117,11 @@ export default function MatchH2HPanel({navigation, match}) {
                 flex: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: team == match.team2.id ? 'white' : 'transparent',
+                backgroundColor: team == match.team2.id ? Colors.gray800  : 'transparent',
                 borderRadius: 30
             }}>
                     <Text style={{
-                    color: 'black',
+                    color: Colors.titleColor,
                     fontWeight: 'bold'
                 }}>{match.team2.shortName}</Text>
             </TouchableOpacity>
@@ -138,6 +142,7 @@ export default function MatchH2HPanel({navigation, match}) {
                         renderTime = true;
                         currMatchDate = item.date;
                     }
+                    item.week_type = item.weekType
 
                     return <View key={`item_${match.id}_${index}`} style={{
                         width: '100%',
@@ -150,11 +155,11 @@ export default function MatchH2HPanel({navigation, match}) {
                             marginBottom: 10,
                             marginTop: 20,
                           }}>
-                            <CalendarIcon width={26} height={26} />
+                            { Colors.mode == 1 ? <CalendarIcon width={26} height={26} /> : <CalendarWhiteIcon width={26} height={26} /> }
                             <Text style={{
                                  marginLeft: 10,
                                  fontWeight: 'bold',
-                                 color: 'black',
+                                 color: Colors.titleColor,
                             }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
                           </View>
                         ): null}

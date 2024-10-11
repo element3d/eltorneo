@@ -21,255 +21,188 @@ import dataManager from './DataManager';
 import authManager from './AuthManager';
 import strings from './Strings';
 import { useFocusEffect } from '@react-navigation/native';
+import LiveMatchItem from './LiveMatchItem';
+import Colors from './Colors';
 
 function MatchesLivePage({ navigation, route }): JSX.Element {
-    const [matches, setMatches] = useState([])
-    const [matchesReqFinished, setMatchesReqFinished] = useState(false)
+  const [matches, setMatches] = useState([])
+  const [upcoming, setUpcoming] = useState([])
 
-    const backgroundStyle = {
-      backgroundColor: 'white',
-    };
+  const [matchesReqFinished, setMatchesReqFinished] = useState(false)
+  const [upcomingReqFinished, setUpcomingReqFinished] = useState(false)
 
-    useEffect(()=> {
+  const backgroundStyle = {
+    backgroundColor: 'white',
+  };
+
+  useEffect(() => {
+    getMatches()
+  }, [])
+
+  useFocusEffect(
+    useCallback(() => {
       getMatches()
-    }, [])
-
-    useFocusEffect(
-      useCallback(() => {
+      const interval = setInterval(() => {
         getMatches()
-          const interval = setInterval(() => {
-            getMatches()
-          }, 60000);
-      
-          // Cleanup interval on focus loss or unmount
-          return () => {
-            clearInterval(interval)
-          };
-        
-      }, [])
-    );
+      }, 60000);
 
-    function getMatches() {
-      const url = `${SERVER_BASE_URL}/api/v1/matches/live`
-      fetch(url, {
-        method: 'GET',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authentication': authManager.getToken() || ''
-        },
+      // Cleanup interval on focus loss or unmount
+      return () => {
+        clearInterval(interval)
+      };
+
+    }, [])
+  );
+
+  function getMatches() {
+    const url = `${SERVER_BASE_URL}/api/v1/matches/live`
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authentication': authManager.getToken() || ''
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        setMatches(data)
+        setMatchesReqFinished(true)
+
+        if (!data.length) {
+          getUpcoming()
+        }
       })
-        .then(response => response.json())
-        .then(data => {
-          setMatches(data)
-          setMatchesReqFinished(true)
-        })
-        .catch(error => {
-           console.error('Error fetching leagues:', error)
-          setMatches([])
-          setMatchesReqFinished(true)
-        });
-    }
+      .catch(error => {
+        console.error('Error fetching leagues:', error)
+        setMatches([])
+        setMatchesReqFinished(true)
+      });
+  }
 
-    let currentLeague = null
-
-    function onNavMatch(match) {
-      match.leagueName= match.league_name
-      match.weekType = match.week_type
-      dataManager.setMatch(match)
-
-      navigation.navigate({ 
-        name: 'Match', 
-        params: {
-          id: match.id, 
-        }, 
-        key: match.id
+  function getUpcoming() {
+    const url = `${SERVER_BASE_URL}/api/v1/matches/upcoming`
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authentication': authManager.getToken() || ''
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        setUpcoming(data)
+        setUpcomingReqFinished(true)
       })
-    }
+      .catch(error => {
+        console.error('Error fetching leagues:', error)
+        setUpcoming([])
+        setUpcomingReqFinished(true)
+      });
+  }
 
-    function getStatusText(m) {
-      if (m.status == 'HT' || m.status == 'FT') return m.status
-      
-      return m.elapsed + " '"
-    }
+  let currentLeague = null
+
 
   return (
-    <GestureHandlerRootView style={{flex: 1, backgroundColor: '#f7f7f7'}}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
-    <SafeAreaView style={{flex: 1, backgroundColor: '#f7f7f7'}}>
-      <StatusBar
-        barStyle={'dark-content'}
-        
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-   
-        <View style={{flex: 1}}>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{
-            minHeight: '100%'
-          }}
-        
-          style={{flex: 1}}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+        <StatusBar
+          barStyle={Colors.statusBar}
 
-          <View style={{
-            width: '100%',
-            // paddingBottom: 20,
-            backgroundColor: 'white'
-          }}>
-            <AppBar navigation={navigation}/>
-          
-           
-          </View>
+          backgroundColor={Colors.gray800}
+        />
 
-     
-          
-          <View style={{
-            width: '100%',
-            // backgroundColor: 'red',
-            padding: 15,
-            marginTop: 10,
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            {!matchesReqFinished ? <ActivityIndicator color={'#FF2882'} size={'large'}/> : null }
-            {!matches.length && matchesReqFinished ? <Text style={{
-              fontWeight: 'bold',
-              color: '#8E8E93'
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={{
+              // minHeight: '100%'
+            }}
+
+            style={{ flex: 1 }}>
+
+            <View style={{
+              width: '100%',
+              // paddingBottom: 20,
+              backgroundColor: Colors.gray800
             }}>
-              {strings.no_live_matches}
-            </Text>: null}
+              <AppBar navigation={navigation} />
 
-            {matches.map((m, i)=>{
-              let renderLeague = false;
-              if (!currentLeague || currentLeague != m.league_name) {
-                currentLeague = m.league_name
-                renderLeague = true;
-              }
-              return <View key={`match_${i}`} style={{
-                width: '100%'
+
+            </View>
+
+
+
+            <View style={{
+              width: '100%',
+              // backgroundColor: 'red',
+              padding: 15,
+              paddingHorizontal: 20,
+              marginTop: 10,
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {!matchesReqFinished || (matchesReqFinished && !matches.length && !upcomingReqFinished) ? <ActivityIndicator color={'#FF2882'} size={'large'} /> : null}
+              {!matches.length && matchesReqFinished && !upcoming.length && upcomingReqFinished ? <Text style={{
+                fontWeight: 'bold',
+                color: '#8E8E93'
               }}>
-                      <TouchableOpacity onPress={()=>onNavMatch(m)} activeOpacity={.9} style={{
-                        width: '100%',
-                        // height: 250,
-                        // paddingBottom: 20,
-                        borderRadius: 20,
-                        overflow: 'hidden',
-                        marginBottom: 20,
-                        alignItems: 'center',
-                        // backgroundColor: 'red'
-                      }}>
-                        <Image src={`${SERVER_BASE_URL}/data/leagues/${m.league_name}_banner.png`} style={{
-                            width: '100%',
-                            height: '100%',
-                            top: 0,
-                            position: 'absolute'
-                        }}/>
+                {strings.no_live_matches}
+              </Text> : null}
 
-                        <View style={{
-                            width: '100%',
-                            alignItems: 'center',
-                            paddingTop: 15
-                        }}>
-                            <Text style={{
-                                fontSize: 18,
-                                fontWeight: 'bold',
-                                color: 'white'
-                            }}>{m.league_name}</Text>
-                            <Text style={{
-                                color: '#AEAEB2',
-                                fontSize: 10
-                            }}>{dataManager.getWeekTitle({week: m.week, type: m.week_type})}</Text>
-                        </View>
+              {matchesReqFinished && matches.length ? <Text style={{
+                width: '100%',
+                fontWeight: 'bold',
+                fontSize: 18,
+                marginBottom: 10,
+                textAlign: 'left',
+                color: Colors.titleColor
+              }}>{strings.live_matches}</Text> : null }
 
-                        <View style={{
-                            width: '100%',
-                            marginTop: 0,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexDirection: 'row'
-                        }}>
-                            <TeamItem team={m.team1} isHome={true} compact={true}/>
-                            <View>
-                              <View style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginTop: 20,
-                                marginBottom: 5
-                              }}>
-                                <Text style={{
-                                  color: 'white',
-                                  fontSize: 24,
-                                  fontWeight: 'bold',
-                                  marginRight: 10
-                                }}>{m.team1_score_live}</Text>
-                                <Text style={{
-                                  color: 'white',
-                                  fontSize: 20,
-                                  fontWeight: 'bold'
-                                }}>:</Text>
-                                <Text style={{
-                                  color: 'white',
-                                  fontSize: 24,
-                                  fontWeight: 'bold',
-                                  marginLeft: 10
-                                }}>{m.team2_score_live}</Text>
-                              </View>
-                              <View style={{
-                                  marginBottom: 27,
-                                  height: 30,
-                                  paddingLeft: 15,
-                                  paddingRight: 15,
-                                  borderWidth: 1.5,
-                                  borderColor: '#00C566',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  borderRadius: 20,
-                                  backgroundColor: '#34C75944'
-                              }}>
-                                  <Text style={{
-                                      fontSize: 16,
-                                      color: '#00C566',
-                                      fontWeight: 'bold',
-                                      marginLeft: 5,
-                                  }}>{getStatusText(m)}</Text>
-                              </View>
-                            </View>
-                            <TeamItem team={m.team2} compact={true}/>
+              {matches.map((m, i) => {
+                let renderLeague = false;
+                if (!currentLeague || currentLeague != m.league_name) {
+                  currentLeague = m.league_name
+                  renderLeague = true;
+                }
+                return <View key={`match_${i}`} style={{
+                  width: '100%'
+                }}>
+                  <LiveMatchItem match={m} navigation={navigation} />
+                </View>
+              })}
 
-                        </View>
-                        <View style={{
-                            padding: 10,
-                            // backgroundColor: 'red'
-                        }}>
-                           { m.predict.team1_score > -1 && m.predict.team2_score > -1 ? <View style={{
-                                height: 25,
-                                borderRadius: 20,
-                                paddingLeft: 20,
-                                paddingRight: 20,
-                                marginBottom: 5,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: 'white'
-                            }}>
-                                <Text style={{
-                                    color: 'black',
-                                    fontWeight: 'bold'
-                                }}>{strings.prediction} {m.predict.team1_score} : {m.predict.team2_score}</Text>
-                            </View> : null }
-                        </View>
-                      </TouchableOpacity>
-              </View>
-            })}
-          </View>
+              {upcoming.length ? <Text style={{
+                width: '100%',
+                fontWeight: 'bold',
+                fontSize: 18,
+                marginBottom: 10,
+                textAlign: 'left',
+                color: Colors.titleColor
+              }}>{strings.upcoming_matches}</Text> : null }
 
-         
-        </ScrollView>
+              {upcoming.map((m, i) => {
+                let renderLeague = false;
+                if (!currentLeague || currentLeague != m.league_name) {
+                  currentLeague = m.league_name
+                  renderLeague = true;
+                }
+                return <View key={`match_${i}`} style={{
+                  width: '100%'
+                }}>
+                  <LiveMatchItem match={m} navigation={navigation} />
+                </View>
+              })}
+            </View>
+
+
+          </ScrollView>
           <BottomNavBar navigation={navigation} />
         </View>
       </SafeAreaView>
-      </GestureHandlerRootView>
+    </GestureHandlerRootView>
   );
 }
 

@@ -19,7 +19,7 @@ class GSignin {
     });
   };
 
-  internalSignIn(email, name, navigation) {
+  internalSignIn(email, name, navigation, callback) {
     this.signinGoogle(email, name)
       .then((token) => {
         AsyncStorage.setItem(
@@ -30,15 +30,18 @@ class GSignin {
             ?.then((me) => {
               authManager.setMe(me)
               authManager.setToken(token)
-
-              if (dataManager.getPendingPredict()) {
-                navigation.goBack();
-              } else {
-                navigation.replace('Profile', {
-                  globalPage: 1,
-                  routeSelectedLeague: -1,
-                  selectedStat: ESTAT_TOTAL
-                });
+              if (navigation) {
+                if (dataManager.getPendingPredict()) {
+                  navigation.goBack();
+                } else {
+                  navigation.replace('Profile', {
+                    globalPage: 1,
+                    routeSelectedLeague: -1,
+                    selectedStat: ESTAT_TOTAL
+                  });
+                }
+              } else if (callback) {
+                callback(me)
               }
             })
 
@@ -52,7 +55,7 @@ class GSignin {
       })
   }
 
-  async signin(navigation) {
+  async signin(navigation, callback) {
     // this.internalSignIn("narekhovhannisyanim6@gmail.com", 'Narek5', navigation)
     // return
 
@@ -63,10 +66,12 @@ class GSignin {
       try {
         userInfo = await GoogleSignin.signIn();
       } catch (error) {
+        // this.internalSignIn("narekhovhannisyanim6@gmail.com", 'Narek5', navigation, callback)
+
         console.error('Google sign-in error:', error);
         return
       }
-      this.internalSignIn(userInfo.user.email, userInfo.user.name, navigation)
+      this.internalSignIn(userInfo.user.email, userInfo.user.name, navigation, callback)
     } catch (error) {
       console.log('Google login error', error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
