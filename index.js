@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SERVER_BASE_URL from './AppConfig';
 import adsManager from './AdsManager';
 import strings from './Strings';
+import dataManager from './DataManager';
 adsManager.init()
 AppRegistry.registerComponent(appName, () => App);
 
@@ -29,7 +30,7 @@ PushNotification.createChannel(
 function saveFcmToken(fcmToken, authToken) {
   AsyncStorage.getItem('lang', (lang) => {
     if (!lang) lang = strings.getLanguage()
-
+    dataManager.fetchSpecialMatch(lang, authToken)
     if (authToken) authManager.setToken(authToken)
     const json = {
       os: fcmToken.os,
@@ -84,6 +85,8 @@ PushNotification.configure({
   
       // Must call this for the notification to be removed from the tray
       notification.finish();
+      // notification.finish(PushNotification.FetchResult.NoData);
+
     },
 
     // (optional) Called when Registered Action is pressed and invokeApp is false, if true onNotification will be called (Android)
