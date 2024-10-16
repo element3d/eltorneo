@@ -21,13 +21,14 @@ export default function TeamItem({team, isHome, compact = false}) {
           }}/>
           <Text style={{
               color: compact ? 'white' : Colors.titleColor,
-              marginTop: 10,
+              marginTop: 5,
               fontSize: 16,
               fontFamily: 'OpenSans-Bold'
           }}>{team.shortName}</Text>
           <Text style={{
             marginTop: 0,
             fontSize: 12,
+            lineHeight: 14,
             color: '#AEAEB2',
             fontWeight: 'bold'
           }}>{isHome ? strings.home : strings.away}</Text>

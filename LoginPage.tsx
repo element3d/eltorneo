@@ -90,18 +90,18 @@ function LoginPage({ navigation }): JSX.Element {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: 10
+            // marginBottom: 10
           }}>
             <Text style={{
               marginRight: 5,
               fontSize: 34,
               color: Colors.titleColor,
-              fontFamily: 'OpenSans-Bold'
+              fontFamily: 'Poppins-Bold'
             }}>el</Text>
             <Text style={{
               fontSize: 34,
               color: Colors.titleColor,
-              fontFamily: 'OpenSans-Bold'
+              fontFamily: 'Poppins-Bold'
             }}>To</Text>
             {/* <BallIcon height={18} width={20} color='#ff2882' style={{
               marginTop: 8,
@@ -113,7 +113,7 @@ function LoginPage({ navigation }): JSX.Element {
               fontSize: 34,
               color: Colors.titleColor,
               // fontWeight: 'bold'
-              fontFamily: 'OpenSans-Bold'
+              fontFamily: 'Poppins-Bold'
             }}>rneo</Text>
           </View>
 
@@ -142,7 +142,7 @@ function LoginPage({ navigation }): JSX.Element {
               borderRadius: 20,
               // marginBottom: 20
             }}>
-              <AwardsPanel overlay={true}/>
+              <AwardsPanel onReadMore={onNavAwardsInfo} overlay={true}/>
             </ImageBackground>
           </TouchableOpacity>
 
@@ -163,7 +163,9 @@ function LoginPage({ navigation }): JSX.Element {
             <Text style={{
               fontSize: 20,
               color: 'white',
-              fontWeight: 'bold'
+              fontFamily: 'Poppins-Bold',
+              lineHeight: 28,
+              // fontWeight: 'bold'
             }}>
               {strings.join_now}
             </Text>

@@ -65,6 +65,14 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
         }
     }
 
+    function getBanner() {
+        if (!match.special_match_title.length) {
+            return `${SERVER_BASE_URL}/data/leagues/${m.league_name}_banner2.png${dataManager.getImageCacheTime()}`
+        }
+
+        return `${SERVER_BASE_URL}/data/special/${m.special_match_title}.png${dataManager.getImageCacheTime()}`
+    }
+
 
     return (
         <TouchableOpacity onPress={() => onNavMatch(m)} activeOpacity={.9} style={{
@@ -77,7 +85,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
             alignItems: 'center',
             backgroundColor: '#37003C'
         }}>
-            <Image src={`${SERVER_BASE_URL}/data/leagues/${m.league_name}_banner2.png${dataManager.getImageCacheTime()}`} style={{
+            <Image src={getBanner()} style={{
                 width: '100%',
                 height: '100%',
                 top: 0,
@@ -96,7 +104,9 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                 }}>{m.league_name}</Text>
                 <Text style={{
                     color: '#AEAEB2',
-                    fontSize: 10
+                    fontSize: 10,
+                    lineHeight: 10,
+                    fontWeight: 'bold'
                 }}>{dataManager.getWeekTitle({ week: m.week, type: m.week_type })}</Text>
             </View>
 

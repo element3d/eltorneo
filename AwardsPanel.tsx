@@ -1,15 +1,17 @@
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import strings from "./Strings";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Colors from "./Colors";
 
-function AwardsPanel({overlay=false}) {
+function AwardsPanel({ onReadMore, overlay = false }) {
     return (
         <View style={{
             // marginTop: 10,
+            
             width: '100%',
             height: '100%',
             backgroundColor: overlay ? '#000000aa' : 'transparent',
+            
             alignItems: 'center',
             justifyContent: 'center'
         }}>
@@ -17,6 +19,7 @@ function AwardsPanel({overlay=false}) {
                 fontWeight: 'bold',
                 color: 'white',
                 fontSize: 18,
+                lineHeight: 18,
                 marginBottom: 4,
             }}>{strings.awards}</Text>
             <Text style={{
@@ -31,7 +34,7 @@ function AwardsPanel({overlay=false}) {
                 borderRadius: 40,
                 paddingHorizontal: 20,
                 paddingVertical: 10,
-                marginBottom: 20,
+                marginBottom: 12,
                 marginTop: 6,
                 backgroundColor: 'white'
             }}>
@@ -43,53 +46,55 @@ function AwardsPanel({overlay=false}) {
                     1 pt = 0.5 $
                 </Text>
             </View>
-       
-            {/* <Text style={{
+
+            <Text style={{
                 fontWeight: 'bold',
                 color: 'white',
+                marginBottom: 4,
                 fontSize: 18
-            }}>{strings.rules}</Text> */}
+            }}>{strings.rules}</Text>
 
             <View style={{
                 // marginTop: 10,
                 flexDirection: 'row'
             }}>
                 <View style={{
-                    width: 90,
+                    width: 60,
                     //  marginLeft: 20,
                     //  marginRight: 20,
-                     alignItems: 'center'
+                    alignItems: 'center'
                 }}>
                     <View style={{
-                        width: 28,
-                        height: 28,
+                        width: 34,
+                        height: 34,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 20,
                         backgroundColor: '#FACC15'
                     }}>
                         <Text style={{
-                            fontWeight: 900,
-                            fontSize: 12,
+                            fontSize: 16,
+                            lineHeight: 22,
+                            fontFamily: "Poppins-Bold",
                             color: 'black'
                         }}>+3</Text>
                     </View>
-                    <Text style={{
+                    {/* <Text style={{
                         color: 'white',
                         marginTop: 2,
                         fontWeight: 'bold'
-                    }}>{strings.score}</Text>
+                    }}>{strings.score}</Text> */}
                 </View>
 
                 <View style={{
-                    width: 90,
+                    width: 60,
                     // marginLeft: 20,
                     // marginRight: 20,
                     alignItems: 'center'
                 }}>
                     <View style={{
-                        width: 28,
-                        height: 28,
+                        width: 34,
+                        height: 34,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 20,
@@ -98,27 +103,28 @@ function AwardsPanel({overlay=false}) {
                         backgroundColor: '#34C75955'
                     }}>
                         <Text style={{
-                            fontWeight: 900,
-                            fontSize: 12,
+                            fontSize: 16,
+                            lineHeight: 22,
+                            fontFamily: "Poppins-Bold",
                             color: '#00C566'
                         }}>+1</Text>
                     </View>
-                    <Text style={{
+                    {/* <Text style={{
                         color: 'white',
                         marginTop: 2,
                         fontWeight: 'bold'
-                    }}>{strings.win}</Text>
+                    }}>{strings.win}</Text> */}
                 </View>
 
                 <View style={{
-                    width: 90,
+                    width: 60,
                     //  marginLeft: 20,
                     //  marginRight: 20,
-                     alignItems: 'center'
+                    alignItems: 'center'
                 }}>
                     <View style={{
-                        width: 28,
-                        height: 28,
+                        width: 34,
+                        height: 34,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 20,
@@ -127,20 +133,39 @@ function AwardsPanel({overlay=false}) {
                         backgroundColor: '#FF474755'
                     }}>
                         <Text style={{
-                            fontWeight: 900,
-                            fontSize: 12,
+                            fontSize: 16,
+                            lineHeight: 22,
+                            fontFamily: "Poppins-Bold",
                             color: '#FF4747'
                         }}>-1</Text>
                     </View>
-                    <Text style={{
+                    {/* <Text style={{
                         marginTop: 2,
                         color: 'white',
                         fontWeight: 'bold'
-                    }}>{strings.lost}</Text>
+                    }}>{strings.lost}</Text> */}
                 </View>
 
-                
+
+
             </View>
+            <TouchableOpacity activeOpacity={.8} onPress={onReadMore} style={{
+                height: 24,
+                marginTop: 10,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#FF2882',
+                borderRadius: 15,
+                paddingHorizontal: 20,
+            }}>
+                <Text style={{
+                    fontFamily: 'Poppins-Bold',
+                    fontSize: 13,
+                    lineHeight: 18,
+                    // fontWeight: 'bold',
+                    color: 'white'
+                }}>{strings.learn_more}</Text>
+            </TouchableOpacity>
             {/* <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',

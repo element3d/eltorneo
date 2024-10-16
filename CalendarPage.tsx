@@ -59,7 +59,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
       setMatches([])
       setMatchesReqFinished(false)
     }
-    fetch(`${SERVER_BASE_URL}/api/v1/matches/day?timestamp=${new Date(date).getTime()}`, {
+    fetch(`${SERVER_BASE_URL}/api/v1/matches/day?timestamp=${new Date(date).getTime()}&lang=${strings.getLanguage()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -201,7 +201,8 @@ function CalendarPage({ navigation, route }): JSX.Element {
                         color: Colors.titleColor
                       }}>{m.league_name}</Text>
                       <Text style={{
-                        fontSize: 12,
+                        fontSize: 11,
+                        lineHeight: 12,
                         color: '#AEAEB2',
                         fontWeight: 'bold'
                       }}>{strings.matchday} {m.week}</Text>

@@ -21,18 +21,22 @@ export default function LeagueChip({ league, selected, onPress, compact = true }
     }}>
       <Text style={{
         color: selected ? 'white' : Colors.chipText,
-        fontWeight: 800,
-        fontSize: 8
+        // fontWeight: 800,
+        fontFamily: 'Poppins-Bold',
+        fontSize: 9
       }}>UEFA</Text>
       <Text style={{
         color: selected ? 'white' : Colors.chipText,
-        fontWeight: 900,
-        fontSize: 12
+        // fontWeight: 900,
+        fontFamily: 'Poppins-Bold',
+        fontSize: 12,
+        lineHeight: 16,
       }}>NATIONS</Text>
       <Text style={{
         color: selected ? 'white' : Colors.chipText,
-        fontWeight: 800,
-        fontSize: 8
+        // fontWeight: 800,
+        fontFamily: 'Poppins-Bold',
+        fontSize: 9
       }}>LEAGUE</Text>
     </View>
     

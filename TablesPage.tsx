@@ -440,17 +440,17 @@ function TablesPage({ navigation, route }): JSX.Element {
                   width: '100%',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  height: 230,
+                  height: 250,
                   overflow: 'hidden'
                 }}>
                 <ImageBackground width={200} height={200} source={require('./assets/throphy.png')} style={{
 
                     width: '100%',
-                    height: 230,
+                    height: 250,
                     borderRadius: 20,
                     // marginBottom: 20
                   }}>
-                    <AwardsPanel />
+                    <AwardsPanel onReadMore={onNavAwardsInfo}/>
                   </ImageBackground>
                 </TouchableOpacity>
               </View>

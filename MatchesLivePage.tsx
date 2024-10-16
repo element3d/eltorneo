@@ -44,7 +44,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
       getMatches()
       const interval = setInterval(() => {
         getMatches()
-      }, 60000);
+      }, 30000);
 
       // Cleanup interval on focus loss or unmount
       return () => {

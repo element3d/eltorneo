@@ -157,7 +157,7 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
       <TouchableOpacity activeOpacity={.8} onPress={onNavLiveMatches} style={{
         width: 60,
         height: 55,
-        borderRadius: 20,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#FF2882'
@@ -172,7 +172,7 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
           fontSize: 22,
           fontFamily: 'digital-7',
           textAlign: 'center',
-          marginBottom: 10,
+          marginBottom: 8,
           // fontWeight: 'bold',
         }}>{renderTime()}</Text>
 

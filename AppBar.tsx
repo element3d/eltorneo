@@ -76,35 +76,20 @@ function AppBar({navigation, title, setMode,  showLang, showMode=false, showBack
         justifyContent: 'center'
       }}>
         <Text style={{
-          marginRight: 5,
-          fontSize: 26,
+          // marginRight: 5,
+          fontSize: 20,
+          lineHeight: 28,
           // fontWeight: 'bold',
           color: Colors.titleColor,
-          fontFamily: 'OpenSans-Bold'
-        }}>el</Text>
-        <Text style={{
-          fontSize: 26,
-          // fontWeight: 'bold',
-          color: Colors.titleColor,
-          fontFamily: 'OpenSans-Bold'
-        }}>To</Text>
-        {/* <BallIcon height={16} width={16} color='#ff2882' style={{
-          marginTop: 6,
-          marginLeft: 2,
-          marginRight: 3,
-          color: '#ff2882'
-        }}/> */}
-        <Text style={{
-          fontSize: 26,
-          color: Colors.titleColor,
-          // fontWeight: 'bold',
-
-          fontFamily: 'OpenSans-Bold'
-        }}>rneo</Text>
+          fontFamily: 'Poppins-Bold'
+        }}>el Torneo</Text>
+      
       </View> : null }
       {title ? <Text style={{
-        fontWeight: 900,
-        fontSize: 20,
+        // fontWeight: 'bold',
+        fontFamily: 'Poppins-Bold',
+        fontSize: 16,
+        lineHeight: 22,
         color:  Colors.titleColor
       }}>{title}</Text> : null }
       {showLang ? <TouchableOpacity activeOpacity={.6} onPress={onLang} style={{

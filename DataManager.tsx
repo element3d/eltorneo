@@ -9,6 +9,11 @@ class DataManager {
         this.firstSeasonStartYear = 2024
         this.getTableByPoints()
         this.fetchTopScorers()
+
+        this.settings = {
+            blockForAd: false,
+            enableAds: false
+        }
     }
 
     init() {

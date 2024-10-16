@@ -43,8 +43,8 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                 width: '100%',
                 backgroundColor: Colors.gray800,
                 borderRadius: 12,
-                paddingLeft: 10,
-                paddingRight: 10,
+                // paddingLeft: 10,
+                // paddingRight: 10,
                 marginBottom: 20,
             }}>
                 <View style={{
@@ -150,7 +150,7 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                         }}>
 
                             {!blockForAd ? <Text style={{
-                                fontSize: 13,
+                                fontSize: 12,
                                 // flex: 1,
                                 width: 60,
                                 color: Colors.titleColor,
@@ -160,7 +160,7 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                             </Text>: <Icon color={Colors.titleColor} size={16} name='lock'/>}
                             {!blockForAd ? <Text style={{
                                 width: 60,
-                                fontSize: 13,
+                                fontSize: 12,
                                 textAlign: 'center',
                                 color: Colors.titleColor,
                                 fontWeight: 'bold'
@@ -170,7 +170,7 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                             {!blockForAd ? <Text style={{
                                 textAlign: 'right',
                                 width: 60,
-                                fontSize: 13,
+                                fontSize: 12,
                                 color: Colors.titleColor,
                                 fontWeight: 'bold'
                             }}>

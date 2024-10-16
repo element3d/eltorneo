@@ -48,11 +48,11 @@ function MatchAppBar({ match, navigation }) {
       alignItems: 'center',
       justifyContent: 'space-between',
       flexDirection: 'row',
-      height: 80
+      height: 70
     }}>
       <TouchableOpacity activeOpacity={.6} onPress={() => { navigation.goBack() }} style={{
-        width: 50,
-        height: 50,
+        width: 45,
+        height: 45,
         borderRadius: 25,
         alignItems: 'center',
         borderColor: '#EAEDF1',
@@ -64,8 +64,9 @@ function MatchAppBar({ match, navigation }) {
         <Icon name={'arrow-back'} color='white' size={30}></Icon>
       </TouchableOpacity>
       <Text style={{
-        fontSize: 20,
-        fontFamily: 'OpenSans-ExtraBold',
+        fontSize: 16,
+        lineHeight: 22,
+        fontFamily: 'Poppins-Bold',
         color: 'white'
       }}>{match?.leagueName}</Text>
       <View style={{
@@ -102,7 +103,7 @@ function MatchDatePanel({ match, isShowTopMatchTime }) {
     }}>
       <Text style={{
         color: Colors.titleColor,
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold'
         // fontFamily: 'NotoSansArmenian-Bold',
         // color: 'black'
@@ -114,24 +115,29 @@ function MatchDatePanel({ match, isShowTopMatchTime }) {
         borderColor: '#00C566',
         paddingLeft: 8,
         paddingRight: 8,
-        height: 30,
+        height: 26,
         marginBottom: 10,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 15
       }}>
         <Text style={{
-          fontFamily: 'NotoSansArmenian-Bold',
+          fontWeight: 'bold',
+          // fontFamily: 'Poppins-Bold',
           fontSize: 14,
+          lineHeight: 20,
           color: '#00C566'
         }}>{moment(match.date).format('HH:mm')}</Text>
       </View> :
 
         <Text style={{
-          marginTop: 4,
+          marginTop: 1,
           fontSize: 12,
+          lineHeight: 12,
           color: '#AEAEB2',
-          height: 30,
+          fontWeight: 'bold',
+          height: 20,
+          // backgroundColor: 'red'
         }}>{dataManager.getWeekTitle({ week: match.week, type: match.weekType })}</Text>}
 
     </View>
@@ -237,7 +243,7 @@ function MatchPage({ navigation, route }): JSX.Element {
           return
         }
         getLive();
-      }, 60000);
+      }, 30000);
 
       // Cleanup interval on focus loss or unmount
       return () => clearInterval(interval);
@@ -907,7 +913,7 @@ function MatchPage({ navigation, route }): JSX.Element {
               position: 'absolute',
               width: '100%',
 
-              height: 230,
+              height: 210,
               // margin: 20,
               backgroundColor: '#37003C',
               borderRadius: 20,
@@ -922,7 +928,7 @@ function MatchPage({ navigation, route }): JSX.Element {
               borderRadius: 20,
               
               backgroundColor: Colors.gray800,
-              paddingTop: 20,
+              paddingTop: 10,
               paddingBottom: 10
             }}>
               <MatchDatePanel match={match} isShowTopMatchTime={isShowTopMatchTime()} predictReqFinished={predictReqFinished} />
@@ -944,7 +950,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                   // width: '50%',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bottom: isMatchLive() ? 30 : 55
+                  bottom: isMatchLive() || isMatchEnded() ? 30 : 55
                 }}>
                   {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
                     width: 45,
@@ -1083,7 +1089,7 @@ function MatchPage({ navigation, route }): JSX.Element {
               </View>
               {(!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
                 width: '100%',
-                minHeight: 50,
+                // minHeight: 40,
                 // marginTop: 10,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1135,7 +1141,8 @@ function MatchPage({ navigation, route }): JSX.Element {
                   </View>
                 </TouchableOpacity> : null}
                 {predict ? <View style={{
-                  flexDirection: 'row'
+                  flexDirection: 'row',
+                  // backgroundColor: 'red'
                 }}>
                   {mode == EMODE_DEFAULT ? <View style={{
                     height: 30,

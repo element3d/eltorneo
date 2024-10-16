@@ -109,7 +109,7 @@ export default function MatchItem({ onPress, match, showLeague }) {
         }}></Image> : null }
 
         {hasPredict() ? <View style={{
-          height: showLeague ? 0 : 20
+          height: showLeague || match.is_special ? 0 : 20
         }}></View> : null}
 
         {showLeague ? <View style={{
@@ -137,9 +137,31 @@ export default function MatchItem({ onPress, match, showLeague }) {
           <Text style={{
             color: '#AEAEB2',
             fontSize: 10,
+            lineHeight: 10,
             fontWeight: 'bold'
           }}>{dataManager.getWeekTitle({ week: match.week, type: match.week_type })}</Text>
         </View> : null}
+
+        {match.is_special && !showLeague? <View style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingTop: 1,
+          // backgroundColor: 'red',
+        }}>
+          <Text style={{
+              fontSize: 14,
+              color: match.is_special ? 'white' : Colors.titleColor,
+              fontWeight: 'bold'
+            }}>{match.special_match_tr_title}</Text>
+            <Text style={{
+            color: '#AEAEB2',
+            fontSize: 10,
+            lineHeight: 10,
+            marginBottom: 2,
+            fontWeight: 'bold'
+          }}>{strings.at} {match.special_match_stadium}</Text>
+        </View> : null }
+
         <View style={{
           // flex: 1,
           width: "100%",
@@ -288,7 +310,7 @@ export default function MatchItem({ onPress, match, showLeague }) {
 
         {hasPredict() ? <View style={{
           width: '100%',
-          height: 30,
+          height: 24,
           alignItems: 'center',
           justifyContent: 'center',
           // backgroundColor: 'blue'
@@ -303,8 +325,8 @@ export default function MatchItem({ onPress, match, showLeague }) {
             borderRadius: 12,
             paddingLeft: 10,
             paddingRight: 10,
-            height: 22,
-            marginTop: 6
+            height: 20,
+            marginTop: 2
           }}>
             <Text style={{
               fontSize: 12,
@@ -317,9 +339,69 @@ export default function MatchItem({ onPress, match, showLeague }) {
         {showLeague || hasPredict() ? <View style={{
           height: 5
         }}></View> : null}
-        {showLeague && !hasPredict() ? <View style={{
+        {showLeague && !match.is_special && !hasPredict() ? <View style={{
           height: 6
         }}></View> : null}
+         {match.is_special && !showLeague && !hasPredict() ? <View style={{
+          height: 28,
+          // alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row',
+          paddingTop: 2,
+        }}>
+          <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 8,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'gold'
+          }}>
+            <Text style={{
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: 'black'
+            }}>+10</Text>
+          </View>
+           <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 8,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderColor: '#00C566',
+            borderWidth: 1,
+            backgroundColor: '#34C75955'
+          }}>
+            <Text style={{
+               fontSize: 10,
+               lineHeight: 14,
+               fontFamily: 'Poppins-Bold',
+               color: '#00C566'
+            }}>+5</Text>
+          </View>
+           <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 8,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: '#FF4747',
+            backgroundColor: '#FF474755'
+          }}>
+            <Text style={{
+               fontSize: 10,
+               lineHeight: 14,
+               fontFamily: 'Poppins-Bold',
+               color: '#FF4747'
+            }}>0</Text>
+          </View>
+        </View> : null}
       </View>
       {hasPredict() && match.predict.status > 0 ? <View style={{
         position: 'absolute',

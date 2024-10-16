@@ -123,7 +123,8 @@ const strings = new LocalizedStrings({
     "about_us": "About us",
     "about_us_msg": "We are a team of dedicated fans who cannot imagine their lives without football. el Torneo is a unique and completely free opportunity to test your football knowledge and win money, which will be awarded based on your points. We appreciate your understanding regarding the presence of ads in the tournament — this helps increase the prize pool. Your feedback and ratings on Google Play are extremely important to us. Feel free to share your impressions and suggestions. Hala Madrid, Visca Barça, You’ll Never Walk Alone at Stade de France!",
     "at": "At",
-    "leave_a_review": "Leave a review"
+    "leave_a_review": "Leave a review",
+    "learn_more": "Learn more"
   },
   es:{
     "new_version_msg": "Nueva versión disponible.",
@@ -244,7 +245,8 @@ const strings = new LocalizedStrings({
     "about_us": "Sobre nosotros",
     "about_us_msg": "Somos un equipo de fanáticos dedicados que no pueden imaginar sus vidas sin el fútbol. el Torneo es una oportunidad única y completamente gratuita para poner a prueba tus conocimientos sobre fútbol y ganar dinero, que se otorgará en función de tus puntos. Agradecemos tu comprensión con respecto a la presencia de anuncios en el torneo; esto ayuda a aumentar el premio. Tus comentarios y calificaciones en Google Play son extremadamente importantes para nosotros. No dudes en compartir tus impresiones y sugerencias. ¡Hala Madrid, Visca Barça, You'll Never Walk Alone en el Stade de France!",
     "at": "en",
-    "leave_a_review": "Dejar una reseña"
+    "leave_a_review": "Dejar una reseña",
+    "learn_more": "Más información"
   },
   fr:{
     "new_version_msg": "Nouvelle version disponible.",
@@ -365,7 +367,8 @@ const strings = new LocalizedStrings({
     "about_us": "À propos de nous",
     "about_us_msg": "Nous sommes une équipe de fans dévoués qui ne peuvent pas imaginer leur vie sans le football. el Torneo est une opportunité unique et complètement gratuite de tester vos connaissances sur le football et de gagner de l'argent, qui sera attribué en fonction de vos points. Nous apprécions votre compréhension concernant la présence de publicités dans le tournoi — cela aide à augmenter le prize pool. Vos retours et évaluations sur Google Play sont extrêmement importants pour nous. N'hésitez pas à partager vos impressions et suggestions. Hala Madrid, Visca Barça, You’ll Never Walk Alone au Stade de France!",
     "at": "à",
-    "leave_a_review": "Laisser un avis"
+    "leave_a_review": "Laisser un avis",
+    "learn_more": "En savoir plus"
   },
   it:{
     "new_version_msg": "Nuova versione disponibile.",
@@ -486,7 +489,8 @@ const strings = new LocalizedStrings({
     "about_us": "Chi siamo",
     "about_us_msg": "Siamo un team di fan dedicati che non possono immaginare la propria vita senza il calcio. el Torneo è un'opportunità unica e completamente gratuita per mettere alla prova le tue conoscenze sul calcio e vincere denaro, che sarà assegnato in base ai tuoi punti. Apprezziamo la tua comprensione riguardo alla presenza di pubblicità nel torneo — questo aiuta ad aumentare il montepremi. I tuoi feedback e le tue valutazioni su Google Play sono estremamente importanti per noi. Non esitare a condividere le tue impressioni e suggerimenti. Hala Madrid, Visca Barça, You’ll Never Walk Alone allo Stade de France!",
     "at": "a",
-    "leave_a_review": "Lascia una recensione"
+    "leave_a_review": "Lascia una recensione",
+    "learn_more": "Ulteriori informazioni"
   },
   ru:{
     "new_version_msg": "Доступна новая версия.",
@@ -607,7 +611,8 @@ const strings = new LocalizedStrings({
     "about_us": "О нас",
     "about_us_msg": "Мы — команда преданных фанатов, которые не представляют свою жизнь без футбола. el Torneo — это уникальная и совершенно бесплатная возможность проверить свои знания о футболе и выиграть деньги, которые будут начислены на основе ваших очков. Мы ценим ваше понимание относительно наличия рекламы в турнире — это помогает увеличить призовой фонд. Ваши отзывы и оценки в Google Play крайне важны для нас. Не стесняйтесь делиться своими впечатлениями и предложениями. Hala Madrid, Visca Barça, You’ll Never Walk Alone на Stade de France!",
     "at": "на",
-    "leave_a_review": "Оставить отзыв"
+    "leave_a_review": "Оставить отзыв",
+    "learn_more": "Узнать больше"
   },
   pt:{
     "new_version_msg": "Nova versão disponível.",
@@ -728,7 +733,8 @@ const strings = new LocalizedStrings({
     "about_us": "Sobre nós",
     "about_us_msg": "Somos uma equipe de fãs dedicados que não conseguem imaginar suas vidas sem futebol. el Torneo é uma oportunidade única e totalmente gratuita para testar seus conhecimentos sobre futebol e ganhar dinheiro, que será concedido com base em seus pontos. Agradecemos sua compreensão em relação à presença de anúncios no torneio — isso ajuda a aumentar o prêmio. Seu feedback e avaliações na Google Play são extremamente importantes para nós. Fique à vontade para compartilhar suas impressões e sugestões. Hala Madrid, Visca Barça, You’ll Never Walk Alone no Stade de France!",
     "at": "em",
-    "leave_a_review": "Deixar uma avaliação"
+    "leave_a_review": "Deixar uma avaliação",
+    "learn_more": "Saiba mais"
   },
   de:{
     "new_version_msg": "Neue Version verfügbar.",
@@ -849,7 +855,8 @@ const strings = new LocalizedStrings({
     "about_us": "Über uns",
     "about_us_msg": "Wir sind ein Team von engagierten Fans, die sich ihr Leben ohne Fußball nicht vorstellen können. el Torneo ist eine einzigartige und völlig kostenlose Möglichkeit, dein Fußballwissen zu testen und Geld zu gewinnen, das basierend auf deinen Punkten vergeben wird. Wir schätzen dein Verständnis bezüglich der Werbung im Turnier — dies hilft, den Preisfonds zu erhöhen. Dein Feedback und deine Bewertungen im Google Play sind uns äußerst wichtig. Zögere nicht, deine Eindrücke und Vorschläge zu teilen. Hala Madrid, Visca Barça, You’ll Never Walk Alone im Stade de France!",
     "at": "auf dem",
-    "leave_a_review": "Eine Bewertung abgeben"
+    "leave_a_review": "Eine Bewertung abgeben",
+    "learn_more": "Weitere Informationen"
   },
   hr:{
     "new_version_msg": "Dostupna nova verzija.",
@@ -970,7 +977,8 @@ const strings = new LocalizedStrings({
     "about_us": "O nama",
     "about_us_msg": "Mi smo tim posvećenih navijača koji ne mogu zamisliti svoj život bez nogometa. el Torneo je jedinstvena i potpuno besplatna prilika da provjerite svoje nogometno znanje i osvojite novac, koji će biti dodijeljen na temelju vaših bodova. Cijenimo vaše razumijevanje u vezi s prisutnošću oglasa na turniru — to pomaže povećanju nagradnog fonda. Vaše povratne informacije i ocjene na Google Playu su nam izuzetno važne. Slobodno podijelite svoje dojmove i prijedloge. Hala Madrid, Visca Barça, You’ll Never Walk Alone na Stade de France!",
     "at": "na",
-    "leave_a_review": "Ostaviti recenziju"
+    "leave_a_review": "Ostaviti recenziju",
+    "learn_more": "Saznaj više"
   },
   
 

@@ -390,7 +390,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       setLoading(true)
     }
 
-    const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${season}`
+    const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${season}&lang=${strings.getLanguage()}`
     fetch(url, {
       method: 'GET',
       headers: {
@@ -436,9 +436,9 @@ function CarsPage({ navigation, route }): JSX.Element {
       let offset = 0;
       let selectedIndex = weeks.indexOf(selectedWeek);
       for (let i = 0; i < selectedIndex; i++) {
-        offset += 100 + 10; // Adding margin size
+        offset += 110 + 12; // Adding margin size
       }
-      let selectedWidth = 100;
+      let selectedWidth = 110;
       let scrollPosition = offset + (selectedWidth / 2) - (windowWidth / 2);
 
       weeksScrollRef.current.scrollTo({ x: scrollPosition, animated: isFirstScroll ? false : true })
