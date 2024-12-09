@@ -25,6 +25,11 @@
                     android:resource="@color/primary_dark"/> <!-- or @android:color/{name} to use a standard color -->
 
 
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7041403371220271~8201438238"/> 
+
+
       <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id"
                android:value="@string/default_notification_channel_id"/>
       <!-- Change the resource name to your App's accent color - or any other color you want -->
