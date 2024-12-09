@@ -3,7 +3,7 @@ import strings from "./Strings";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import Colors from "./Colors";
 
-function AwardsPanel({ onReadMore, overlay = false }) {
+function AwardsPanel({ onReadMore, showLeague = true, overlay = false, league = 1 }) {
     return (
         <View style={{
             // marginTop: 10,
@@ -15,11 +15,25 @@ function AwardsPanel({ onReadMore, overlay = false }) {
             alignItems: 'center',
             justifyContent: 'center'
         }}>
-            <Text style={{
+           { showLeague ? <Text style={{
                 fontWeight: 'bold',
                 color: 'white',
-                fontSize: 18,
-                lineHeight: 18,
+                fontSize: 22,
+                lineHeight: 22,
+                marginBottom: 4,
+            }}>{strings.league} {league}</Text> : null }
+             <Text style={{
+                fontWeight: 'bold',
+                color: '#ffffffaa',
+                fontSize: 16,
+                lineHeight: 16,
+                marginBottom: 4,
+            }}>{strings.season} 24/25</Text>
+            {/* <Text style={{
+                fontWeight: 'bold',
+                color: 'white',
+                fontSize: 16,
+                lineHeight: 16,
                 marginBottom: 4,
             }}>{strings.awards}</Text>
             <Text style={{
@@ -38,18 +52,25 @@ function AwardsPanel({ onReadMore, overlay = false }) {
                 marginTop: 6,
                 backgroundColor: 'white'
             }}>
-                <Text style={{
+               { league == 1 ? <Text style={{
                     fontWeight: 'bold',
                     fontSize: 16,
                     color: "black"
                 }}>
                     1 pt = 0.5 $
-                </Text>
-            </View>
+                </Text> : <Text style={{
+                    fontWeight: 'bold',
+                    fontSize: 16,
+                    color: "black"
+                }}>
+                    1 pt = 0.3 $
+                </Text>}
+            </View> */}
 
             <Text style={{
                 fontWeight: 'bold',
                 color: 'white',
+                marginTop: 10,
                 marginBottom: 4,
                 fontSize: 18
             }}>{strings.rules}</Text>
@@ -59,14 +80,14 @@ function AwardsPanel({ onReadMore, overlay = false }) {
                 flexDirection: 'row'
             }}>
                 <View style={{
-                    width: 60,
+                    width: 50,
                     //  marginLeft: 20,
                     //  marginRight: 20,
                     alignItems: 'center'
                 }}>
                     <View style={{
-                        width: 34,
-                        height: 34,
+                        width: 28,
+                        height: 28,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 20,
@@ -87,14 +108,14 @@ function AwardsPanel({ onReadMore, overlay = false }) {
                 </View>
 
                 <View style={{
-                    width: 60,
+                    width: 50,
                     // marginLeft: 20,
                     // marginRight: 20,
                     alignItems: 'center'
                 }}>
                     <View style={{
-                        width: 34,
-                        height: 34,
+                        width: 28,
+                        height: 28,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 20,
@@ -117,14 +138,14 @@ function AwardsPanel({ onReadMore, overlay = false }) {
                 </View>
 
                 <View style={{
-                    width: 60,
+                    width: 50,
                     //  marginLeft: 20,
                     //  marginRight: 20,
                     alignItems: 'center'
                 }}>
                     <View style={{
-                        width: 34,
-                        height: 34,
+                        width: 28,
+                        height: 28,
                         alignItems: 'center',
                         justifyContent: 'center',
                         borderRadius: 20,

@@ -56,7 +56,7 @@ export default function EventCard({ onPress, onClose, match }) {
                         fontSize: 20,
                         fontFamily: 'Poppins-Bold'
                     }}>{match.translatedTitle}</Text>
-                    <View style={{
+                    {/* <View style={{
                         marginTop: -10,
                         height: 20,
                         flexDirection: 'row',
@@ -75,7 +75,7 @@ export default function EventCard({ onPress, onClose, match }) {
                             lineHeight: 20,
                             fontFamily: 'Poppins-Bold'
                         }}> {match.stadium}</Text>
-                    </View>
+                    </View> */}
 
                     <View style={{
                         width: '100%',
@@ -181,7 +181,7 @@ export default function EventCard({ onPress, onClose, match }) {
                         </View>
                     </View>
                     <View>
-                        <SpecialAwardPanel />
+                        <SpecialAwardPanel match={match.match} />
                         <TouchableOpacity onPress={onPress} activeOpacity={.8} style={{
                             height: 24,
                             marginTop: 3,

@@ -25,13 +25,18 @@ import { ESTAT_TOTAL } from './ProfilePage';
 import CupIcon from './assets/Trophy.svg';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MDIcon from 'react-native-vector-icons/MaterialIcons';
+import GoogleIcon from './assets/google.svg';
 
 import adsManager from './AdsManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AwardsPanel from './AwardsPanel';
 import { useFocusEffect } from '@react-navigation/native';
 import Colors from './Colors';
+import NativeAdComp from './NativeAdComp';
+import gsingin from './GSignin';
 
+const league1Img = require('./assets/throphy.png')
+const league2Img = require('./assets/second.png')
 
 const ETABLE_GENERAL = 0
 const ETABLE_SCORE = 1
@@ -61,7 +66,7 @@ function TableCheap({ title, selected, onPress }) {
 }
 
 function TablesPage({ navigation, route }): JSX.Element {
-  const { page } = route.params;
+  const { page, league } = route.params;
   const [table, setTable] = useState([])
   const [selectedTable, setSelectedTable] = useState(ETABLE_GENERAL)
   const [selectedLeague, setSelectedLeague] = useState(null)
@@ -69,6 +74,8 @@ function TablesPage({ navigation, route }): JSX.Element {
   const [adLoaded, setAdLoaded] = useState(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [me, setMe] = useState(authManager.getMeSync())
+  const [myLeague, setMyLeague] = useState(me?.league || 1)
 
   const backgroundStyle = {
     backgroundColor: Colors.gray800,
@@ -80,6 +87,10 @@ function TablesPage({ navigation, route }): JSX.Element {
 
   useFocusEffect(
     React.useCallback(() => {
+      if (authManager.getMeSync()) {
+        setMyLeague(authManager.getMeSync().league)
+        setMe(authManager.getMeSync())
+      }
       if (!adLoaded && !adsManager.isLoaded()) return setBlockForAd(false)
 
       setBlockForAd(dataManager.getSettings()?.blockForAd)
@@ -116,6 +127,10 @@ function TablesPage({ navigation, route }): JSX.Element {
     setTableLoading(true)
   }, [selectedTable, selectedLeague])
 
+  useEffect(() => {
+    getTableByPoints()
+  }, [league])
+
   function getTableByPoints() {
     const requestOptions = {
       method: 'GET',
@@ -124,7 +139,7 @@ function TablesPage({ navigation, route }): JSX.Element {
       },
     };
 
-    fetch(`${SERVER_BASE_URL}/api/v1/table/points?page=${page}`, requestOptions)
+    fetch(`${SERVER_BASE_URL}/api/v1/table/points?page=${page}&league=${league}`, requestOptions)
       .then(response => {
         if (response.status == 200)
           return response.json()
@@ -212,7 +227,7 @@ function TablesPage({ navigation, route }): JSX.Element {
   function getIcon(index) {
     let i = index
     if (selectedTable == ETABLE_GENERAL) i = index + 20 * (page - 1)
-    if (i == 0 && selectedTable == ETABLE_GENERAL) {
+    if (i == 0) {
       return <View style={{
         width: 50,
         alignItems: 'center',
@@ -259,13 +274,96 @@ function TablesPage({ navigation, route }): JSX.Element {
     }}>{i + 1}</Text>
   }
 
+  function onSignIn() {
+    gsingin.signin(null, () => {
+      navigation.navigate('Calendar')
+    })
+  }
+
+  function onPredict() {
+    navigation.navigate('Calendar')
+  }
+
   function renderTable() {
+    if (!table?.length && page == 1) {
+      return (
+        <View style={{
+          width: '100%',
+          alignItems: 'center',
+          marginTop: 20,
+          justifyContent: 'center'
+        }}>
+          <Text style={{
+            color: '#8E8E93',
+            fontWeight: 'bold'
+          }}>{me ? strings.no_players : strings.be_first} {league}</Text>
+
+          {!me ? <TouchableOpacity activeOpacity={.8} onPress={onSignIn} style={{
+            height: 30,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 15,
+            marginTop: 10,
+            flexDirection: 'row',
+            alignSelf: 'center',
+            paddingHorizontal: 20,
+            paddingRight: 5,
+            marginBottom: 30,
+            backgroundColor: '#FF2882'
+          }}>
+            <Text style={{
+              fontSize: 16,
+              lineHeight: 22,
+              fontWeight: 'bold',
+              // fontFamily: 'Poppins-Bold',
+              color: 'white'
+            }}>{strings.sign_in_to_predict}</Text>
+            <View style={{
+              width: 20,
+              height: 20,
+              marginLeft: 5,
+              backgroundColor: 'white',
+              borderRadius: 10,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <GoogleIcon style={{
+                width: 18,
+                height: 18
+              }} />
+            </View>
+          </TouchableOpacity> : null}
+          {me?.league == league ? <TouchableOpacity activeOpacity={.8} onPress={onPredict} style={{
+            height: 30,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 15,
+            flexDirection: 'row',
+            alignSelf: 'center',
+            paddingHorizontal: 20,
+            // paddingRight: 5,
+            marginTop: 10,
+            backgroundColor: '#FF2882'
+          }}>
+            <Text style={{
+              fontSize: 16,
+              lineHeight: 22,
+              fontWeight: 'bold',
+              // fontFamily: 'Poppins-Bold',
+              color: 'white'
+            }}>{strings.predict}</Text>
+
+          </TouchableOpacity> : null}
+        </View>
+      )
+    }
+
     return table?.map((u, i) => {
       return (
         <TouchableOpacity activeOpacity={.8} onPress={() => { onNavUser(u) }} key={`player_${i}`} style={{
           width: '100%',
           height: 52,
-          
+
           backgroundColor: authManager.getMeSync() && authManager.getMeSync().id == u.id ? Colors.gray800 : 'transparent',
           flexDirection: 'row',
           // backgroundColor: 'blue',
@@ -324,11 +422,19 @@ function TablesPage({ navigation, route }): JSX.Element {
   }
 
   function onPrev() {
-    navigation.navigate({ name: 'Tables', params: { page: page - 1 }, key: page - 1 })
+    navigation.navigate({ name: 'Tables', params: { page: page - 1, league: league }, key: `${page - 1}_${league}` })
   }
 
   function onNext() {
-    navigation.navigate({ name: 'Tables', params: { page: page + 1 }, key: page + 1 })
+    navigation.navigate({ name: 'Tables', params: { page: page + 1, league: league }, key: `${page + 1}_${league}` })
+  }
+
+  function onLeague1() {
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 1 }, key: `${1}_${league}` })
+  }
+
+  function onLeague2() {
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 2 }, key: `${1}_${league}` })
   }
 
   const onRefresh = () => {
@@ -345,12 +451,31 @@ function TablesPage({ navigation, route }): JSX.Element {
   };
 
   function onNavAwardsInfo() {
-    navigation.navigate('AwardsInfo')
+    navigation.navigate({
+      name: 'AwardsInfo',
+      params: {
+        league: league
+      },
+      key: `awards_${league}`
+    })
+
+    // navigation.navigate('AwardsInfo')
   }
 
+  function showMoveToLeague() {
+    if (!me) return false
+    if (me.league == 2) return true
+    if (me.league == 1 && me.points <= 20) return true
+
+    return false
+  }
+
+  function onMoveToLeague() {
+    navigation.navigate("MoveToLeague")
+  }
 
   const showPrev = page != 1
-  const showNext = table.length >= 20
+  const showNext = table?.length >= 20
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
@@ -440,23 +565,143 @@ function TablesPage({ navigation, route }): JSX.Element {
                   width: '100%',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  height: 250,
+                  height: 180,
                   overflow: 'hidden'
                 }}>
-                <ImageBackground width={200} height={200} source={require('./assets/throphy.png')} style={{
+                  <ImageBackground width={200} height={200} source={league == 1 ? league1Img : league2Img} style={{
 
                     width: '100%',
-                    height: 250,
+                    height: 180,
                     borderRadius: 20,
                     // marginBottom: 20
                   }}>
-                    <AwardsPanel onReadMore={onNavAwardsInfo}/>
+                    <AwardsPanel onReadMore={onNavAwardsInfo} league={league} />
                   </ImageBackground>
                 </TouchableOpacity>
               </View>
               : null}
 
-            {!blockForAd ? <View style={{
+            {dataManager.getSettings().enableAds ? <View style={{
+              width: '100%',
+              paddingHorizontal: 20
+            }}>
+              <NativeAdComp forceNativeAd={true} />
+            </View> : null}
+
+            <View style={{
+              marginBottom: 15,
+              flexDirection: 'row',
+              justifyContent: 'flex-start'
+            }}>
+              <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague1() }} style={{
+                marginLeft: 20,
+                marginRight: 10,
+                paddingHorizontal: 20,
+                height: 40,
+                backgroundColor: league == 1 ? Colors.primary : Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                // flex: 1,
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: league == 1 ? 'white' : Colors.titleColor
+                }}>{strings.league} 1</Text>
+                {me?.league == 1 ? <Text style={{
+                  fontSize: 8,
+                  fontWeight: 'bold',
+                  lineHeight: 10,
+                  color: league == 1 ? 'white' : Colors.titleColor
+                }}>{strings.your_league}</Text> : null}
+              </TouchableOpacity>
+
+              <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague2() }} style={{
+                // marginLeft: 20,
+                marginRight: 10,
+                paddingHorizontal: 20,
+                height: 40,
+                backgroundColor: league == 2 ? Colors.primary : Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                // flex: 1,
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: league == 2 ? 'white' : Colors.titleColor
+                }}>{strings.league} 2</Text>
+                {me?.league == 2 ? <Text style={{
+                  fontSize: 8,
+                  fontWeight: 'bold',
+                  lineHeight: 10,
+                  color: league == 2 ? 'white' : Colors.titleColor
+                }}>{strings.your_league}</Text> : null}
+              </TouchableOpacity>
+
+              {!showMoveToLeague() ? <TouchableOpacity onPress={onMoveToLeague} style={{
+                width: 40,
+                height: 40,
+                backgroundColor: Colors.primary,
+                // borderWidth: 1,
+                // borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                // flex: 1,
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: 'white'
+                }}><Icon name='info' size={18}></Icon></Text>
+              </TouchableOpacity> : null}
+            </View>
+
+            {showMoveToLeague() ? <View style={{
+              flexDirection: 'row',
+              paddingHorizontal: 20,
+              marginBottom: 20,
+              marginTop: -5,
+            }}>
+              <TouchableOpacity activeOpacity={.8} onPress={onMoveToLeague} style={{
+                height: 30,
+                borderRadius: 15,
+                paddingHorizontal: 20,
+                paddingRight: 5,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: Colors.primary
+              }}>
+                <Text style={{
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}>{strings.move_to_league} {me.league == 1 ? "2" : "1"}</Text>
+                <MDIcon name={'arrow-right'} size={30} color={'white'}></MDIcon>
+              </TouchableOpacity>
+
+              <TouchableOpacity activeOpacity={.6} onPress={onMoveToLeague} style={{
+                width: 30,
+                height: 30,
+                backgroundColor: Colors.primary,
+                borderRadius: 20,
+                marginLeft: 10,
+                alignItems: 'center',
+                // flex: 1,
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: 'white'
+                }}><Icon name='info' size={16}></Icon></Text>
+              </TouchableOpacity>
+            </View> : null}
+
+            {!blockForAd || !authManager.getMeSync() ? <View style={{
               width: '100%',
               // backgroundColor: 'red',
               padding: 15,
@@ -511,6 +756,8 @@ function TablesPage({ navigation, route }): JSX.Element {
                   width: '100%',
                 }}>
                   {renderTable()}
+
+
                   {selectedTable == ETABLE_GENERAL ? <View style={{
                     height: 50,
 
@@ -547,6 +794,13 @@ function TablesPage({ navigation, route }): JSX.Element {
                       }}>{strings.next} ></Text>
                     </TouchableOpacity> : null}
                   </View> : null}
+                  {/* { dataManager.getSettings().enableAds ? <View style={{
+                    width: '100%',
+                    marginTop: 10,
+                    // paddingHorizontal: 20,
+                  }}>
+                    <NativeAdComp />
+                  </View> : null } */}
 
 
                   {/* <View style={{

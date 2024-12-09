@@ -8,153 +8,171 @@ import { ESTAT_TOTAL } from "./ProfilePage";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useEffect, useState } from "react";
 import Colors from "./Colors";
+import NativeAdComp from "./NativeAdComp";
 
-export default function MatchTop20PredictsPanel({top20Predicts, onUnlock, adLoaded, blockForAd, match, isMatchEnded, navigation}) {  
-    function getBorderColor(p) {
-        if (p.status == 0) return 'black'//'#8E8E93'
-        if (p.status == 1) return '#00C566'
-        if (p.status == 2) return '#ff7539'
-        if (p.status == 3) return '#FF4747'
-    } 
-  
-    function getBgColor(p) {
-        if (p.status == 0) return '#F7F7F7'
-        if (p.status == 1) return '#00C56619'
-        if (p.status == 2) return '#FACC1519'
-        if (p.status == 3) return '#FF474719'
-    } 
+export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoaded, blockForAd, match, isMatchEnded, navigation }) {
+  function getBorderColor(p) {
+    if (p.status == 0) return 'black'//'#8E8E93'
+    if (p.status == 1) return '#00C566'
+    if (p.status == 2) return '#ff7539'
+    if (p.status == 3) return '#FF4747'
+  }
 
-    function onNavUser(u) {
-        authManager.setActiveUser(u)
-  
-        navigation.navigate({ 
-          name: 'Profile', 
-          params: {
-            id: u.id, 
-            globalPage: 1,
-            selectedStat: ESTAT_TOTAL
-          }, 
-          key: `user_${u.id}`
-        })  
-    }
+  function getBgColor(p) {
+    if (p.status == 0) return '#F7F7F7'
+    if (p.status == 1) return '#00C56619'
+    if (p.status == 2) return '#FACC1519'
+    if (p.status == 3) return '#FF474719'
+  }
 
-    function renderLock(predict) {
-      if (blockForAd && (predict.user.position == 1 || predict.user.position == 2 || predict.user.position == 3)) return true
-      return false
-    }
+  function onNavUser(u) {
+    authManager.setActiveUser(u)
 
-    return (
-        <View>
-            <Text style={{
-              color: '#8E8E93',
-              fontSize: 14,
-              fontWeight: 'bold',
-              marginBottom: 4,
-            }}>{strings.top_20_predicts}</Text>
-            {top20Predicts?.predicts.map((predict, i)=> {
-              return (<TouchableOpacity key={`match_predict_${i}`} onPress={()=>{onNavUser(predict.user)}} activeOpacity={.8} style={{
-                backgroundColor: Colors.gray800,
-                  borderRadius: 12,
-                  marginBottom: 10,
+    navigation.navigate({
+      name: 'Profile',
+      params: {
+        id: u.id,
+        globalPage: 1,
+        selectedStat: ESTAT_TOTAL
+      },
+      key: `user_${u.id}`
+    })
+  }
+
+  function renderLock(predict) {
+    if (blockForAd && (predict.user.position == 1 || predict.user.position == 2 || predict.user.position == 3)) return true
+    return false
+  }
+
+  return (
+    <View>
+      {dataManager.getSettings().enableAds ? <View style={{
+        marginTop: 10
+      }}>
+        <NativeAdComp forceNativeAd={true}/>
+      </View> : null}
+      <Text style={{
+        color: '#8E8E93',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 4,
+      }}>{strings.top_20_predicts}</Text>
+      {top20Predicts?.predicts.map((predict, i) => {
+        return (<TouchableOpacity key={`match_predict_${i}`} onPress={() => { onNavUser(predict.user) }} activeOpacity={.8} style={{
+          backgroundColor: Colors.gray800,
+          borderRadius: 12,
+          marginBottom: 10,
+        }}>
+          <View style={{
+            width: '100%',
+            height: 64,
+            paddingTop: 0,
+            paddingLeft: 10,
+            paddingRight: 5,
+            flexDirection: 'row',
+            alignItems: 'center'
+          }}>
+            <View style={{
+              width: 50,
+              height: 50,
+              overflow: 'hidden',
+              borderRadius: 30,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 2,
+              borderColor: Colors.borderColor,
+              backgroundColor: Colors.bgColor
+            }}>
+              {predict.user.avatar.length ? <Image src={`${SERVER_BASE_URL}/${predict.user.avatar}`} style={{
+                width: 50,
+                height: 50,
+              }} /> : <ProfileIcon width={40} height={40} style={{ marginTop: 10 }} />}
+            </View>
+            <View style={{
+              flex: 1,
+              height: '100%',
+              // paddingTop: 10,
+              justifyContent: 'center',
+              // alignItems: 'center',
+              flexDirection: 'column',
+              marginLeft: 10,
+              // backgroundColor: 'red'
+            }}>
+              <Text lineBreakMode='clip' numberOfLines={1} style={{
+                color: Colors.titleColor,
+                fontSize: 14,
+
+                marginBottom: 0,
+                fontFamily: 'NotoSansArmenian-ExtraBold'
+              }}>{predict.user.name}</Text>
+              {predict.user.position > 0 && predict.user.points > 0 ? <Text style={{
+                fontSize: 12,
+                color: '#8E8E93',
+                // marginBottom: 10,
+                fontFamily: 'NotoSansArmenian-Bold'
+              }}>{predict.user.league == 2 ? strings.place_in_league2 : strings.place_in_el_torneo}: {predict.user.position}, {strings.points}: {predict.user.points}</Text>
+                : <Text style={{
+                  fontSize: 12,
+                  color: '#8E8E93',
+                  // marginBottom: 10,
+                  fontFamily: 'NotoSansArmenian-Bold'
+                }}>{strings.points}: {predict.user.points}</Text>}
+            </View>
+            <View style={{
+              height: '100%',
+              // paddingTop: 8,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'flex-end'
+            }}>
+              {!renderLock(predict) ? <View style={{
+                // borderWidth: 1,
+                backgroundColor: getBgColor(predict),
+                borderColor: '#00000033',
+                padding: 1,
+                paddingLeft: 8,
+                paddingRight: 8,
+                borderRadius: 8,
+                marginBottom: 4
               }}>
-                <View style={{
-                  width: '100%',
-                  height: 64,
-                  paddingTop: 0,
-                  paddingLeft: 10,
-                  paddingRight: 5,
-                  flexDirection: 'row',
-                  alignItems: 'center'
-                }}>
-                  <View style={{
-                    width: 50,
-                    height: 50,
-                    overflow: 'hidden',
-                    borderRadius: 30,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderWidth: 2,
-                    borderColor: Colors.borderColor,
-                    backgroundColor: Colors.bgColor
-                  }}>
-                    { predict.user.avatar.length ? <Image src={`${SERVER_BASE_URL}/${predict.user.avatar}`} style={{
-                     width: 50,
-                     height: 50,
-                    }}/> : <ProfileIcon width={40} height={40} style={{marginTop: 10}}/> }
-                  </View>
-                  <View style={{
-                    flex: 1,
-                    height: '100%',
-                    // paddingTop: 10,
-                    justifyContent: 'center',
-                    // alignItems: 'center',
-                    flexDirection: 'column',
-                    marginLeft: 10,
-                    // backgroundColor: 'red'
-                  }}>
-                    <Text lineBreakMode='clip' numberOfLines={1} style={{
-                      color: Colors.titleColor,
-                      fontSize: 14,
-                      
-                      marginBottom: 0,
-                      fontFamily: 'NotoSansArmenian-ExtraBold'
-                    }}>{predict.user.name}</Text>
-                    {predict.user.position > 0 && predict.user.position <= 20 && predict.user.points > 0 ? <Text style={{
-                      fontSize: 12,
-                      color: '#8E8E93',
-                      // marginBottom: 10,
-                      fontFamily: 'NotoSansArmenian-Bold'
-                    }}>{strings.place_in_el_torneo}: { predict.user.position}, {strings.points}: {predict.user.points}</Text>
-                    : <Text style={{
-                      fontSize: 12,
-                      color: '#8E8E93',
-                      // marginBottom: 10,
-                      fontFamily: 'NotoSansArmenian-Bold'
-                    }}>{strings.points}: {predict.user.points}</Text> }
-                  </View>
-                  <View style={{
-                      height: '100%',
-                      // paddingTop: 8,
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'flex-end'
-                    }}>
-                   { !renderLock(predict) ? <View style={{
-                        // borderWidth: 1,
-                        backgroundColor: getBgColor(predict),
-                        borderColor: '#00000033',
-                        padding: 1,
-                        paddingLeft: 8,
-                        paddingRight: 8,
-                        borderRadius: 8,
-                        marginBottom: 4
-                    }}>
-                        <Text style={{
-                          color: getBorderColor(predict),
-                          fontWeight: 'bold',
-                          marginBottom: 1,
-                          // fontFamily: 'NotoSansArmenian-Bold'
-                        }}>{predict.team1_score} : {predict.team2_score}</Text>
-                    </View> : <Icon color={Colors.titleColor} size={20} name='lock'/> }
-                    <View style={{
-                        // borderWidth: 1,
-                        backgroundColor: '#00000005',
-                        borderColor: '#00000033',
-                        height: 30,
-                        // padding: 2,
-                        // paddingLeft: 8,
-                        // paddingRight: 8,
-                        // borderRadius: 8
-                    }}>
-                       {/* { isMatchEnded  ?  <Text style={{
+                <Text style={{
+                  color: getBorderColor(predict),
+                  fontWeight: 'bold',
+                  marginBottom: 1,
+                  // fontFamily: 'NotoSansArmenian-Bold'
+                }}>{predict.team1_score} : {predict.team2_score}</Text>
+              </View> : <Icon color={Colors.titleColor} size={20} name='lock' />}
+              <View style={{
+                // borderWidth: 1,
+                backgroundColor: '#00000005',
+                borderColor: '#00000033',
+                height: 30,
+                // padding: 2,
+                // paddingLeft: 8,
+                // paddingRight: 8,
+                // borderRadius: 8
+              }}>
+                {/* { isMatchEnded  ?  <Text style={{
                           fontFamily: 'NotoSansArmenian-Bold'
                         }}>Actual {match?.team1_score}:{match?.team2_score}</Text> : null } */}
-                    </View> 
-                </View>
-                </View>
-              
-              </TouchableOpacity>)
-            })}
-        </View>
-    )
+              </View>
+            </View>
+          </View>
+
+        </TouchableOpacity>)
+      })}
+
+      {dataManager.getSettings().enableAds && dataManager.getSettings().bannerType == 2 ? <View style={{
+        marginTop: 10
+      }}>
+        <NativeAdComp />
+      </View> : null}
+
+      {/* {dataManager.getSettings().enableAds ? <View style={{
+              marginTop: 10
+            }}>
+              <NativeAdComp />
+            </View> : null } */}
+    </View>
+  )
 }

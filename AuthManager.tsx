@@ -101,6 +101,14 @@ class AuthManager {
                 }
                 return response.json()
             })
+            .then((me) => {
+                if (me.points > 5) {
+                    const oneYearAgo = new Date();
+                    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1); 
+                    AsyncStorage.setItem('installDate', oneYearAgo.getTime().toString());            
+                }
+                return me
+            })
         }
   
         return null

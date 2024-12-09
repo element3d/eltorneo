@@ -29,6 +29,8 @@ import dataManager from './DataManager';
 import Colors from './Colors';
 
 function AwardsInfoPage({ navigation, route }): JSX.Element {
+    // const { league } = route.params;
+
     const today = moment();
     const [date, setDate] = useState(today.format('YYYY-MM-DD'))
     const [matches, setMatches] = useState([])
@@ -89,13 +91,13 @@ function AwardsInfoPage({ navigation, route }): JSX.Element {
                                 fontSize: 20,
                                 fontWeight: 'bold',
                                 color: Colors.titleColor,
-                            }}>{strings.awards}</Text>
+                            }}>{strings.learn_more}</Text>
                             <Text style={{
                                 marginTop: 10,
                                 fontSize: 14,
                                 color: '#8E8E93',
 
-                            }}>{strings.awards_info}</Text>
+                            }}>{strings.awards_info_short}</Text>
 
                             <Text style={{
                                 marginTop: 20,
@@ -107,10 +109,33 @@ function AwardsInfoPage({ navigation, route }): JSX.Element {
                                 marginTop: 10,
                                 fontSize: 14,
                                 color: '#8E8E93',
-
                             }}>{strings.rules_info}</Text>
 
                             <Text style={{
+                                marginTop: 5,
+                                fontSize: 14,
+                                fontWeight: 'bold',
+                                color: Colors.titleColor,
+                            }}>{strings.supermatch}</Text>
+                            <Text style={{
+                                // marginTop: 2,
+                                fontSize: 14,
+                                color: '#8E8E93',
+                            }}>{strings.supermatch_msg}</Text>
+
+                            <Text style={{
+                                marginTop: 5,
+                                fontSize: 14,
+                                fontWeight: 'bold',
+                                color: Colors.titleColor,
+                            }}>{strings.quest}</Text>
+                            <Text style={{
+                                // marginTop: 5,
+                                fontSize: 14,
+                                color: '#8E8E93',
+                            }}>{strings.quest_match_msg}</Text>   
+
+                            {/* <Text style={{
                                 marginTop: 20,
                                 fontSize: 20,
                                 fontWeight: 'bold',
@@ -121,7 +146,7 @@ function AwardsInfoPage({ navigation, route }): JSX.Element {
                                 fontSize: 14,
                                 color: '#8E8E93',
 
-                            }}>{strings.about_us_msg}</Text>
+                            }}>{strings.about_us_msg}</Text> */}
 
                         </View>
 

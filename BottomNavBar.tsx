@@ -45,7 +45,7 @@ export const EPAGE_PROFILE = 3
 
 function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
   const [currentTime, setCurrentTime] = useState(new Date());
-
+  const me = authManager.getMeSync()
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -71,7 +71,7 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
   }
 
   function navTables() {
-    navigation.navigate({ name: 'Tables', params: { page: 1 }, key: 1 })
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: me && me.league ? me.league : 1 }, key: 1 })
   }
 
 

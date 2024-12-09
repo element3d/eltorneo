@@ -27,6 +27,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import Colors from './Colors';
 import AwardsInfoPage from './AwardsInfoPage';
+import MoveToLeaguePage from './MoveToLeaguePage';
+import RegisterPage from './RegisterPage';
 
 // import { RewardedAd, TestIds, AdEventType, RewardedAdEventType } from 'react-native-google-mobile-ads';
 
@@ -103,11 +105,13 @@ function App(): JSX.Element {
         <Stack.Screen name="Tables" component={TablesPage} />
         <Stack.Screen name="Match" component={MatchPage} />
         <Stack.Screen name="Login" component={LoginPage} />
+        <Stack.Screen name="Register" component={RegisterPage} />
         <Stack.Screen name="Profile" component={ProfilePage} />
         <Stack.Screen name="ProfileEdit" component={ProfileEditPage} />
         <Stack.Screen name="MatchesLive" component={MatchesLivePage} />
         <Stack.Screen name="Langs" component={LangPage} />
         <Stack.Screen name="AwardsInfo" component={AwardsInfoPage} />
+        <Stack.Screen name="MoveToLeague" component={MoveToLeaguePage} />
 
       </Stack.Navigator>
 

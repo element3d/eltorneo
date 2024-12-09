@@ -14,6 +14,8 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import FAIcon from 'react-native-vector-icons/FontAwesome5';
+
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
 import BottomNavBar from './BottomNavBar';
 import SERVER_BASE_URL from './AppConfig';
@@ -37,6 +39,8 @@ import MatchPredictsSummaryPanel2 from './MatchPredictsSummaryPanel2';
 import GoogleIcon from './assets/google.svg';
 import gsingin from './GSignin';
 import SpecialAwardPanel from './SpecialAwardPanel';
+import NativeAdComp from './NativeAdComp';
+import MatchPreviewDialog from './MatchPreviewDialog';
 
 const EMODE_DEFAULT = 0
 const EMODE_EDIT = 1
@@ -64,7 +68,7 @@ function MatchAppBar({ match, navigation }) {
         <Icon name={'arrow-back'} color='white' size={30}></Icon>
       </TouchableOpacity>
       <Text style={{
-        fontSize: 16,
+        fontSize: 18,
         lineHeight: 22,
         fontFamily: 'Poppins-Bold',
         color: 'white'
@@ -87,13 +91,13 @@ function MatchDatePanel({ match, isShowTopMatchTime }) {
     const matchDate = moment(match.date); // Ensure it's in milliseconds
 
     if (matchDate.isSame(today, 'day')) {
-        return strings.today;
+      return strings.today;
     } else if (matchDate.isSame(tomorrow, 'day')) {
-        return strings.tomorrow;
+      return strings.tomorrow;
     } else {
-        return `${matchDate.format('DD')} ${strings[matchDate.format('MMM').toLowerCase()]} ${matchDate.format('YYYY').toLowerCase()}`;
+      return `${matchDate.format('DD')} ${strings[matchDate.format('MMM').toLowerCase()]} ${matchDate.format('YYYY').toLowerCase()}`;
     }
-}
+  }
 
   return (
     <View style={{
@@ -199,7 +203,8 @@ function MatchPage({ navigation, route }): JSX.Element {
   const [table, setTable] = useState(null)
   const [mode, setMode] = useState(EMODE_DEFAULT)
   const [header, setHeader] = useState(null)
-
+  const [showMatchPreview, setShowMatchPreview] = useState(false)
+  const [previewMatch, setPreviewMatch] = useState(null)
   const scrollViewRef = useRef(null);
 
   const EVIEW_PREDICTIONS = 1
@@ -347,8 +352,8 @@ function MatchPage({ navigation, route }): JSX.Element {
               adsManager.setIsLoaded(true)
             })
 
-            adsManager.addErrorListener(()=>{
-             
+            adsManager.addErrorListener(() => {
+
             })
           }
         }
@@ -387,7 +392,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   }, []);
 
   useFocusEffect(
-    useCallback(()=>{
+    useCallback(() => {
       getPredict()
     }, [])
   )
@@ -778,14 +783,14 @@ function MatchPage({ navigation, route }): JSX.Element {
     if (p.status == 0) return "black"//'#8E8E93'
     if (p.status == 1) return '#00C566'
     if (p.status == 2) return '#ff7539'
-    if (p.status == 3) return '#FF4747'
+    if (p.status == 3 || p.status == 4) return '#FF4747'
   }
 
   function getBgColor(p) {
     if (p.status == 0) return '#F7F7F7'
     if (p.status == 1) return '#00C56619'
     if (p.status == 2) return '#FACC1519'
-    if (p.status == 3) return '#FF474719'
+    if (p.status == 3 || p.status == 4) return '#FF474719'
   }
 
   function isShowScoreInput() {
@@ -888,6 +893,15 @@ function MatchPage({ navigation, route }): JSX.Element {
   //   return <MatchPredictsSummaryPanel  match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}/>
   // }
 
+  function onShowMatchPress(match) {
+    setShowMatchPreview(true)
+    setPreviewMatch(match)
+  }
+
+  function onCloseMatchPreview() {
+    setShowMatchPreview(false)
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
@@ -926,11 +940,27 @@ function MatchPage({ navigation, route }): JSX.Element {
             <View style={{
               width: '88%',
               borderRadius: 20,
-              
+
               backgroundColor: Colors.gray800,
               paddingTop: 10,
               paddingBottom: 10
             }}>
+
+              {match.preview ? <TouchableOpacity onPress={()=>onShowMatchPress(match)} style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: '#FF2882',// 'white',
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+              }}>
+                <FAIcon name='video' color={'white'} size={16} />
+              </TouchableOpacity> : null}
+
               <MatchDatePanel match={match} isShowTopMatchTime={isShowTopMatchTime()} predictReqFinished={predictReqFinished} />
               <View style={{
                 width: '100%',
@@ -1096,7 +1126,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                 // backgroundColor: 'red'
               }}>
 
-                { match.is_special ? <SpecialAwardPanel /> : null }
+                {match.is_special ? <SpecialAwardPanel match={match} /> : null}
 
                 {mode == EMODE_DEFAULT && isShowScoreInput() ? <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
                   opacity: !isPredictDisabled() ? 1 : .8
@@ -1112,9 +1142,9 @@ function MatchPage({ navigation, route }): JSX.Element {
                     backgroundColor: '#fb2781',
                     flexDirection: 'row'
                   }}>
-                    {!authManager.getMeSync() ? 
+                    {!authManager.getMeSync() ?
                       <View style={{
-                        width: 20, 
+                        width: 20,
                         height: 20,
                         marginRight: 6,
                         backgroundColor: 'white',
@@ -1122,16 +1152,16 @@ function MatchPage({ navigation, route }): JSX.Element {
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
-                        <GoogleIcon width={16} height={18} /> 
+                        <GoogleIcon width={16} height={18} />
                       </View>
-                      : null }
+                      : null}
                     <Text style={{
                       color: 'white',
                       marginTop: 2,
                       // fontWeight: 'bold',
                       fontFamily: 'Poppins-Bold'
                     }}>{authManager.getMeSync() ? strings.predict : strings.sign_in_to_predict}</Text>
-                    
+
                     {showAd && loaded && authManager.getMeSync() ? <Icon name='play-circle-filled' size={20} color='white' style={{
                       marginLeft: 4
                     }} /> : null}
@@ -1152,6 +1182,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 15,
+                    overflow: 'hidden',
                     backgroundColor: getBgColor(predict),
                     borderColor: getBorderColor(predict)
                   }}>
@@ -1159,7 +1190,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                       marginBottom: 2,
                       color: getBorderColor(predict),
                       fontFamily: 'NotoSansArmenian-Bold'
-                    }}>{dataManager.getPredictTitle(predict)} {predict.team1_score} : {predict.team2_score}</Text>
+                    }}>{dataManager.getPredictTitle(predict)}{dataManager.getPredictValue(predict)}</Text>
                   </View> : <TouchableOpacity onPress={onSavePredict} disabled={isSaveDisabled()} activeOpacity={.8} style={{
                     opacity: !isSaveDisabled() ? 1 : .8
                   }}>
@@ -1200,6 +1231,32 @@ function MatchPage({ navigation, route }): JSX.Element {
                 </View> : null}
               </View> : null}
             </View>
+
+            {match.is_special && match.special_match_title == 'quest' ? <View style={{
+              width: '100%',
+              paddingHorizontal: 20,
+              marginTop: 20,
+            }}>
+              <View style={{
+                width: '100%',
+                borderRadius: 12,
+                padding: 10,
+                // borderWidth: 1,
+                // borderColor: '#FF4747',
+                // marginBottom: 5,
+                paddingHorizontal: 10,
+                backgroundColor: '#FF474719'
+              }}>
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: '#FF4747'
+                }}>{strings.attention_quest}</Text>
+                <Text style={{
+                  color: Colors.titleColor
+                }}>{strings.quest_match_msg}</Text>
+              </View>
+            </View> : null}
 
             {predictsReqFinished ? <ScrollView
               ref={scrollViewRef}
@@ -1245,7 +1302,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                 }}>{strings.no_pred_for_match}</Text> : null}
                 {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
               </View> : null}
-              {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} /> : null}
+              {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} onShowMatchPreview={onShowMatchPress} /> : null}
               {view == EVIEW_STATISTICS && statistics ? <MatchStatisticsPanel statistics={statistics} /> : view == EVIEW_STATISTICS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
               {view == EVIEW_EVENTS && events ? <MatchEventsPanel events={events} /> : view == EVIEW_EVENTS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
               {view == EVIEW_LINEUPS && lineups ? <MatchLineupsPanel match={match} lineups={lineups} /> : view == EVIEW_LINEUPS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
@@ -1257,6 +1314,7 @@ function MatchPage({ navigation, route }): JSX.Element {
           </ScrollView>
           <BottomNavBar navigation={navigation} />
         </View>
+        { showMatchPreview ? <MatchPreviewDialog match={previewMatch} onClose={onCloseMatchPreview} /> : null }
       </SafeAreaView>
     </GestureHandlerRootView>
   );

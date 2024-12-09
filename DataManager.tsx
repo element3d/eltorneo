@@ -26,7 +26,10 @@ class DataManager {
             .then(data => {
                 this.settings = data[0]
                 this.settings.blockForAd = false
-                
+                if (this.settings.newUser) {
+                    this.settings.enableAds = false
+                    this.settings.enableNativeAds = false
+                }
                 return this.settings
 
                 // AsyncStorage.getItem("lastAdTime")
@@ -47,7 +50,7 @@ class DataManager {
                 //         } else {
                 //             this.settings.blockForAd = false
                 //         }
-                        
+
                 //     } else {
                 //         lastAdTime = new Date(Date.now() - 3600000); 
                 //         AsyncStorage.setItem("lastAdTime", lastAdTime.getTime().toString())
@@ -57,8 +60,8 @@ class DataManager {
 
                 // adsManager.init()
             })
-            .catch(error => { 
-                
+            .catch(error => {
+
                 console.error('Error fetching settings:', error)
                 throw "Error"
             });
@@ -69,7 +72,7 @@ class DataManager {
     }
 
     setMatch(m) {
-        if (m.predict &&  (m.predict.team1_score < 0 || m.predict.team2_score < 0)) m.predict = null
+        if (m.predict && (m.predict.team1_score < 0 || m.predict.team2_score < 0)) m.predict = null
         this.match = m
     }
 
@@ -81,44 +84,62 @@ class DataManager {
         if (!this.settings.enableAds) return
 
         return AsyncStorage.getItem("lastAdTime")
-        .then((time)=>{
-            let lastAdTime;
-            if (time) {
-                lastAdTime = new Date(parseInt(time)); 
-                const adDiffHours = this.settings.adDiffHours
-                const currentTime = new Date();
-                const diffInMillis = currentTime - lastAdTime;
-                const diffInHours = diffInMillis / 3600000; 
-                if (diffInHours > adDiffHours) {
-                    this.settings.blockForAd = true
-                    // AsyncStorage.setItem("lastAdTime", currentTime.getTime().toString())
+            .then((time) => {
+                if (!this.settings.enableAds || this.settings.newUser) return this.settings
+
+                let lastAdTime;
+                if (time) {
+                    lastAdTime = new Date(parseInt(time));
+                    const adDiffHours = this.settings.adDiffHours
+                    const currentTime = new Date();
+                    const diffInMillis = currentTime - lastAdTime;
+                    const diffInHours = diffInMillis / 3600000;
+                    if (diffInHours > adDiffHours) {
+                        this.settings.blockForAd = true
+                        // AsyncStorage.setItem("lastAdTime", currentTime.getTime().toString())
+                    } else {
+                        this.settings.blockForAd = false
+                    }
+
                 } else {
+                    lastAdTime = new Date(Date.now() - 3600000);
+                    AsyncStorage.setItem("lastAdTime", lastAdTime.getTime().toString())
                     this.settings.blockForAd = false
                 }
-                
-            } else {
-                lastAdTime = new Date(Date.now() - 3600000); 
-                AsyncStorage.setItem("lastAdTime", lastAdTime.getTime().toString())
-                this.settings.blockForAd = false
-            }
 
-            return this.settings
-        })
+                return this.settings
+            })
+    }
+
+    getWeekTitleShort(week) {
+        if (week.type == 0) {
+            return `(${week.week})`
+
+            //   return `${strings.matchday} ${week.week}`
+        } else if (week.type == 1) {
+            return '(R16)'
+        } else if (week.type == 2) {
+            return '(QF)'
+        } else if (week.type == 3) {
+            return '(SF)'
+        } else if (week.type == 4) {
+            return '(F)'
+        }
     }
 
     getWeekTitle(week) {
         if (week.type == 0) {
-          return `${strings.matchday} ${week.week}`
+            return `${strings.matchday} ${week.week}`
         } else if (week.type == 1) {
-          return 'Round of 16'
+            return 'Round of 16'
         } else if (week.type == 2) {
-          return 'Quarter final'
+            return 'Quarter final'
         } else if (week.type == 3) {
-          return 'Semi final'
+            return 'Semi final'
         } else if (week.type == 4) {
-          return 'Final'
+            return 'Final'
         }
-      }
+    }
 
     getSettings() {
         return this.settings
@@ -152,9 +173,15 @@ class DataManager {
         return this.table
     }
 
+    getPredictValue(predict) {
+        if (predict.status == 4) return ''
+        return ` ${predict.team1_score} : ${predict.team2_score}`
+    }
+
     getPredictTitle(p) {
+        if (p.status == 4) return strings.missing_prediction
         if (p.status == 0) return strings.prediction
-        if (p.status == 1) { 
+        if (p.status == 1) {
             if (p.team1_score == p.team2_score) return strings.draw_predicted
             return strings.winner_predicted
         }
@@ -184,26 +211,26 @@ class DataManager {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authentication': token  || ''
+                'Authentication': token || ''
             },
         };
 
         return fetch(`${SERVER_BASE_URL}/api/v1/matches/special?lang=${lang}`, requestOptions)
-        .then(response => {
-            if (response.status == 200)
-                return response.json()
-            return null
-        })
-        .then(data => {
-            if (!data || !Object.keys(data).length) return null
-            this.specialMatch = data
+            .then(response => {
+                if (response.status == 200)
+                    return response.json()
+                return null
+            })
+            .then(data => {
+                if (!data || !Object.keys(data).length) return null
+                this.specialMatch = data
 
-            return this.specialMatch
-        })
-        .catch(() => {
+                return this.specialMatch
+            })
+            .catch(() => {
 
-        });
-    } 
+            });
+    }
 
     getTableByPoints() {
         const requestOptions = {
@@ -229,14 +256,14 @@ class DataManager {
 
     fetchTopScorers() {
         fetch(`${SERVER_BASE_URL}/api/v1/top_scorers`, {
-          method: 'GET',
-          // headers: { 'Content-Type': 'application/json' },
+            method: 'GET',
+            // headers: { 'Content-Type': 'application/json' },
         })
-          .then(response => response.json())
-          .then(data => {
-            this.topScorers = data
-          })
-      }
+            .then(response => response.json())
+            .then(data => {
+                this.topScorers = data
+            })
+    }
 
     setPendingPredict(p) {
         this.pendingPredict = p
@@ -255,8 +282,8 @@ class DataManager {
 
     getLangs() {
         if (this.langs) return this.langs;
-        
-        this.langs =  {
+
+        this.langs = {
             "en": "English",
             "es": "Español",
             "ru": "Русский",
@@ -269,9 +296,9 @@ class DataManager {
         return this.langs;
     }
 
-    
-    
-    
+
+
+
 }
 
 const dataManager = new DataManager()

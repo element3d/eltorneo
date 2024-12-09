@@ -9,8 +9,10 @@ import SERVER_BASE_URL from './AppConfig';
 import dataManager from './DataManager';
 import strings from './Strings';
 import Colors from './Colors';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
-export default function MatchItem({ onPress, match, showLeague }) {
+
+export default function MatchItem({ onPress, match, showLeague, onShowMatchPreview }) {
 
   function getTime(ts) {
     const date = new Date(ts);
@@ -31,21 +33,24 @@ export default function MatchItem({ onPress, match, showLeague }) {
     if (p.status == 0) return 'black'//'#8E8E93'
     if (p.status == 1) return '#00C566'
     if (p.status == 2) return match.is_special ? 'gold' : '#ff7539'
-    if (p.status == 3) return '#FF4747'
+    if (p.status == 3 || p.status == 4) return '#FF4747'
   }
 
   function getBgColor(p) {
     if (p.status == 0) return '#F7F7F7'
     if (p.status == 1) return '#00C56619'
     if (p.status == 2) return '#FACC1519'
-    if (p.status == 3) return '#FF474719'
+    if (p.status == 3 || p.status == 4) return '#FF474719'
   }
 
   function getPoints(p) {
+    const sp = getSpecialPoints()
+
     if (p.status == 0) return '0'
-    if (p.status == 1) return match.is_special ? '+5' : '+1'
-    if (p.status == 2) return match.is_special ? '+10' : '+3'
-    if (p.status == 3) return match.is_special ? '0' : '-1'
+    if (p.status == 1) return match.is_special ? '+' + sp[1] : '+1'
+    if (p.status == 2) return match.is_special ? '+' + sp[0] : '+3'
+    if (p.status == 3) return match.is_special ? sp[2] : '-1'
+    if (p.status == 4) return '-2'
   }
 
   function isMatchEnded() {
@@ -81,6 +86,14 @@ export default function MatchItem({ onPress, match, showLeague }) {
 
   }
 
+  function getSpecialPoints() {
+    return match.special_match_points.split(':')
+  }
+
+  function onShowMatchPress() {
+    if (onShowMatchPreview) onShowMatchPreview(match)
+  }
+
   return (
     <TouchableOpacity onPress={match.status == 'PST' ? null : onPress} activeOpacity={.8} style={{
       width: '100%',
@@ -100,13 +113,13 @@ export default function MatchItem({ onPress, match, showLeague }) {
         minHeight: 64,
         overflow: 'hidden'
       }}>
-        {match.is_special ?<Image src={`${SERVER_BASE_URL}/data/special/${match.special_match_title}.png${dataManager.getImageCacheTime()}`} style={{
+        {match.is_special ? <Image src={`${SERVER_BASE_URL}/data/special/${match.special_match_title}.png${dataManager.getImageCacheTime()}`} style={{
           width: '100%',
           height: '100%',
           // flex: 1,
           position: 'absolute',
           top: 0,
-        }}></Image> : null }
+        }}></Image> : null}
 
         {hasPredict() ? <View style={{
           height: showLeague || match.is_special ? 0 : 20
@@ -114,6 +127,7 @@ export default function MatchItem({ onPress, match, showLeague }) {
 
         {showLeague ? <View style={{
           marginTop: 5,
+          marginBottom: 4,
           alignItems: 'center',
           justifyContent: 'center'
         }}>
@@ -132,35 +146,43 @@ export default function MatchItem({ onPress, match, showLeague }) {
               color: match.is_special ? 'white' : Colors.titleColor,
               fontWeight: 'bold'
             }}>{match.league.name}</Text>
+            <Text style={{
+              color: '#AEAEB2',
+              fontSize: 14,
+              marginLeft: 5,
+              // lineHeight: 10,
+              fontWeight: 'bold'
+            }}>{dataManager.getWeekTitleShort({ week: match.week, type: match.week_type })}</Text>
           </View>
 
-          <Text style={{
+          {/* <Text style={{
             color: '#AEAEB2',
             fontSize: 10,
             lineHeight: 10,
             fontWeight: 'bold'
-          }}>{dataManager.getWeekTitle({ week: match.week, type: match.week_type })}</Text>
+          }}>{dataManager.getWeekTitle({ week: match.week, type: match.week_type })}</Text> */}
         </View> : null}
 
-        {match.is_special && !showLeague? <View style={{
+        {match.is_special && !showLeague ? <View style={{
           alignItems: 'center',
           justifyContent: 'center',
-          paddingTop: 1,
+          paddingTop: 2,
           // backgroundColor: 'red',
         }}>
           <Text style={{
-              fontSize: 14,
-              color: match.is_special ? 'white' : Colors.titleColor,
-              fontWeight: 'bold'
-            }}>{match.special_match_tr_title}</Text>
-            <Text style={{
+            fontSize: 14,
+            color: match.is_special ? 'white' : Colors.titleColor,
+            fontWeight: 'bold',
+            marginBottom: 4,
+          }}>{match.special_match_tr_title}</Text>
+          {/* <Text style={{
             color: '#AEAEB2',
             fontSize: 10,
             lineHeight: 10,
             marginBottom: 2,
             fontWeight: 'bold'
-          }}>{strings.at} {match.special_match_stadium}</Text>
-        </View> : null }
+          }}>{strings.at} {match.special_match_stadium}</Text> */}
+        </View> : null}
 
         <View style={{
           // flex: 1,
@@ -302,7 +324,7 @@ export default function MatchItem({ onPress, match, showLeague }) {
               // overflow: 'hidden',
               marginLeft: 10,
               fontSize: 12,
-              color: match.is_special ? 'white' :  Colors.titleColor,
+              color: match.is_special ? 'white' : Colors.titleColor,
               fontFamily: 'OpenSans-ExtraBold'
             }}>{match.team2.shortName}</Text>
           </View>
@@ -333,7 +355,7 @@ export default function MatchItem({ onPress, match, showLeague }) {
               marginBottom: 2,
               color: getBorderColor(match.predict),
               fontFamily: 'NotoSansArmenian-Bold'
-            }}>{dataManager.getPredictTitle(match.predict)} {match.predict.team1_score} : {match.predict.team2_score}</Text>
+            }}>{dataManager.getPredictTitle(match.predict)}{dataManager.getPredictValue(match.predict)}</Text>
           </View>
         </View> : null}
         {showLeague || hasPredict() ? <View style={{
@@ -342,7 +364,11 @@ export default function MatchItem({ onPress, match, showLeague }) {
         {showLeague && !match.is_special && !hasPredict() ? <View style={{
           height: 6
         }}></View> : null}
-         {match.is_special && !showLeague && !hasPredict() ? <View style={{
+        {showLeague && match.is_special && !hasPredict() ? <View style={{
+          height: 6
+        }}></View> : null}
+
+        {match.is_special && !showLeague && !hasPredict() ? <View style={{
           height: 28,
           // alignItems: 'center',
           justifyContent: 'center',
@@ -352,7 +378,7 @@ export default function MatchItem({ onPress, match, showLeague }) {
           <View style={{
             width: 20,
             height: 20,
-            marginHorizontal: 8,
+            marginHorizontal: 5,
             borderRadius: 10,
             alignItems: 'center',
             justifyContent: 'center',
@@ -363,12 +389,12 @@ export default function MatchItem({ onPress, match, showLeague }) {
               lineHeight: 14,
               fontFamily: 'Poppins-Bold',
               color: 'black'
-            }}>+10</Text>
+            }}>+{getSpecialPoints()[0]}</Text>
           </View>
-           <View style={{
+          <View style={{
             width: 20,
             height: 20,
-            marginHorizontal: 8,
+            marginHorizontal: 5,
             borderRadius: 10,
             alignItems: 'center',
             justifyContent: 'center',
@@ -377,16 +403,16 @@ export default function MatchItem({ onPress, match, showLeague }) {
             backgroundColor: '#34C75955'
           }}>
             <Text style={{
-               fontSize: 10,
-               lineHeight: 14,
-               fontFamily: 'Poppins-Bold',
-               color: '#00C566'
-            }}>+5</Text>
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: '#00C566'
+            }}>+{getSpecialPoints()[1]}</Text>
           </View>
-           <View style={{
+          <View style={{
             width: 20,
             height: 20,
-            marginHorizontal: 8,
+            marginHorizontal: 5,
             borderRadius: 10,
             alignItems: 'center',
             justifyContent: 'center',
@@ -395,13 +421,14 @@ export default function MatchItem({ onPress, match, showLeague }) {
             backgroundColor: '#FF474755'
           }}>
             <Text style={{
-               fontSize: 10,
-               lineHeight: 14,
-               fontFamily: 'Poppins-Bold',
-               color: '#FF4747'
-            }}>0</Text>
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: '#FF4747'
+            }}>{getSpecialPoints()[2]}</Text>
           </View>
         </View> : null}
+
       </View>
       {hasPredict() && match.predict.status > 0 ? <View style={{
         position: 'absolute',
@@ -420,6 +447,21 @@ export default function MatchItem({ onPress, match, showLeague }) {
           color: getBorderColor(match.predict)
         }}>{strings.points}: {getPoints(match.predict)}</Text>
       </View> : null}
+
+      {match.preview ? <TouchableOpacity onPress={onShowMatchPress} style={{
+        width: 26,
+        height: 26,
+        borderRadius: 13,
+        backgroundColor: '#FF2882',// 'white',
+        position: 'absolute',
+        bottom: 5,
+        right: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+      }}>
+        <Icon name='video' color={'white'} size={12} />
+      </TouchableOpacity> : null}
     </TouchableOpacity>
   )
 }

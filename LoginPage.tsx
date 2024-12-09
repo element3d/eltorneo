@@ -8,9 +8,11 @@ import {
   View,
   TouchableOpacity,
   Image,
-  ImageBackground
+  ImageBackground,
+  TextInput
 } from 'react-native';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 
 import GoogleIcon from './assets/google.svg';
@@ -23,9 +25,18 @@ import gsingin from './GSignin';
 import BallIcon from './assets/ball.svg';
 import AwardsPanel from './AwardsPanel';
 import Colors from './Colors';
+import SERVER_BASE_URL from './AppConfig';
+import authManager from './AuthManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import dataManager from './DataManager';
+import { ESTAT_TOTAL } from './ProfilePage';
 
 function LoginPage({ navigation }): JSX.Element {
   const [lang, setLang] = useState('ru')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPass, setShowPass] = useState(false)
+  const [error, setError] = useState(null)
 
   const backgroundStyle = {
     backgroundColor: '#f7f7f7'
@@ -53,6 +64,104 @@ function LoginPage({ navigation }): JSX.Element {
 
   function onNavAwardsInfo() {
     navigation.navigate("AwardsInfo")
+  }
+
+  function onChangeUsername(u) {
+    setUsername(u)
+  }
+
+  function onChangePassword(p) {
+    setPassword(p)
+  }
+
+  function isValidUsername(username) {
+    // Check if the username is at least 6 characters long
+    if (username.length < 6) {
+      return false;
+    }
+
+    // Check if the username contains any spaces or line endings
+    if (/\s/.test(username)) {
+      return false;
+    }
+
+    return true;
+  }
+
+
+  function onSignIn() {
+    if (username.length < 6) {
+      setError(strings.err_username_len)
+      return
+    }
+    if (!isValidUsername(username)) {
+      setError(strings.err_username)
+      return
+    }
+
+    if (password.length < 6) {
+      setError(strings.err_password_len)
+      return
+    }
+    if (!isValidUsername(password)) {
+      setError(strings.err_password)
+      return
+    }
+
+    setError(null)
+    const requestOptions = {
+      method: 'POST',
+      body: JSON.stringify({
+        username: username,
+        password: password
+      })
+    };
+    return fetch(`${SERVER_BASE_URL}/api/v1/signin`, requestOptions)
+      .then(response => {
+        if (response.status == 200)
+          return response.text()
+        if (response.status == 404) {
+          setError(strings.err_user_not_found)
+        }
+        if (response.status == 403) {
+          setError(strings.err_incorrect_password)
+        }
+        // setError(t('incorrect_login'))
+        return null
+      })
+      .then((token) => {
+        if (!token) return
+
+        AsyncStorage.setItem(
+          'token',
+          token,
+        ).then((d) => {
+          authManager.getMe(token)
+            ?.then((me) => {
+              authManager.setMe(me)
+              authManager.setToken(token)
+              if (navigation) {
+                if (dataManager.getPendingPredict()) {
+                  navigation.goBack();
+                } else {
+                  navigation.replace('Profile', {
+                    globalPage: 1,
+                    routeSelectedLeague: -1,
+                    selectedStat: ESTAT_TOTAL
+                  });
+                }
+              } 
+            })
+
+        })
+          .catch((err) => {
+            console.log(err)
+          });
+      })
+  }
+
+  function onNavRegister() {
+    navigation.navigate('Register')
   }
 
   return (
@@ -83,7 +192,7 @@ function LoginPage({ navigation }): JSX.Element {
           // height: '100%',
           alignItems: 'center',
           justifyContent: 'center',
-          marginTop: 30,
+          // marginTop: 30,
         }}>
 
           <View style={{
@@ -130,7 +239,7 @@ function LoginPage({ navigation }): JSX.Element {
             {strings.login_desc}
           </Text>
 
-          <TouchableOpacity activeOpacity={.9} onPress={onNavAwardsInfo} style={{
+          {/* <TouchableOpacity activeOpacity={.9} onPress={onNavAwardsInfo} style={{
             borderRadius: 20,
             width: 320,
             height: 250,
@@ -142,9 +251,9 @@ function LoginPage({ navigation }): JSX.Element {
               borderRadius: 20,
               // marginBottom: 20
             }}>
-              <AwardsPanel onReadMore={onNavAwardsInfo} overlay={true}/>
+              <AwardsPanel onReadMore={onNavAwardsInfo} showLeague={false} overlay={true}/>
             </ImageBackground>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
 
 
@@ -152,17 +261,19 @@ function LoginPage({ navigation }): JSX.Element {
 
           <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
             width: 320,
-            height: 50,
+            height: 52,
             marginTop: 20,
             borderRadius: 30,
             justifyContent: 'center',
             alignItems: 'center',
             flexDirection: 'row',
-            backgroundColor: '#FF2882',
+            borderWidth: 2,
+            borderColor: Colors.borderColor
+            // backgroundColor: '#FF2882',
           }}>
             <Text style={{
               fontSize: 20,
-              color: 'white',
+              color: Colors.titleColor,
               fontFamily: 'Poppins-Bold',
               lineHeight: 28,
               // fontWeight: 'bold'
@@ -174,7 +285,7 @@ function LoginPage({ navigation }): JSX.Element {
               height: 40,
               position: 'absolute',
               right: 5,
-              backgroundColor: 'white',
+              // backgroundColor: 'white',
               borderRadius: 30,
               // marginTop: 20,
               // borderWidth: 3,
@@ -185,6 +296,138 @@ function LoginPage({ navigation }): JSX.Element {
               <GoogleIcon width={32} height={32} />
             </View>
           </TouchableOpacity>
+
+          <View style={{
+            width: 280,
+            marginTop: 40,
+            flexDirection: 'row',
+            // backgroundColor: 'red',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <View style={{
+              flex: 1,
+              height: 2,
+              backgroundColor: Colors.borderColor
+            }}></View>
+            <Text style={{
+              fontSize: 16,
+              color: Colors.titleColor,
+              fontWeight: 'bold',
+              marginLeft: 20,
+              marginRight: 20
+            }}>{strings.or}</Text>
+            <View style={{
+              flex: 1,
+              height: 2,
+              backgroundColor: Colors.borderColor
+            }}></View>
+          </View>
+
+          <Text style={{
+            width: 320,
+            marginTop: 20,
+            color: Colors.titleColor,
+            fontWeight: 'bold',
+            fontSize: 16,
+            marginBottom: 4
+          }}>{strings.username}</Text>
+          <TextInput value={username} onChangeText={onChangeUsername} style={{
+            width: 320,
+            height: 52,
+            borderColor: Colors.borderColor,
+            borderWidth: 2,
+            borderRadius: 26,
+            paddingLeft: 23
+          }}>
+
+          </TextInput>
+
+          <Text style={{
+            width: 320,
+            marginTop: 20,
+            color: Colors.titleColor,
+            fontWeight: 'bold',
+            fontSize: 16,
+            marginBottom: 4
+          }}>{strings.password}</Text>
+
+          <View style={{
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <TextInput value={password} onChangeText={onChangePassword} secureTextEntry={!showPass} style={{
+              width: 320,
+              height: 52,
+              borderColor: Colors.borderColor,
+              borderWidth: 2,
+              // backgroundColor: Colors.gray800,
+              borderRadius: 26,
+              paddingLeft: 23
+            }}>
+            </TextInput>
+            <TouchableOpacity onPress={() => { setShowPass(!showPass) }} style={{
+              position: 'absolute',
+              bottom: 14,
+              right: 15
+            }}>
+              <Icon name={'eye'} color={Colors.titleColor} size={24} style={{
+
+              }}></Icon>
+            </TouchableOpacity>
+          </View>
+
+          <View style={{
+            marginTop: 20,
+            width: 320,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 20
+          }}>
+            <Text style={{
+              color: '#FF4747'
+            }}>{error}</Text>
+          </View>
+
+          <TouchableOpacity onPress={onSignIn} activeOpacity={.8} style={{
+            height: 46,
+            width: 320,
+            borderRadius: 26,
+            backgroundColor: Colors.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            // marginTop: 40
+          }}>
+            <Text style={{
+              fontSize: 20,
+              color: 'white',
+              fontFamily: 'Poppins-Bold',
+              lineHeight: 28,
+            }}>
+              {strings.signin}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={{
+            marginTop: 20,
+            flexDirection: 'row'
+          }}>
+            <Text style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: Colors.titleColor
+            }}>{strings.dont_have_acc}</Text>
+            <TouchableOpacity onPress={onNavRegister} style={{
+              marginLeft: 5
+            }}>
+              <Text style={{
+                fontSize: 16,
+                fontWeight: 'bold',
+                color: Colors.primary
+              }}>{strings.register}</Text>
+            </TouchableOpacity>
+          </View>
+
         </View>
       </ScrollView>
       <BottomNavBar navigation={navigation} />

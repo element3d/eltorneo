@@ -56,7 +56,8 @@ class GSignin {
   }
 
   async signin(navigation, callback) {
-    // this.internalSignIn("narekhovhannisyanim6@gmail.com", 'Narek5', navigation)
+    // this.internalSignIn("narekhovhannisyanim3@gmail.com", 'Narek', navigation, callback)
+    
     // return
 
     try {

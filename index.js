@@ -12,8 +12,8 @@ import SERVER_BASE_URL from './AppConfig';
 import adsManager from './AdsManager';
 import strings from './Strings';
 import dataManager from './DataManager';
+import { AdManager } from 'react-native-admob-native-ads';
 adsManager.init()
-AppRegistry.registerComponent(appName, () => App);
 
 PushNotification.createChannel(
   {
@@ -37,6 +37,7 @@ function saveFcmToken(fcmToken, authToken) {
       fcm_token: fcmToken.token,
       lang: lang
     }
+
     fetch(`${SERVER_BASE_URL}/api/v1/me/fcm_token`, {
       method: 'POST',
       headers: {
@@ -122,3 +123,5 @@ PushNotification.configure({
      */
     requestPermissions: true,
   });
+
+  AppRegistry.registerComponent(appName, () => App);

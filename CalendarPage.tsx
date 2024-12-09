@@ -25,6 +25,8 @@ import authManager from './AuthManager';
 import { useFocusEffect } from '@react-navigation/native';
 import dataManager from './DataManager';
 import Colors from './Colors';
+import NativeAdComp from './NativeAdComp';
+import MatchPreviewDialog from './MatchPreviewDialog';
 
 function CalendarPage({ navigation, route }): JSX.Element {
   const today = moment();
@@ -32,6 +34,8 @@ function CalendarPage({ navigation, route }): JSX.Element {
   const [matches, setMatches] = useState([])
   const [matchesReqFinished, setMatchesReqFinished] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [showMatchPreview, setShowMatchPreview] = useState(false)
+  const [previewMatch, setPreviewMatch] = useState(null)
 
   const backgroundStyle = {
     backgroundColor: 'white',
@@ -79,6 +83,15 @@ function CalendarPage({ navigation, route }): JSX.Element {
   }
 
   let currentLeague = null
+
+  function onClosePreview() {
+    setShowMatchPreview(false)
+  }
+
+  function onShowMatchPreview(match) {
+    setShowMatchPreview(match)
+    setPreviewMatch(match)
+  }
 
   function onNavMatch(match) {
     const now = Date.now(); // Get current timestamp in milliseconds
@@ -174,6 +187,13 @@ function CalendarPage({ navigation, route }): JSX.Element {
               }}>
                 {strings.no_matches_found}
               </Text> : null}
+              {matchesReqFinished && matches.length && dataManager.getSettings().enableAds ? <View style={{
+                width: '100%',
+                // marginTop: 30,
+                // paddingHorizontal: 20,
+            }}>
+                <NativeAdComp forceNativeAd={true} />
+            </View> : null }
               {!matchesReqFinished ? <ActivityIndicator color={'#FF2882'} size={'large'}></ActivityIndicator> : null}
               {matches.map((m, i) => {
                 let renderLeague = false;
@@ -208,13 +228,21 @@ function CalendarPage({ navigation, route }): JSX.Element {
                       }}>{strings.matchday} {m.week}</Text>
                     </View>
                   </View> : null}
-                  <MatchItem onPress={() => { onNavMatch(m) }} match={m} />
+                  <MatchItem onPress={() => { onNavMatch(m) }} match={m} onShowMatchPreview={onShowMatchPreview} />
                 </View>
               })}
             </View>
+            {matchesReqFinished && dataManager.getSettings().enableAds ? <View style={{
+                width: '100%',
+                // marginTop: 30,
+                paddingHorizontal: 20,
+            }}>
+                <NativeAdComp />
+            </View> : null }
           </ScrollView>
           <BottomNavBar page={EPAGE_CALENDAR} navigation={navigation} />
         </View>
+        { showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch}/> : null }
       </SafeAreaView>
     </GestureHandlerRootView>
   );

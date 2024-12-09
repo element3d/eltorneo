@@ -23,6 +23,7 @@ import strings from './Strings';
 import { useFocusEffect } from '@react-navigation/native';
 import LiveMatchItem from './LiveMatchItem';
 import Colors from './Colors';
+import NativeAdComp from './NativeAdComp';
 
 function MatchesLivePage({ navigation, route }): JSX.Element {
   const [matches, setMatches] = useState([])
@@ -70,11 +71,14 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
 
         if (!data.length) {
           getUpcoming()
+        } else {
+          setUpcomingReqFinished(true)
         }
       })
       .catch(error => {
         console.error('Error fetching leagues:', error)
         setMatches([])
+        setUpcomingReqFinished(true)
         setMatchesReqFinished(true)
       });
   }
@@ -128,8 +132,6 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
               backgroundColor: Colors.gray800
             }}>
               <AppBar navigation={navigation} />
-
-
             </View>
 
 
@@ -139,7 +141,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
               // backgroundColor: 'red',
               padding: 15,
               paddingHorizontal: 20,
-              marginTop: 10,
+              // marginTop: 10,
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center'
@@ -152,6 +154,12 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 {strings.no_live_matches}
               </Text> : null}
 
+              {matchesReqFinished && upcomingReqFinished && dataManager.getSettings().enableAds ? <View style={{
+                width: '100%',
+              }}>
+                <NativeAdComp forceNativeAd={true}/>
+              </View> : null}
+
               {matchesReqFinished && matches.length ? <Text style={{
                 width: '100%',
                 fontWeight: 'bold',
@@ -159,7 +167,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 marginBottom: 10,
                 textAlign: 'left',
                 color: Colors.titleColor
-              }}>{strings.live_matches}</Text> : null }
+              }}>{strings.live_matches}</Text> : null}
 
               {matches.map((m, i) => {
                 let renderLeague = false;
@@ -181,7 +189,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 marginBottom: 10,
                 textAlign: 'left',
                 color: Colors.titleColor
-              }}>{strings.upcoming_matches}</Text> : null }
+              }}>{strings.upcoming_matches}</Text> : null}
 
               {upcoming.map((m, i) => {
                 let renderLeague = false;
@@ -196,6 +204,14 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 </View>
               })}
             </View>
+
+            {matchesReqFinished && upcomingReqFinished && dataManager.getSettings().enableAds ? <View style={{
+              width: '100%',
+              // marginTop: 30,
+              paddingHorizontal: 20,
+            }}>
+              <NativeAdComp />
+            </View> : null}
 
 
           </ScrollView>

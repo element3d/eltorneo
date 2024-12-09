@@ -9,20 +9,24 @@ import dataManager from './DataManager';
 import authManager from './AuthManager';
 import Colors from './Colors';
 
-const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, loading, hasNext, renderTopPart, page, setPage, predicts, selectedLeague }) => {
+const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, hasNext1, renderTopPart, page, setPage, predicts, totalPredicts, selectedLeague, onShowMatchPreview }) => {
+
+  const numPages = Math.ceil(totalPredicts / 100);
+  const hasNext = globalPage < numPages
+  const hasMore = (globalPage - 1) * 100 + predicts.length < totalPredicts
 
   const handleLoadMore = useCallback(() => {
-    if (!hasMore || loading || page >= globalPage * 5 || predicts.length % 20 != 0) return;
+    if (!hasMore || /*loading ||*/ page >= globalPage * 5 || predicts.length % 20 != 0) return;
 
     setPage(page + 1);
-  }, [hasMore, loading, page, globalPage, setPage]);
+  }, [page/*hasMore, page, globalPage, setPage*/]);
 
   function onNext() {
     navigation.navigate({
       name: 'Profile', params: {
         globalPage: globalPage + 1,
-        selectedStat: selectedStat
-      }, key: `profile_page_${globalPage + 1}`
+        id: id,
+      }, key: `profile_page_${globalPage + 1}_${id}`
     })
   }
 
@@ -30,10 +34,21 @@ const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, 
     navigation.goBack()
   }
 
+  function showNextPrev() {
+
+    if (loading) return false
+    // if (hasMore && ((globalPage - 1) * 100 + predicts.length < totalPredicts )) return true
+    if (!hasMore && globalPage > 1 && ((globalPage - 1) * 100 + predicts.length >= totalPredicts )) return true
+    if (hasMore && predicts.length >= 100) return true
+ 
+    return false
+  }
+
   const renderFooter = () => {
     // return null
-    if (hasNext || globalPage > 1) {
-
+    // if ((hasNext || globalPage > 1) && !loading) {
+    const showNP = showNextPrev()
+    if (showNP) {
       return <View style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -66,12 +81,13 @@ const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, 
             fontSize: 16,
             fontWeight: 'bold',
             color: '#FF2882'
-          }}>{strings.next} ></Text>
+          }}>{`${strings.next} >`}</Text>
         </TouchableOpacity> : null}
       </View>
     }
 
-    if (!hasMore || !loading) return (
+
+    if (!loading) return (
       <View style={styles.footer}>
         {/* <ActivityIndicator color={'#FF2882'} size="large" /> */}
       </View>
@@ -110,6 +126,17 @@ const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, 
     );
   };
 
+  const renderItem = useCallback(({ item, index }) => {
+    return (
+      <View style={{
+        width: '90%',
+        alignSelf: 'center'
+      }}>
+        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} />
+      </View>
+    );
+  }, [onNavMatch, onShowMatchPreview]);
+
   let currMatchDate = null;
   const renderMatch = useCallback(({ item, index }) => {
     let renderTime = false;
@@ -135,7 +162,7 @@ const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, 
             }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
           </View>
         ) : null}
-        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} />
+        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} />
       </View>
     );
   }, []);
@@ -143,13 +170,11 @@ const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, 
   return (
     <FlatList
       contentContainerStyle={{
-        // flex: 1,
         width: '100%',
-        // alignItems: 'space-betwee'
       }}
       data={predicts}
       style={styles.list}
-      keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique keys
+      keyExtractor={(item) => item.id.toString()} // Use item.id alone
       renderItem={renderMatch}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.1}
@@ -158,8 +183,6 @@ const UserMatchesList = ({ navigation, user, selectedStat, hasMore, globalPage, 
       ListHeaderComponent={renderTopPart}
       ListFooterComponentStyle={{
         width: '100%',
-        // alignItems: 'center',
-        // justifyContent: 'center'
       }}
     />
   );

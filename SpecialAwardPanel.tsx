@@ -1,6 +1,13 @@
 import { Text, View } from "react-native";
 
-export default function SpecialAwardPanel() {
+export default function SpecialAwardPanel({match}) {
+
+    
+    function getSpecialPoints() {
+
+        return match.special_match_points.split(':')
+    }
+
     return (
         <View style={{
             // marginTop: 5,
@@ -23,7 +30,7 @@ export default function SpecialAwardPanel() {
                     lineHeight: 20,
                     fontFamily: 'Poppins-Bold',
                     // fontWeight: 'bold'
-                }}>+10</Text>
+                }}>+{getSpecialPoints()[0]}</Text>
             </View>
             <View style={{
                 width: 30,
@@ -41,7 +48,7 @@ export default function SpecialAwardPanel() {
                     lineHeight: 20,
                     fontFamily: 'Poppins-Bold',
                     // fontWeight: 'bold'
-                }}>+5</Text>
+                }}>+{getSpecialPoints()[1]}</Text>
             </View>
             <View style={{
                 width: 30,
@@ -58,7 +65,7 @@ export default function SpecialAwardPanel() {
                     lineHeight: 20,
                     fontFamily: 'Poppins-Bold',
                     // fontWeight: 'bold'
-                }}>0</Text>
+                }}>{getSpecialPoints()[2]}</Text>
             </View>
         </View>
     )

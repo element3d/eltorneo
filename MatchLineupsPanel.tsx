@@ -3,12 +3,21 @@ import SERVER_BASE_URL from "./AppConfig";
 import DropShadow from "react-native-drop-shadow";
 import strings from "./Strings";
 import Colors from "./Colors";
+import NativeAdComp from "./NativeAdComp";
+import dataManager from "./DataManager";
 
 const win = Dimensions.get('window');
-const pitch = require( './assets/pitch.png')
+const pitch = require('./assets/pitch.png')
 const pitchDark = require('./assets/pitch_dark.png')
 
 export default function MatchLineupsPanel({ match, lineups }) {
+
+    function getKitImage(name) {
+        if (match.league != 7) {
+            return `${SERVER_BASE_URL}/data/teams/150x150/${name}_kit.png`
+        }
+        return `${SERVER_BASE_URL}/data/teams/150x150/${name}.png`
+    }
 
     function getKgNumber(team) {
 
@@ -174,7 +183,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                 alignItems: 'center',
                 justifyContent: 'flex-start',
                 padding: 0,
-                paddingBottom: 40
+                paddingBottom: 20
             }}>
             <View style={{
                 width: '100%',
@@ -186,9 +195,10 @@ export default function MatchLineupsPanel({ match, lineups }) {
                     alignItems: 'center',
                     justifyContent: 'center'
                 }}>
-                    <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team1.name}.png`} style={{
-                        width: 40,
-                        height: 40
+                    <Image src={getKitImage(match.team1.name)} style={{
+                        width: match.league != 7 ? 40 : 40,
+                        height: match.league != 7 ? 50 : 40,
+                        objectFit: match.league != 7 ? 'cover' : 'contain'
                     }} />
                     <View style={{
                         marginLeft: 5
@@ -226,9 +236,10 @@ export default function MatchLineupsPanel({ match, lineups }) {
                             fontSize: 13
                         }}>{lineups.team2.formation}</Text>
                     </View>
-                    <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team2.name}.png`} style={{
-                        width: 40,
-                        height: 40
+                    <Image src={getKitImage(match.team2.name)} style={{
+                        width: match.league != 7 ? 40 : 40,
+                        height: match.league != 7 ? 50 : 40,
+                        objectFit: match.league != 7 ? 'cover' : 'contain'
                     }} />
 
                 </View>
@@ -236,7 +247,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
             <ImageBackground
                 source={pitchImage}
                 style={{
-                    marginTop: 10,
+                    // marginTop: 10,
                     flexDirection: 'row',
                     width: '100%',
                     aspectRatio: 1.6,
@@ -344,7 +355,7 @@ export default function MatchLineupsPanel({ match, lineups }) {
                 <Text style={{
                     fontSize: 20,
                     fontWeight: 'bold',
-                    color:  Colors.titleColor
+                    color: Colors.titleColor
                 }}>{strings.managers}</Text>
             </View>
             <View style={{
@@ -492,6 +503,13 @@ export default function MatchLineupsPanel({ match, lineups }) {
                     })}
                 </View>
             </View>
+
+            { dataManager.getSettings().enableAds ? <View style={{
+                width: '100%',
+                marginTop: 30
+            }}>
+                <NativeAdComp />
+            </View> : null }
         </View>
     );
 }

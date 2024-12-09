@@ -6,6 +6,7 @@ import {
   Image,
   Linking,
   RefreshControl,
+  requireNativeComponent,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -43,7 +44,15 @@ import { useFocusEffect } from '@react-navigation/native';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EventCard from './EventCard';
+import { AdManager } from "react-native-admob-native-ads";
+import AdMobIcon from './assets/admob.svg'
+import NativeAdComp from './NativeAdComp';
 
+import MatchPreviewDialog from './MatchPreviewDialog';
+
+AdManager.setRequestConfiguration({
+  testDeviceIds: ["DC5FB0E024817B77B466572E6959C152"]
+});
 
 const NUM_NEXT_WEEKS = 3
 
@@ -74,6 +83,8 @@ function CarsPage({ navigation, route }): JSX.Element {
   const [mode, setMode] = useState(EMODE_LIGHT)
   const [randomItem, setRandomItem] = useState(5)
   const [specialMatch, setSpecialMatch] = useState(null)
+  const [showMatchPreview, setShowMatchPreview] = useState(false)
+  const [previewMatch, setPreviewMatch] = useState(null)
 
   const weeksScrollRef = useRef(null)
   const currentWeekRef = useRef(null)
@@ -90,30 +101,30 @@ function CarsPage({ navigation, route }): JSX.Element {
 
     getLeagues()
     AsyncStorage.getItem('specialMatchLastDate')
-    .then((storedDate) => {
-      const currentDate = moment();
-      const fiveHours = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
+      .then((storedDate) => {
+        const currentDate = moment();
+        const fiveHours = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
 
-      // If no date is stored, treat as if more than 5 minutes elapsed
-      if (!storedDate || currentDate.diff(moment(parseInt(storedDate)), 'milliseconds') > fiveHours) {
-        // Fetch the special match
-        dataManager.fetchSpecialMatch(strings.getLanguage(), authManager.getToken())
-          .then((m) => {
-            setSpecialMatch(m);
-  
-            // Store the current date after fetching
-            AsyncStorage.setItem('specialMatchLastDate', currentDate.valueOf().toString());
-          })
-          .catch((err) => {
-            console.log(err)
-          });
-      }
-    })
-    .catch(() => {});
-  
+        // If no date is stored, treat as if more than 5 minutes elapsed
+        if (!storedDate || currentDate.diff(moment(parseInt(storedDate)), 'milliseconds') > fiveHours) {
+          // Fetch the special match
+          dataManager.fetchSpecialMatch(strings.getLanguage(), authManager.getToken())
+            .then((m) => {
+              setSpecialMatch(m);
+
+              // Store the current date after fetching
+              AsyncStorage.setItem('specialMatchLastDate', currentDate.valueOf().toString());
+            })
+            .catch((err) => {
+              console.log(err)
+            });
+        }
+      })
+      .catch(() => { });
+
   }, []);
 
-  
+
 
   function onRefreshPage() {
     authManager.refresh()
@@ -154,7 +165,7 @@ function CarsPage({ navigation, route }): JSX.Element {
         setTable(data)
       })
       .catch(error => {
-        console.error('Error fetching leagues:', error)
+        console.error('Error fetching table:', error)
       });
   }
 
@@ -165,8 +176,23 @@ function CarsPage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
-        AsyncStorage.getItem('mode')
-          .then((mode) => {
+        AsyncStorage.multiGet(['mode', 'installDate'])
+          .then((obj) => {
+            const mode = obj[0][1]
+            let installDate = obj[1][1]
+            if (!installDate) {
+              installDate = new Date().getTime().toString()
+              AsyncStorage.setItem('installDate', new Date().getTime().toString())
+            }
+            if (new Date().getTime() - new Date(Number.parseInt(installDate)).getTime() < 7 * 24 * 60 * 60 * 1000) {
+              if (dataManager.getSettings()) {
+                dataManager.getSettings().newUser = true
+                dataManager.getSettings().enableAds = false
+                dataManager.getSettings().enableNativeAds = false
+                dataManager.getSettings().blockForAd = false
+              }
+            }
+
             if (!mode) {
               SplashScreen.hide();
               return
@@ -239,7 +265,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       </View>
     }
     return (
-      <TouchableOpacity onPress={() => {}} activeOpacity={.9} style={{
+      <TouchableOpacity onPress={() => { }} activeOpacity={.9} style={{
         width: '100%',
         height: 180,
         // paddingBottom: 20,
@@ -343,12 +369,12 @@ function CarsPage({ navigation, route }): JSX.Element {
               }}>{strings.matches_played}:</Text>
               <Text style={{
                 //  marginTop: 10,
-                 marginLeft: 5,
+                marginLeft: 5,
                 //  marginBottom: 3,
-                  fontSize: 14,
-                  lineHeight: 14,
-                 color: '#00C566',
-                 fontWeight: 900
+                fontSize: 14,
+                lineHeight: 14,
+                color: '#00C566',
+                fontWeight: 900
               }}>{topScorers.games}</Text>
             </View>
             <View style={{
@@ -366,11 +392,11 @@ function CarsPage({ navigation, route }): JSX.Element {
               }}>{strings.goals}:</Text>
               <Text style={{
                 //  marginTop: 10,
-                  fontSize: 14,
-                  marginLeft: 5,
-                  lineHeight: 14,
-                 color: '#FACC15',
-                 fontWeight: 900,
+                fontSize: 14,
+                marginLeft: 5,
+                lineHeight: 14,
+                color: '#FACC15',
+                fontWeight: 900,
                 //  marginBottom: 4,
               }}>{topScorers.goals}</Text>
             </View>
@@ -485,6 +511,11 @@ function CarsPage({ navigation, route }): JSX.Element {
     getMatches(l, week, s)
   }
 
+  function onShowPreviewMatch(match) {
+    setShowMatchPreview(true)
+    setPreviewMatch(match)
+  }
+
   function onNavMatch(match) {
     const now = Date.now(); // Get current timestamp in milliseconds
     const twoDaysInMillis = 2 * 24 * 60 * 60 * 1000; // 2 days in milliseconds    
@@ -521,7 +552,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       },
       key: specialMatch.match.id
     })
-}
+  }
 
   function onWeekPress(week) {
     this.effect = true
@@ -551,6 +582,10 @@ function CarsPage({ navigation, route }): JSX.Element {
   let currMatchDate = null
   const flatListRef = useRef();
 
+  function onClosePreview() {
+    setShowMatchPreview(false)
+  }
+
   const renderLeagueItem = (item, index) => (
     <TouchableOpacity
       key={`league_${index}`}
@@ -558,9 +593,9 @@ function CarsPage({ navigation, route }): JSX.Element {
       activeOpacity={0.7}
       onPress={() => onMiniLeaguePress(item)}
       style={{
-        height: 40,
+        height: 30,
         paddingLeft: 15,
-        width: 150,
+        width: 100,
         paddingRight: 15,
         margin: 5,
         backgroundColor: item.index === selectedMiniLeague ? '#ff2882' : Colors.gray800,
@@ -571,7 +606,7 @@ function CarsPage({ navigation, route }): JSX.Element {
         borderColor: item.index === selectedMiniLeague || (selectedMiniLeague === 0 && item === 1) ? '#ff2882' : Colors.borderColor,
       }}
     >
-      <Text style={{ color: item.index === selectedMiniLeague ? 'white' : '#8E8E93', fontFamily: 'NotoSansArmenian-Bold' }}>
+      <Text style={{ color: item.index === selectedMiniLeague ? 'white' : '#8E8E93', fontFamily: 'NotoSansArmenian-Bold', fontSize: 12 }}>
         {`${strings.league} ${item.name}`}
         {/* Quarter finals */}
       </Text>
@@ -732,7 +767,8 @@ function CarsPage({ navigation, route }): JSX.Element {
         }}>
           {renderGroupName ? <Text style={{
             fontWeight: 'bold',
-            fontSize: 20,
+            fontSize: 16,
+            marginBottom: 4,
             color: Colors.titleColor,
             marginLeft: 15,
             marginTop: 20
@@ -889,20 +925,20 @@ function CarsPage({ navigation, route }): JSX.Element {
     getMatches(selectedLeague, selectedWeek.week, selectedSeason)
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     this.effect = true
   }, [])
 
   useFocusEffect(
-    useCallback(()=>{
-      return () =>{
+    useCallback(() => {
+      return () => {
         this.effect = false
-      } 
+      }
     }, [])
   )
 
   useFocusEffect(
-    useCallback(()=>{
+    useCallback(() => {
       if (!this.effect) {
         if (tab != ETAB_MATCHES) return
 
@@ -910,7 +946,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       }
 
 
-      
+
     }, [selectedLeague, selectedWeek])
   )
 
@@ -920,7 +956,7 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   function renderCard() {
-    
+
 
     if (!mathOfDay) return <TopScorerItem />
 
@@ -935,7 +971,6 @@ function CarsPage({ navigation, route }): JSX.Element {
 
     return <TopScorerItem />
   }
-
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
@@ -963,7 +998,8 @@ function CarsPage({ navigation, route }): JSX.Element {
             <View style={{
               width: '100%',
               paddingBottom: 10,
-              backgroundColor: Colors.gray800
+              backgroundColor: Colors.gray800,
+              marginBottom: 20
             }}>
               <AppBar setMode={setMode} title={selectedLeague?.name} showMode={true} showLang={true} showLogo={false} showBack={false} navigation={navigation} />
 
@@ -1003,24 +1039,6 @@ function CarsPage({ navigation, route }): JSX.Element {
               </View> : null}
 
               {leagues.length ? <View>
-                {/* <ScrollView
-                  horizontal={true}
-                  contentInsetAdjustmentBehavior="automatic"
-                  contentContainerStyle={{
-                    height: 60,
-                    // width: '100%',
-                    paddingLeft: 5,
-                    // backgroundColor: 'blue',
-                    alignItems: 'center',
-                  }}
-                  showsHorizontalScrollIndicator={false}
-                >
-
-                  {leagues.map((l, i) => {
-                    if (!l.is_special) return
-                    return (<LeagueChip compact={false} key={`league_${i}`} league={l} selected={l == selectedLeague} onPress={() => { onLeaguePress(l) }} />)
-                  })}
-                </ScrollView> */}
 
                 <ScrollView
                   horizontal={true}
@@ -1141,20 +1159,29 @@ function CarsPage({ navigation, route }): JSX.Element {
               </TouchableOpacity>
             </View> : null}
 
+            {!loading && dataManager.getSettings().enableAds && leagues.length ? <View style={{
+              width: '100%',
+              // marginTop: 20,
+              paddingHorizontal: 20
+            }}>
+              <NativeAdComp forceNativeAd={true} />
+            </View> : null}
+
             {loading ? <ActivityIndicator style={{
-              marginTop: 30,
+              // marginTop: 30,
             }} color={'#FF2882'} size={'large'}></ActivityIndicator> : null}
 
             {leagues.length ? <View style={{
               width: '100%',
               // backgroundColor: 'red',
-              paddingTop: 15,
+              // paddingTop: 15,
               paddingBottom: 15,
-              marginTop: 10,
+              // marginTop: 10,
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
+
 
               {/* {selectedLeague ? <LeagueTitleItem loading={loading} league={selectedLeague} week={selectedWeek} /> : null} */}
 
@@ -1236,7 +1263,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                         color: Colors.titleColor
                       }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')} </Text>
                     </View> : null}
-                    <MatchItem onPress={() => { onNavMatch(m) }} match={m} />
+                    <MatchItem onPress={() => { onNavMatch(m) }} match={m} onShowMatchPreview={onShowPreviewMatch} />
                   </View>
                 }) : null}
 
@@ -1248,13 +1275,30 @@ function CarsPage({ navigation, route }): JSX.Element {
                 </Text> : null}
               </View> : !loading ? renderTable() : null}
             </View> : null}
-
+           
+            {!loading && dataManager.getSettings().enableAds ? <View style={{
+              paddingHorizontal: 20,
+              marginTop: 10
+            }}>
+              {/* <View style={{
+                marginBottom: 20,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: Colors.gray800
+              }}>
+              <BannerAd unitId='ca-app-pub-7041403371220271/5297891922' size={BannerAdSize.MEDIUM_RECTANGLE} />
+              </View> */}
+              <NativeAdComp />
+            </View> : null}
 
           </ScrollView>
           {!loading && !leagues.length ? null : <BottomNavBar page={EPAGE_HOME} navigation={navigation} />}
         </View>
-        { specialMatch ? <EventCard onPress={onNavSpecialMatch} onClose={onEventClose} match={specialMatch}/> : null }
+        {specialMatch ? <EventCard onPress={onNavSpecialMatch} onClose={onEventClose} match={specialMatch} /> : null}
+        { showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch}/> : null }
       </SafeAreaView>
+
     </GestureHandlerRootView>
   );
 }

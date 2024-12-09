@@ -3,6 +3,7 @@ import strings from "./Strings"
 import SERVER_BASE_URL from "./AppConfig"
 import dataManager from "./DataManager"
 import Colors from "./Colors"
+import NativeAdComp from "./NativeAdComp"
 
 export default function MatchTablePanel({ match, table }) {
     let currentGroup = 0
@@ -117,9 +118,10 @@ export default function MatchTablePanel({ match, table }) {
                 }}>
                     {renderGroupName ? <Text style={{
                         fontWeight: 'bold',
-                        fontSize: 20,
+                        fontSize: 16,
+                        marginBottom: 4,
                         color: Colors.titleColor,
-                        marginLeft: 15,
+                        // marginLeft: 15,
                         marginTop: 20
                     }}>{strings.group} {getGroupName(team.league_index, team.group_index)}</Text> : null}
                     <View style={{
@@ -186,6 +188,10 @@ export default function MatchTablePanel({ match, table }) {
                 </View>
             })}
 
+            <View style={{
+                height: 20
+            }}></View>
+
             {/* <View style={{
                 // backgroundColor: 'red',
                 width: '100%',
@@ -244,7 +250,12 @@ export default function MatchTablePanel({ match, table }) {
                     }}>{strings.pts}</Text>
                 </View>
             </View> */}
-
+            { dataManager.getSettings().enableAds ? <View style={{
+                width: '100%',
+                marginTop: 20
+            }}>
+                <NativeAdComp />
+            </View> : null }
         </View>
     )
 }

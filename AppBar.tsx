@@ -77,7 +77,7 @@ function AppBar({navigation, title, setMode,  showLang, showMode=false, showBack
       }}>
         <Text style={{
           // marginRight: 5,
-          fontSize: 20,
+          fontSize: 18,
           lineHeight: 28,
           // fontWeight: 'bold',
           color: Colors.titleColor,
@@ -88,7 +88,7 @@ function AppBar({navigation, title, setMode,  showLang, showMode=false, showBack
       {title ? <Text style={{
         // fontWeight: 'bold',
         fontFamily: 'Poppins-Bold',
-        fontSize: 16,
+        fontSize: 18,
         lineHeight: 22,
         color:  Colors.titleColor
       }}>{title}</Text> : null }

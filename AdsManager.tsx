@@ -54,7 +54,7 @@ class AdsManager {
             const pr = dataManager.checkBlockForAd()
             if (pr) pr
                 .then((settings)=>{
-                    if (settings.blockForAd) {
+                    if (settings?.blockForAd) {
                         this.loadAd()
                     }
                 })

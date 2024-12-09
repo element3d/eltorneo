@@ -17,6 +17,7 @@ class ColorsClass {
     constructor() {
         this.mode = 1
 
+        this.primary = '#FF2882'
         this.bgColor = "#f7f7f7"
         this.gray800 = "#ffffff"
         this.titleColor = "#1C1C1E"
@@ -32,6 +33,7 @@ class ColorsClass {
     setNewMode(m) {
         if (m == 2) {
             this.mode = 2
+            this.primary = '#FF2882'
             this.bgColor = "#111111"//"#1C1C1E"
             this.gray800 = "#181818"//"#2C2C2E"
             this.titleColor = "#FFFFFF"
@@ -44,7 +46,7 @@ class ColorsClass {
             this.lineupName = '#D1D1D6'
         } else {
             this.mode = 1
-
+            this.primary = '#FF2882'
             this.bgColor = "#f7f7f7"
             this.gray800 = "#ffffff"
             this.titleColor = "#1C1C1E"
@@ -63,6 +65,7 @@ class ColorsClass {
     swap() {
         if (this.mode == 1) {
             this.mode = 2
+            this.primary = '#FF2882'
             this.bgColor = "#111111"//"#1C1C1E"
             this.gray800 = "#181818"//"#2C2C2E"
             this.titleColor = "#FFFFFF"
@@ -75,7 +78,7 @@ class ColorsClass {
             this.lineupName = '#D1D1D6'
         } else {
             this.mode = 1
-
+            this.primary = '#FF2882'
             this.bgColor = "#f7f7f7"
             this.gray800 = "#ffffff"
             this.titleColor = "#1C1C1E"

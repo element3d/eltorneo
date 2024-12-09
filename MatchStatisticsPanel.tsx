@@ -1,8 +1,10 @@
 import { Text, View } from "react-native";
 import strings from "./Strings";
 import Colors from "./Colors";
+import NativeAdComp from "./NativeAdComp";
+import dataManager from "./DataManager";
 
-function Item({title, stat, percent = false}) {
+function Item({ title, stat, percent = false }) {
 
     const values = stat ? stat.split('-') : ['0', '0']
     const intValues = [Number.parseInt(values[0]), Number.parseInt(values[1])]
@@ -23,7 +25,7 @@ function Item({title, stat, percent = false}) {
                 color: val1 > val2 ? '#FF2882' : Colors.titleColor,
                 fontSize: 16,
                 fontWeight: 'bold'
-            }}>{intValues[0]}{percent ? '%': ''}</Text>
+            }}>{intValues[0]}{percent ? '%' : ''}</Text>
             <Text style={{
                 fontSize: 14,
                 color: '#8E8E93'
@@ -33,7 +35,7 @@ function Item({title, stat, percent = false}) {
                 fontSize: 16,
                 color: val2 > val1 ? '#FF2882' : Colors.titleColor,
                 fontWeight: 'bold'
-            }}>{intValues[1]}{percent ? '%': ''}</Text>
+            }}>{intValues[1]}{percent ? '%' : ''}</Text>
         </View>
         <View style={{
             flexDirection: 'row',
@@ -50,7 +52,7 @@ function Item({title, stat, percent = false}) {
                 <View style={{
                     height: '100%',
                     borderRadius: 10,
-                    backgroundColor:  val1 > val2 ? '#FF2882' : Colors.titleColor,
+                    backgroundColor: val1 > val2 ? '#FF2882' : Colors.titleColor,
                     width: `${val1 / total * 100}%`
                 }}>
 
@@ -78,11 +80,11 @@ function Item({title, stat, percent = false}) {
     </View>
 }
 
-export default function MatchStatisticsPanel({statistics}) {
+export default function MatchStatisticsPanel({ statistics }) {
     return <View style={{
         width: '90%',
         alignSelf: 'center',
-        marginBottom: 50
+        marginBottom: 20
     }}>
         <Item title={strings.shots_on_target} stat={statistics.shotsOnTarget} ></Item>
         <Item title={strings.shots_off_target} stat={statistics.shotsOffTarget}></Item>
@@ -92,6 +94,13 @@ export default function MatchStatisticsPanel({statistics}) {
         <Item title={strings.corners} stat={statistics.corners}></Item>
         <Item title={strings.offsides} stat={statistics.offsides}></Item>
         <Item title={strings.saves} stat={statistics.saves}></Item>
+
+        { dataManager.getSettings().enableAds ? <View style={{
+            width: '100%',
+            marginTop: 30
+        }}>
+            <NativeAdComp />
+        </View> : null }
 
     </View>
 }

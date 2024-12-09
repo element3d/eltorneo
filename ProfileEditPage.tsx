@@ -287,7 +287,7 @@ function ProfileEditPage({ navigation, route }): JSX.Element {
                   }}>{authManager.getMeSync().name}</Text> */}
                 </View>
 
-                <View style={{
+                {  authManager.getMeSync().authType == "google" ? <View style={{
                     marginTop: 4,
                     width: '100%',
                     paddingLeft: 15,
@@ -300,7 +300,22 @@ function ProfileEditPage({ navigation, route }): JSX.Element {
                       fontWeight: 'bold'
                       // fontFamily: 'NotoSansArmenian-Bold'
                   }}>{authManager.getMeSync().email}</Text>
-                </View>
+                </View> : null }
+
+                { authManager.getMeSync().authType == "username" ? <View style={{
+                    marginTop: 4,
+                    width: '100%',
+                    paddingLeft: 15,
+                    flex: 1
+                }}>
+                  <Text style={{
+                      // marginTop: 10,
+                      color: '#8E8E93',
+                      fontSize: 14,
+                      fontWeight: 'bold'
+                      // fontFamily: 'NotoSansArmenian-Bold'
+                  }}>@{authManager.getMeSync().username}</Text>
+                </View> : null}
             
 
               <View style={{
