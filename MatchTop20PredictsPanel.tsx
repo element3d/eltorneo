@@ -44,12 +44,22 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
     return false
   }
 
+  function getLeagueText(user) {
+    let txt = strings.place_in_league
+    if (user.league == 1) txt += " " + strings.legend
+    else if (user.league == 2) txt += " " + strings.pro
+    else if (user.league == 3) txt += " " + strings.amateur
+    else if (user.league == 4) txt += " " + strings.beginner
+
+    return txt
+  }
+
   return (
     <View>
       {dataManager.getSettings().enableAds ? <View style={{
         marginTop: 10
       }}>
-        <NativeAdComp forceNativeAd={true}/>
+        <NativeAdComp forceNativeAd={true} />
       </View> : null}
       <Text style={{
         color: '#8E8E93',
@@ -105,12 +115,32 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
                 marginBottom: 0,
                 fontFamily: 'NotoSansArmenian-ExtraBold'
               }}>{predict.user.name}</Text>
-              {predict.user.position > 0 && predict.user.points > 0 ? <Text style={{
-                fontSize: 12,
-                color: '#8E8E93',
-                // marginBottom: 10,
-                fontFamily: 'NotoSansArmenian-Bold'
-              }}>{predict.user.league == 2 ? strings.place_in_league2 : strings.place_in_el_torneo}: {predict.user.position}, {strings.points}: {predict.user.points}</Text>
+              {predict.user.position > 0 && predict.user.points > 0 ?
+                <View style={{
+                  marginTop: 2
+                }}>
+                  <Text style={{
+                    fontSize: 12,
+                    color: '#8E8E93',
+                    // marginBottom: 10,
+                    fontWeight: 'bold'
+                    // fontFamily: 'NotoSansArmenian-Bold'
+                  }}>
+                    {getLeagueText(predict.user)}: {predict.user.position}
+
+                    {/* {predict.user.league == 2 ? strings.place_in_league2 : strings.place_in_el_torneo}: {predict.user.position}, {strings.points}: {predict.user.points} */}
+                  </Text>
+                  <Text style={{
+                    fontSize: 12,
+                    lineHeight: 14,
+                    color: '#8E8E93',
+                    fontWeight: 'bold'
+                    // marginBottom: 10,
+                    // fontFamily: 'NotoSansArmenian-Bold'
+                  }}>
+                    {strings.points}: {predict.user.points}
+                  </Text>
+                </View>
                 : <Text style={{
                   fontSize: 12,
                   color: '#8E8E93',

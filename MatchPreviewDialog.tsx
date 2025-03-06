@@ -1,11 +1,15 @@
-import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, Image, Linking, Text, TouchableOpacity, View } from "react-native";
 import NativeAdComp from "./NativeAdComp";
 import YoutubePlayer from "react-native-youtube-iframe";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Colors from "./Colors";
 import SERVER_BASE_URL from "./AppConfig";
 
+import SupportPanel from "./SupportPanel";
+
+
 export default function MatchPreviewDialog({ onClose, match }) {
+
     return (
         <View style={{
             width: '100%',
@@ -50,7 +54,7 @@ export default function MatchPreviewDialog({ onClose, match }) {
                         }}></Image>
                     </View>
 
-                    <View style={{
+                    {!match.isTeaser ? <View style={{
                         marginHorizontal: 6,
                         flexDirection: 'row'
                     }}>
@@ -77,7 +81,15 @@ export default function MatchPreviewDialog({ onClose, match }) {
                         }}>
                             {match.team2_score}
                         </Text>
-                    </View>
+                    </View> : <Text style={{
+                        color: Colors.titleColor,
+                        // fontWeight: 'bold',
+                        fontFamily: 'Poppins-Bold',
+                        fontSize: 14,
+                        marginLeft: 10,
+                        marginRight: 10,
+                        marginHorizontal: 2
+                    }}>VS</Text>}
                     <View style={{
                         width: '40%',
                         flexDirection: 'row',
@@ -111,11 +123,11 @@ export default function MatchPreviewDialog({ onClose, match }) {
                     width: '100%',
                     paddingHorizontal: 12,
                 }}>
-                    <NativeAdComp forceNativeAd={true}/>
+                    <NativeAdComp forceNativeAd={true} />
                 </View>
                 <YoutubePlayer
                     width={Dimensions.get('window').width}
-                    height={240}
+                    height={220}
                     play={true}
                     initialPlayerParams={
                         {
@@ -124,10 +136,11 @@ export default function MatchPreviewDialog({ onClose, match }) {
                     }
                     webViewProps={{
                         source: { baseUrl: "https://youtube.com" },
-                  }}
-                    videoId={match.preview}
+                    }}
+                    videoId={match.isTeaser ? match.teaser : match.preview}
                 // onChangeState={onStateChange}
                 />
+                <SupportPanel />
             </View>
         </View>
     )

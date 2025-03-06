@@ -7,7 +7,7 @@ import MoonDarkIcon from './assets/moon_dark.svg';
 import strings from './Strings';
 import Colors, { ColorsClassDark } from './Colors';
 
-function AppBar({navigation, title, setMode,  showLang, showMode=false, showBack = true, showLogo = true}): JSX.Element {
+function AppBar({navigation, title, showDrawer, setMode,  showLang, showMode=false, showBack = true, showLogo = true}): JSX.Element {
 
   function onBack() {
     navigation.goBack()
@@ -18,6 +18,9 @@ function AppBar({navigation, title, setMode,  showLang, showMode=false, showBack
   }
 
   function onSetMode() {
+    // showDrawer()
+    // return
+    
     Colors.swap()
     setMode(Colors.mode)
   }

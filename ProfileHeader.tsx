@@ -8,7 +8,10 @@ import Colors from "./Colors";
 import dataManager from "./DataManager";
 
 const ProfileHeader = React.memo(({ navigation, user, isMe, predictsJson }) => {
-    return <View>
+
+    return <View style={{
+        marginBottom: 10
+    }}>
         <View style={{
             width: "100%",
             // height: 500,

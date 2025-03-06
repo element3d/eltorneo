@@ -29,6 +29,10 @@ import Colors from './Colors';
 import AwardsInfoPage from './AwardsInfoPage';
 import MoveToLeaguePage from './MoveToLeaguePage';
 import RegisterPage from './RegisterPage';
+import BeatBetPage from './BeatBet';
+import SelectLeaguePage from './SelectLeaguePage';
+import TrailersPage from './TrailersPage';
+// import { createDrawerNavigator } from '@react-navigation/drawer';
 
 // import { RewardedAd, TestIds, AdEventType, RewardedAdEventType } from 'react-native-google-mobile-ads';
 
@@ -38,6 +42,7 @@ import RegisterPage from './RegisterPage';
 // });
 
 const Stack = createNativeStackNavigator();
+// const Drawer = createDrawerNavigator();
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -95,6 +100,7 @@ function App(): JSX.Element {
  
   return (
     <NavigationContainer>
+    
       <Stack.Navigator initialRouteName={ "Home" } screenOptions={{
           headerShown: false, // This hides the header,
           animation: 'none',
@@ -112,6 +118,9 @@ function App(): JSX.Element {
         <Stack.Screen name="Langs" component={LangPage} />
         <Stack.Screen name="AwardsInfo" component={AwardsInfoPage} />
         <Stack.Screen name="MoveToLeague" component={MoveToLeaguePage} />
+        <Stack.Screen name="BeatBet" component={BeatBetPage} />
+        <Stack.Screen name="SelectLeague" component={SelectLeaguePage} />
+        <Stack.Screen name="Trailers" component={TrailersPage} />
 
       </Stack.Navigator>
 

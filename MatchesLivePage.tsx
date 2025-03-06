@@ -72,6 +72,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
         if (!data.length) {
           getUpcoming()
         } else {
+          setUpcoming([])
           setUpcomingReqFinished(true)
         }
       })
@@ -157,7 +158,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
               {matchesReqFinished && upcomingReqFinished && dataManager.getSettings().enableAds ? <View style={{
                 width: '100%',
               }}>
-                <NativeAdComp forceNativeAd={true}/>
+                <NativeAdComp forceNativeAd={true} />
               </View> : null}
 
               {matchesReqFinished && matches.length ? <Text style={{

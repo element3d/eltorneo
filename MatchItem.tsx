@@ -10,9 +10,11 @@ import dataManager from './DataManager';
 import strings from './Strings';
 import Colors from './Colors';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import moment from 'moment';
+import FAIcon from 'react-native-vector-icons/Fontisto';
 
 
-export default function MatchItem({ onPress, match, showLeague, onShowMatchPreview }) {
+export default function MatchItem({ onPress, match, showLeague, onShowMatchPreview, onShowMatchTrailer, showDate = false }) {
 
   function getTime(ts) {
     const date = new Date(ts);
@@ -73,16 +75,16 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
   }
 
   function getStatusText(m) {
-    if (m.status == 'HT' || m.status == 'FT') return m.status
+    if (m.status == 'HT' || m.status == 'FT' || m.status == "BT") return m.status
 
     return '  ' + m.elapsed + " '"
   }
 
   function getLeagueIcon(match) {
     if (Colors.mode == 1 && !match.is_special)
-      return `${SERVER_BASE_URL}/data/leagues/${match.league.name}_colored.png${dataManager.getImageCacheTime()}`
+      return `${SERVER_BASE_URL}/data/leagues/${match.league.name}${match.league.country}_colored.png${dataManager.getImageCacheTime()}`
 
-    return `${SERVER_BASE_URL}/data/leagues/${match.league.name}_white.png${dataManager.getImageCacheTime()}`
+    return `${SERVER_BASE_URL}/data/leagues/${match.league.name}${match.league.country}_white.png${dataManager.getImageCacheTime()}`
 
   }
 
@@ -92,6 +94,73 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
   function onShowMatchPress() {
     if (onShowMatchPreview) onShowMatchPreview(match)
+  }
+
+  function onShowMatchTrailerPress() {
+    if (onShowMatchTrailer) onShowMatchTrailer(match)
+  }
+
+  function get90BGColor() {
+    if (match.is_special) {
+      if (match.predict.status == 0)
+        return 'black'
+
+      return 'white'
+    }
+    return Colors.gray800
+  }
+
+  function get90TitleColor() {
+    if (match.is_special) {
+      if (match.predict.status == 0)
+        return 'white'
+
+      return 'black'
+    }
+    return Colors.titleColor
+  }
+
+  function getTeam1Opacity() {
+    if (!isMatchEnded()) return 1
+
+    if (match.status == 'PEN') {
+      if (match.team1_score_pen < match.team2_score_pen) return 0.6
+      return 1
+    }
+
+    if (match.team1_score < match.team2_score) return 0.6
+    return 1
+  }
+
+  function getTeam2Opacity() {
+    if (!isMatchEnded()) return 1
+
+    if (match.status == 'PEN') {
+      if (match.team2_score_pen < match.team1_score_pen) return 0.6
+      return 1
+    }
+
+    if (match.team2_score < match.team1_score) return 0.6
+    return 1
+  }
+
+  function renderDate() {
+    const currMatchDate = match.date
+
+    return <View style={{
+      position: 'absolute',
+      top: 8,
+      left: 2,
+      width: 100,
+      height: 20,
+    }}>
+      <Text style={{
+        marginLeft: 10,
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#AEAEB2',
+      }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')} </Text>
+    </View >
   }
 
   return (
@@ -206,6 +275,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
               // overflow: 'hidden',
               marginRight: 10,
               fontSize: 12,
+              opacity: getTeam1Opacity(),
               // fontWeight: 'bold',
               color: match.is_special ? 'white' : Colors.titleColor,
               fontFamily: 'OpenSans-ExtraBold'
@@ -324,6 +394,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
               // overflow: 'hidden',
               marginLeft: 10,
               fontSize: 12,
+              opacity: getTeam2Opacity(),
               color: match.is_special ? 'white' : Colors.titleColor,
               fontFamily: 'OpenSans-ExtraBold'
             }}>{match.team2.shortName}</Text>
@@ -346,16 +417,34 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
             justifyContent: 'center',
             borderRadius: 12,
             paddingLeft: 10,
-            paddingRight: 10,
+            paddingRight: match.playOff ? 2 : 10,
+            flexDirection: 'row',
             height: 20,
             marginTop: 2
           }}>
             <Text style={{
               fontSize: 12,
-              marginBottom: 2,
+              // marginBottom: 2,
               color: getBorderColor(match.predict),
-              fontFamily: 'NotoSansArmenian-Bold'
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
             }}>{dataManager.getPredictTitle(match.predict)}{dataManager.getPredictValue(match.predict)}</Text>
+
+            {match.playOff ? <View style={{
+              width: 18,
+              height: 18,
+              backgroundColor: get90BGColor(),
+              borderRadius: 9,
+              marginLeft: 6,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Text style={{
+                fontSize: 12,
+                fontWeight: 900,
+                color: get90TitleColor()
+              }}>90</Text>
+            </View> : null}
           </View>
         </View> : null}
         {showLeague || hasPredict() ? <View style={{
@@ -430,6 +519,8 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
         </View> : null}
 
       </View>
+      { showDate ? renderDate() : null }
+
       {hasPredict() && match.predict.status > 0 ? <View style={{
         position: 'absolute',
         top: 10,
@@ -447,6 +538,22 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
           color: getBorderColor(match.predict)
         }}>{strings.points}: {getPoints(match.predict)}</Text>
       </View> : null}
+      
+      {match.teaser ? <TouchableOpacity onPress={onShowMatchTrailerPress} style={{
+        width: 26,
+        height: 26,
+        borderRadius: 13,
+        backgroundColor: '#FACC15',// 'white',
+        position: 'absolute',
+        bottom: 5,
+        left: match.preview ? 5 : '',
+        right: !match.preview ? 5 : '',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+      }}>
+        <FAIcon name='film' color={'black'} size={14} />
+      </TouchableOpacity> : null}
 
       {match.preview ? <TouchableOpacity onPress={onShowMatchPress} style={{
         width: 26,

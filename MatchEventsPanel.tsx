@@ -174,9 +174,15 @@ function Item({ event, index, isLast, score }) {
 export default function MatchEventsPanel({ events }) {
     let t1Score = 0
     let t2Score = 0
+    let penaltyStarted = false;
 
     return <View>
         {events.map((e, i) => {
+            if (e.comments == 'Penalty Shootout' && !penaltyStarted) {
+                penaltyStarted = true;
+                t1Score = 0
+                t2Score = 0
+            }
             // if (e.type == 'subst') return null
             if (e.type == "Goal" && e.detail != "Missed Penalty") {
                 if (e.team == 1) t1Score++;

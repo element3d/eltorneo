@@ -296,7 +296,7 @@ function TablesPage({ navigation, route }): JSX.Element {
           <Text style={{
             color: '#8E8E93',
             fontWeight: 'bold'
-          }}>{me ? strings.no_players : strings.be_first} {league}</Text>
+          }}>{strings.no_players}</Text>
 
           {!me ? <TouchableOpacity activeOpacity={.8} onPress={onSignIn} style={{
             height: 30,
@@ -437,6 +437,14 @@ function TablesPage({ navigation, route }): JSX.Element {
     navigation.navigate({ name: 'Tables', params: { page: 1, league: 2 }, key: `${1}_${league}` })
   }
 
+  function onLeague3() {
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 3 }, key: `${1}_${league}` })
+  }
+
+  function onLeague4() {
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 4 }, key: `${1}_${league}` })
+  }
+
   const onRefresh = () => {
     setRefreshing(false);
     if (blockForAd) return
@@ -460,14 +468,6 @@ function TablesPage({ navigation, route }): JSX.Element {
     })
 
     // navigation.navigate('AwardsInfo')
-  }
-
-  function showMoveToLeague() {
-    if (!me) return false
-    if (me.league == 2) return true
-    if (me.league == 1 && me.points <= 20) return true
-
-    return false
   }
 
   function onMoveToLeague() {
@@ -568,7 +568,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                   height: 180,
                   overflow: 'hidden'
                 }}>
-                  <ImageBackground width={200} height={200} source={league == 1 ? league1Img : league2Img} style={{
+                  <ImageBackground width={200} height={200} source={league1Img} style={{
 
                     width: '100%',
                     height: 180,
@@ -588,10 +588,20 @@ function TablesPage({ navigation, route }): JSX.Element {
               <NativeAdComp forceNativeAd={true} />
             </View> : null}
 
-            <View style={{
+            <ScrollView style={{
               marginBottom: 15,
+              // width: '100%',
+              // backgroundColor: 'red',
+            }}
+            showsHorizontalScrollIndicator={false}
+              horizontal={true}
+              contentInsetAdjustmentBehavior="automatic"
+            contentContainerStyle={{
+              // width: '100%',
               flexDirection: 'row',
-              justifyContent: 'flex-start'
+            
+              // justifyContent: 'flex-start',
+              paddingRight: 40
             }}>
               <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague1() }} style={{
                 marginLeft: 20,
@@ -609,7 +619,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                 <Text style={{
                   fontWeight: 'bold',
                   color: league == 1 ? 'white' : Colors.titleColor
-                }}>{strings.league} 1</Text>
+                }}>{strings.legend}</Text>
                 {me?.league == 1 ? <Text style={{
                   fontSize: 8,
                   fontWeight: 'bold',
@@ -619,7 +629,6 @@ function TablesPage({ navigation, route }): JSX.Element {
               </TouchableOpacity>
 
               <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague2() }} style={{
-                // marginLeft: 20,
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
@@ -628,13 +637,12 @@ function TablesPage({ navigation, route }): JSX.Element {
                 borderColor: Colors.borderColor,
                 borderRadius: 20,
                 alignItems: 'center',
-                // flex: 1,
                 justifyContent: 'center'
               }}>
                 <Text style={{
                   fontWeight: 'bold',
                   color: league == 2 ? 'white' : Colors.titleColor
-                }}>{strings.league} 2</Text>
+                }}>{strings.pro}</Text>
                 {me?.league == 2 ? <Text style={{
                   fontSize: 8,
                   fontWeight: 'bold',
@@ -643,7 +651,53 @@ function TablesPage({ navigation, route }): JSX.Element {
                 }}>{strings.your_league}</Text> : null}
               </TouchableOpacity>
 
-              {!showMoveToLeague() ? <TouchableOpacity onPress={onMoveToLeague} style={{
+               {dataManager.getSettings().numLevels >= 3 ? <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague3() }} style={{
+                marginRight: 10,
+                paddingHorizontal: 20,
+                height: 40,
+                backgroundColor: league == 3 ? Colors.primary : Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: league == 3 ? 'white' : Colors.titleColor
+                }}>{strings.amateur}</Text>
+                {me?.league == 3 ? <Text style={{
+                  fontSize: 8,
+                  fontWeight: 'bold',
+                  lineHeight: 10,
+                  color: league == 3 ? 'white' : Colors.titleColor
+                }}>{strings.your_league}</Text> : null}
+              </TouchableOpacity> : null }
+
+              {dataManager.getSettings().numLevels >= 4 ? <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague4() }} style={{
+                marginRight: 10,
+                paddingHorizontal: 20,
+                height: 40,
+                backgroundColor: league == 4 ? Colors.primary : Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: league == 4 ? 'white' : Colors.titleColor
+                }}>{strings.beginner}</Text>
+                {me?.league == 4 ? <Text style={{
+                  fontSize: 8,
+                  fontWeight: 'bold',
+                  lineHeight: 10,
+                  color: league == 4 ? 'white' : Colors.titleColor
+                }}>{strings.your_league}</Text> : null}
+              </TouchableOpacity> : null }
+
+              <TouchableOpacity onPress={onMoveToLeague} style={{
                 width: 40,
                 height: 40,
                 backgroundColor: Colors.primary,
@@ -658,48 +712,8 @@ function TablesPage({ navigation, route }): JSX.Element {
                   fontWeight: 'bold',
                   color: 'white'
                 }}><Icon name='info' size={18}></Icon></Text>
-              </TouchableOpacity> : null}
-            </View>
-
-            {showMoveToLeague() ? <View style={{
-              flexDirection: 'row',
-              paddingHorizontal: 20,
-              marginBottom: 20,
-              marginTop: -5,
-            }}>
-              <TouchableOpacity activeOpacity={.8} onPress={onMoveToLeague} style={{
-                height: 30,
-                borderRadius: 15,
-                paddingHorizontal: 20,
-                paddingRight: 5,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: Colors.primary
-              }}>
-                <Text style={{
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}>{strings.move_to_league} {me.league == 1 ? "2" : "1"}</Text>
-                <MDIcon name={'arrow-right'} size={30} color={'white'}></MDIcon>
               </TouchableOpacity>
-
-              <TouchableOpacity activeOpacity={.6} onPress={onMoveToLeague} style={{
-                width: 30,
-                height: 30,
-                backgroundColor: Colors.primary,
-                borderRadius: 20,
-                marginLeft: 10,
-                alignItems: 'center',
-                // flex: 1,
-                justifyContent: 'center'
-              }}>
-                <Text style={{
-                  fontWeight: 'bold',
-                  color: 'white'
-                }}><Icon name='info' size={16}></Icon></Text>
-              </TouchableOpacity>
-            </View> : null}
+            </ScrollView>
 
             {!blockForAd || !authManager.getMeSync() ? <View style={{
               width: '100%',

@@ -84,8 +84,6 @@ function ProfilePage({ navigation, route }): JSX.Element {
   const [previewMatch, setPreviewMatch] = useState(null)
 
   useEffect(() => {
-    console.log(authManager.getMeSync())
-
     if (!dataManager.getSettings()) return
     if (!dataManager.getSettings().enableAds || !dataManager.getSettings().blockForAd) return
 
@@ -110,6 +108,13 @@ function ProfilePage({ navigation, route }): JSX.Element {
   }
 
   function onShowMatchPreview(match) {
+    match.isTeaser = false
+    setShowMatchPreview(true)
+    setPreviewMatch(match)
+  }
+
+  function onShowMatchTrailer(match) {
+    match.isTeaser = true
     setShowMatchPreview(true)
     setPreviewMatch(match)
   }
@@ -256,7 +261,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
                 </TouchableOpacity>
               </View>}
             </View> :
-            <UserMatchesList navigation={navigation} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={predicts} totalPredicts={predictsJson.allPredicts} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} />
+            <UserMatchesList navigation={navigation} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={predicts} totalPredicts={predictsJson.allPredicts} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
           }
 
           <BottomNavBar page={isMe ? EPAGE_PROFILE : null} navigation={navigation} />

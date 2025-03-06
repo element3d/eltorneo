@@ -13,7 +13,7 @@ import Colors from "./Colors";
 import NativeAdComp from "./NativeAdComp";
 
 
-export default function MatchH2HPanel({ navigation, match, onShowMatchPreview }) {
+export default function MatchH2HPanel({ navigation, match, onShowMatchPreview, onShowMatchTrailer }) {
   const [team, setTeam] = useState(match.team1.id)
   const [loading, setLoading] = useState(true)
   const [matchesReqFinished, setMatchesReqFinished] = useState(false)
@@ -164,7 +164,7 @@ export default function MatchH2HPanel({ navigation, match, onShowMatchPreview })
               }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
             </View>
           ) : null}
-          <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} />
+          <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
         </View>
       }) : null}
     </View>

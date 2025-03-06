@@ -9,6 +9,16 @@ export default function UserPanel({ navigation, place, user, isMe }) {
     function onNavEdit() {
       navigation.navigate("ProfileEdit")
     }
+
+    function getLeagueText() {
+      let txt = strings.place_in_league
+      if (user.league == 1) txt += " " + strings.legend
+      else if (user.league == 2) txt += " " + strings.pro
+      else if (user.league == 3) txt += " " + strings.amateur
+      else if (user.league == 4) txt += " " + strings.beginner
+
+      return txt
+    }
   
     if (user) {
       return (
@@ -52,13 +62,18 @@ export default function UserPanel({ navigation, place, user, isMe }) {
               marginTop: 2,
               color: '#8E8E93',
               fontSize: 14,
-              fontFamily: 'NotoSansArmenian-Bold'
-            }}>{`${user.league == 2 ? strings.place_in_league2 : strings.place_in_el_torneo}:  ${place}`}</Text> : null}
+              // lineHeight: 20,
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
+            }}>
+               {`${getLeagueText()}:  ${place}`}</Text> : null} 
             <Text style={{
-              marginTop: 2,
+              // marginTop: 2,
               color: '#8E8E93',
               fontSize: 14,
-              fontFamily: 'NotoSansArmenian-Bold'
+              lineHeight: 16,
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
             }}>{strings.points}:  {user.points}</Text>
           </View>
           {isMe ? <TouchableOpacity activeOpacity={.6} onPress={onNavEdit} style={{

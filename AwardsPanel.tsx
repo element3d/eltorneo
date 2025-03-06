@@ -4,68 +4,39 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import Colors from "./Colors";
 
 function AwardsPanel({ onReadMore, showLeague = true, overlay = false, league = 1 }) {
+
+    function getLeagueName() {
+        if (league == 1) return strings.legend
+        if (league == 2) return strings.pro
+        if (league == 3) return strings.amateur
+        if (league == 4) return strings.beginner
+    }
+
     return (
         <View style={{
             // marginTop: 10,
-            
+
             width: '100%',
             height: '100%',
             backgroundColor: overlay ? '#000000aa' : 'transparent',
-            
+
             alignItems: 'center',
             justifyContent: 'center'
         }}>
-           { showLeague ? <Text style={{
+            {showLeague ? <Text style={{
                 fontWeight: 'bold',
                 color: 'white',
                 fontSize: 22,
                 lineHeight: 22,
                 marginBottom: 4,
-            }}>{strings.league} {league}</Text> : null }
-             <Text style={{
+            }}>{getLeagueName()}</Text> : null}
+            <Text style={{
                 fontWeight: 'bold',
                 color: '#ffffffaa',
                 fontSize: 16,
                 lineHeight: 16,
                 marginBottom: 4,
             }}>{strings.season} 24/25</Text>
-            {/* <Text style={{
-                fontWeight: 'bold',
-                color: 'white',
-                fontSize: 16,
-                lineHeight: 16,
-                marginBottom: 4,
-            }}>{strings.awards}</Text>
-            <Text style={{
-                textAlign: 'center',
-                fontSize: 14,
-                fontWeight: 'bold',
-                color: "#ffffffaa",
-                paddingHorizontal: 20,
-            }}>{strings.award_msg}</Text>
-            <View style={{
-                // borderWidth: 2,
-                borderRadius: 40,
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                marginBottom: 12,
-                marginTop: 6,
-                backgroundColor: 'white'
-            }}>
-               { league == 1 ? <Text style={{
-                    fontWeight: 'bold',
-                    fontSize: 16,
-                    color: "black"
-                }}>
-                    1 pt = 0.5 $
-                </Text> : <Text style={{
-                    fontWeight: 'bold',
-                    fontSize: 16,
-                    color: "black"
-                }}>
-                    1 pt = 0.3 $
-                </Text>}
-            </View> */}
 
             <Text style={{
                 fontWeight: 'bold',
@@ -100,11 +71,7 @@ function AwardsPanel({ onReadMore, showLeague = true, overlay = false, league = 
                             color: 'black'
                         }}>+3</Text>
                     </View>
-                    {/* <Text style={{
-                        color: 'white',
-                        marginTop: 2,
-                        fontWeight: 'bold'
-                    }}>{strings.score}</Text> */}
+
                 </View>
 
                 <View style={{
@@ -130,11 +97,7 @@ function AwardsPanel({ onReadMore, showLeague = true, overlay = false, league = 
                             color: '#00C566'
                         }}>+1</Text>
                     </View>
-                    {/* <Text style={{
-                        color: 'white',
-                        marginTop: 2,
-                        fontWeight: 'bold'
-                    }}>{strings.win}</Text> */}
+
                 </View>
 
                 <View style={{
@@ -160,11 +123,6 @@ function AwardsPanel({ onReadMore, showLeague = true, overlay = false, league = 
                             color: '#FF4747'
                         }}>-1</Text>
                     </View>
-                    {/* <Text style={{
-                        marginTop: 2,
-                        color: 'white',
-                        fontWeight: 'bold'
-                    }}>{strings.lost}</Text> */}
                 </View>
 
 
@@ -187,95 +145,6 @@ function AwardsPanel({ onReadMore, showLeague = true, overlay = false, league = 
                     color: 'white'
                 }}>{strings.learn_more}</Text>
             </TouchableOpacity>
-            {/* <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}>
-                <Text style={{
-                    color: "#ffffffcc",
-                    fontSize: 14,
-                    marginRight: 6,
-                }}>
-                    {strings.score_predicted}:
-                </Text>
-                <Text style={{
-                    color: '#FFCC00',
-                    fontSize: 16,
-                    marginRight: 4,
-                    fontWeight: 'bold'
-                }}>
-                    +3
-                </Text>
-                <Text style={{
-                    color: "#ffffffcc",
-                    fontSize: 14,
-                    // fontWeight: 'bold'
-                }}>
-                    {strings.points2}
-                </Text>
-            </View>
-
-            <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}>
-                <Text style={{
-                    color: "#ffffffcc",
-                    fontSize: 14,
-                    marginRight: 6,
-                     fontWeight: 'bold'
-                }}>
-                    {strings.winner_or_draw_predicted}:
-                </Text>
-                <Text style={{
-                    color: '#00C566',
-                    fontSize: 16,
-                    marginRight: 4,
-                    fontWeight: 'bold'
-                }}>
-                    +1
-                </Text>
-                <Text style={{
-                    color: "#ffffffcc",
-                    fontSize: 14,
-                    fontWeight: 'bold'
-                }}>
-                    {strings.point}
-                </Text>
-            </View>
-
-            <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                // marginBottom: 10,
-            }}>
-                <Text style={{
-                    fontWeight: 'bold',
-                    color: "#ffffffbb",
-                    fontSize: 14,
-                    marginRight: 6,
-                }}>
-                    {strings.prediction_was_failed}:
-                </Text>
-                <Text style={{
-                    color: '#FF4747',
-                    fontSize: 16,
-                    marginRight: 4,
-                    fontWeight: 'bold'
-                }}>
-                    -1
-                </Text>
-                <Text style={{
-                    color: "#ffffffbb",
-                    fontSize: 14,
-                    fontWeight: 'bold'
-                }}>
-                    {strings.point}
-                </Text>
-            </View> */}
         </View>
     )
 }

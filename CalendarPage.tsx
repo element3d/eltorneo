@@ -89,9 +89,17 @@ function CalendarPage({ navigation, route }): JSX.Element {
   }
 
   function onShowMatchPreview(match) {
+    match.isTeaser = false
     setShowMatchPreview(match)
     setPreviewMatch(match)
   }
+
+  function onShowMatchTrailer(match) {
+    match.isTeaser = true
+    setShowMatchPreview(match)
+    setPreviewMatch(match)
+  }
+
 
   function onNavMatch(match) {
     const now = Date.now(); // Get current timestamp in milliseconds
@@ -119,9 +127,9 @@ function CalendarPage({ navigation, route }): JSX.Element {
   };
 
   function getLeagueImageUrl(m) {
-    if (Colors.mode == 1) return `${SERVER_BASE_URL}/data/leagues/${m.league_name}_colored.png${dataManager.getImageCacheTime()}`
+    if (Colors.mode == 1) return `${SERVER_BASE_URL}/data/leagues/${m.league_name}${m.league_country}_colored.png${dataManager.getImageCacheTime()}`
 
-    return `${SERVER_BASE_URL}/data/leagues/${m.league_name}_white.png${dataManager.getImageCacheTime()}`
+    return `${SERVER_BASE_URL}/data/leagues/${m.league_name}${m.league_country}_white.png${dataManager.getImageCacheTime()}`
   }
 
   return (
@@ -215,20 +223,32 @@ function CalendarPage({ navigation, route }): JSX.Element {
                     <View style={{
                       marginLeft: 10,
                     }}>
-                      <Text style={{
-                        fontSize: 16,
-                        fontWeight: 'bold',
-                        color: Colors.titleColor
-                      }}>{m.league_name}</Text>
+                      <View style={{
+                        flexDirection: 'row'
+                      }}>
+                        <Text style={{
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          marginBottom: 1,
+                          color: Colors.titleColor
+                        }}>{m.league_name}</Text>
+                       {m.league_country.length ? <Text style={{
+                          fontSize: 16,
+                          marginLeft: 4,
+                          fontWeight: 'bold',
+                          marginBottom: 1,
+                          color: '#AEAEB2',
+                        }}>({m.league_country})</Text> : null }
+                      </View>
                       <Text style={{
                         fontSize: 11,
                         lineHeight: 12,
                         color: '#AEAEB2',
                         fontWeight: 'bold'
-                      }}>{strings.matchday} {m.week}</Text>
+                      }}>{dataManager.getWeekTitle({ week: m.week, type: m.weekType })}</Text>
                     </View>
                   </View> : null}
-                  <MatchItem onPress={() => { onNavMatch(m) }} match={m} onShowMatchPreview={onShowMatchPreview} />
+                  <MatchItem onPress={() => { onNavMatch(m) }} match={m} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
                 </View>
               })}
             </View>

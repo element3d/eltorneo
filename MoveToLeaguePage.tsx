@@ -31,6 +31,9 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
     const me = authManager.getMeSync()
 
     const onNavPlayStore = () => {
+        navigation.navigate('SelectLeague');
+        return
+
         const league = me.league == 1 ? 2 : 1
 
         fetch(`${SERVER_BASE_URL}/api/v1/me/movetoleague`, {
@@ -87,11 +90,10 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
                             backgroundColor: Colors.gray800
                         }}>
                             <AppBar navigation={navigation} />
-
-
                         </View>
                         <View style={{
                             padding: 18,
+                            paddingBottom: 0,
                             // flexDirection: 'row',
                             alignItems: 'flex-start',
                             // justifyContent: 'flex-start'
@@ -100,7 +102,7 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
                                 fontSize: 20,
                                 fontWeight: 'bold',
                                 color: Colors.titleColor,
-                            }}>{strings.leagues_title}</Text>
+                            }}>{strings.learn_more}</Text>
                             <Text style={{
                                 marginTop: 10,
                                 fontSize: 14,
@@ -109,15 +111,156 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
                             }}>{strings.leagues_msg}</Text>
                         </View>
 
-                        {me && (me.points <= 20 || me.league == 2) ? <TouchableOpacity activeOpacity={.8} onPress={onNavPlayStore} style={{
+                        <View style={{
+                            width: '100%',
+                            padding: 18,
+                            flex: 1,
+                        }}>
+                            <View style={{
+                                flex: 1,
+                                width: '100%',
+                                flexDirection: 'row',
+                                alignItems: 'flex-start'
+                                // alignItems: 'center'
+                            }}>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}>
+                                    {/* <View style={{
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: 10,
+                                        backgroundColor: Colors.titleColor
+                                    }}></View> */}
+                                    <Text style={{
+                                        // marginLeft: 10,
+                                        fontWeight: 'bold',
+                                        fontSize: 16,
+                                        color: Colors.titleColor
+                                    }}>{strings.legend}:</Text>
+                                </View>
+                                <Text style={{
+                                    flex: 1,
+                                    marginLeft: 5,
+                                    // fontWeight: 'bold',
+                                    fontSize: 16,
+                                    color: '#8E8E93',
+                                    // color: Colors.titleColor
+                                }}>{strings.legend_msg}</Text>
+                            </View>
+
+                            <View style={{
+                                flex: 1,
+                                marginTop: 6,
+                                width: '100%',
+                                flexDirection: 'row',
+                                alignItems: 'flex-start'
+                                // alignItems: 'center'
+                            }}>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}>
+                                    <Text style={{
+                                        // marginLeft: 10,
+                                        fontWeight: 'bold',
+                                        fontSize: 16,
+                                        color: Colors.titleColor
+                                    }}>{strings.pro}:</Text>
+                                </View>
+                                <Text style={{
+                                    flex: 1,
+                                    marginLeft: 5,
+                                    // fontWeight: 'bold',
+                                    fontSize: 16,
+                                    color: '#8E8E93',
+                                    // color: Colors.titleColor
+                                }}>{strings.pro_msg}</Text>
+                            </View>
+
+                            <View style={{
+                                flex: 1,
+                                marginTop: 6,
+                                width: '100%',
+                                flexDirection: 'row',
+                                alignItems: 'flex-start'
+                                // alignItems: 'center'
+                            }}>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}>
+                                    <Text style={{
+                                        // marginLeft: 10,
+                                        fontWeight: 'bold',
+                                        fontSize: 16,
+                                        color: Colors.titleColor
+                                    }}>{strings.amateur}:</Text>
+                                </View>
+                                <Text style={{
+                                    flex: 1,
+                                    marginLeft: 5,
+                                    // fontWeight: 'bold',
+                                    fontSize: 16,
+                                    color: '#8E8E93',
+                                    // color: Colors.titleColor
+                                }}>{strings.amateur_msg}</Text>
+                            </View>
+
+                            <View style={{
+                                flex: 1,
+                                marginTop: 6,
+                                width: '100%',
+                                flexDirection: 'row',
+                                alignItems: 'flex-start'
+                                // alignItems: 'center'
+                            }}>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}>
+                                    <Text style={{
+                                        // marginLeft: 10,
+                                        fontWeight: 'bold',
+                                        fontSize: 16,
+                                        color: Colors.titleColor
+                                    }}>{strings.beginner}:</Text>
+                                </View>
+                                <Text style={{
+                                    flex: 1,
+                                    marginLeft: 5,
+                                    // fontWeight: 'bold',
+                                    fontSize: 16,
+                                    color: '#8E8E93',
+                                    // color: Colors.titleColor
+                                }}>{strings.beginner_msg}</Text>
+                            </View>
+                        </View>
+
+                        <View style={{
+                            padding: 18,
+                            paddingTop: 0,
+                            // flexDirection: 'row',
+                            alignItems: 'flex-start',
+                            // justifyContent: 'flex-start'
+                        }}>
+                            <Text style={{
+                                fontSize: 14,
+                                color: '#8E8E93',
+
+                            }}>{strings.leagues_msg2}</Text>
+                        </View>
+
+                        {me ? <TouchableOpacity activeOpacity={.8} onPress={onNavPlayStore} style={{
                             height: 30,
+                            marginTop: 30,
                             alignItems: 'center',
                             justifyContent: 'center',
                             borderRadius: 15,
                             flexDirection: 'row',
                             alignSelf: 'center',
                             paddingHorizontal: 20,
-                            paddingRight: 5,
                             marginBottom: 30,
                             backgroundColor: '#FF2882'
                         }}>
@@ -127,13 +270,12 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
                                 fontWeight: 'bold',
                                 // fontFamily: 'Poppins-Bold',
                                 color: 'white'
-                            }}>{strings.move_to_league} {me.league == 1 ? "2" : '1'}</Text>
-                            <MDIcon name={'arrow-right'} size={30} color={'white'}></MDIcon>
-
+                            }}>{strings.select_league}</Text>
                         </TouchableOpacity> : null}
 
                         {!me ? <TouchableOpacity activeOpacity={.8} onPress={onSignIn} style={{
                             height: 30,
+                            marginTop: 30,
                             alignItems: 'center',
                             justifyContent: 'center',
                             borderRadius: 15,
@@ -163,7 +305,7 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
                                 <GoogleIcon style={{
                                     width: 18,
                                     height: 18
-                                }}/>
+                                }} />
                             </View>
 
                         </TouchableOpacity> : null}

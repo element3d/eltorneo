@@ -5,9 +5,9 @@ import moment from "moment";
 import dataManager from "./DataManager";
 import SpecialAwardPanel from "./SpecialAwardPanel";
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import FAIcon from 'react-native-vector-icons/Fontisto';
 
-export default function EventCard({ onPress, onClose, match }) {
-
+export default function EventCard({ onPress, onTrailerPress, onClose, match }) {
     function getDate(matchDate) {
         const today = moment().startOf('day');
         const tomorrow = moment().add(1, 'day').startOf('day');
@@ -32,7 +32,7 @@ export default function EventCard({ onPress, onClose, match }) {
             paddingHorizontal: 12,
             backgroundColor: "#000000cc"
         }}>
-            <TouchableOpacity activeOpacity={.9}  style={{
+            <TouchableOpacity activeOpacity={.9} style={{
                 width: '100%',
                 // height: 220,
                 borderRadius: 16,
@@ -56,26 +56,6 @@ export default function EventCard({ onPress, onClose, match }) {
                         fontSize: 20,
                         fontFamily: 'Poppins-Bold'
                     }}>{match.translatedTitle}</Text>
-                    {/* <View style={{
-                        marginTop: -10,
-                        height: 20,
-                        flexDirection: 'row',
-                        alignItems: 'flex-end'
-                    }}>
-                        <Text style={{
-                            color: 'white',
-                            fontSize: 12,
-                            lineHeight: 12,
-                            marginBottom: 1,
-                            fontFamily: 'Poppins-Bold'
-                        }}>{strings.at}</Text>
-                        <Text style={{
-                            color: 'white',
-                            fontSize: 14,
-                            lineHeight: 20,
-                            fontFamily: 'Poppins-Bold'
-                        }}> {match.stadium}</Text>
-                    </View> */}
 
                     <View style={{
                         width: '100%',
@@ -84,13 +64,7 @@ export default function EventCard({ onPress, onClose, match }) {
                         justifyContent: 'center'
                     }}>
                         <View style={{
-                            //  width: 150,
                             flex: 1,
-
-                            //  backgroundColor: 'red',
-                            //  height: 70,
-                            // backgroundColor: '#00000088',
-                            // borderRadius: 50,
                             alignItems: 'flex-end',
                             paddingRight: 25,
                             justifyContent: 'center'
@@ -180,7 +154,7 @@ export default function EventCard({ onPress, onClose, match }) {
                             </View>
                         </View>
                     </View>
-                    <View>
+                    {!match.match.teaser?.length ? <View>
                         <SpecialAwardPanel match={match.match} />
                         <TouchableOpacity onPress={onPress} activeOpacity={.8} style={{
                             height: 24,
@@ -198,7 +172,48 @@ export default function EventCard({ onPress, onClose, match }) {
                                 fontFamily: 'Poppins-Bold'
                             }}>{strings.predict}</Text>
                         </TouchableOpacity>
-                    </View>
+                    </View> : <View style={{
+                        flexDirection: 'row',
+                        marginTop: 6
+                    }}>
+                    <TouchableOpacity onPress={onPress} activeOpacity={.8} style={{
+                            height: 24,
+                            marginTop: 5,
+                            marginBottom: 20,
+                            paddingHorizontal: 20,
+                            backgroundColor: '#FF2882',
+                            borderRadius: 12,
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Text style={{
+                                lineHeight: 18,
+                                color: 'white',
+                                fontFamily: 'Poppins-Bold'
+                            }}>{strings.predict}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={onTrailerPress} activeOpacity={.8} style={{
+                            height: 24,
+                            marginTop: 5,
+                            marginBottom: 20,
+                            marginLeft: 10,
+                            paddingHorizontal: 20,
+                            backgroundColor: '#FACC15',
+                            borderRadius: 12,
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            justifyContent: 'center'
+                        }}>
+                            <Text style={{
+                                lineHeight: 20,
+                                color: 'black',
+                                fontFamily: 'Poppins-Bold'
+                            }}>{strings.trailer}</Text>
+                            <FAIcon name={'film'} color={'black'} size={16} style={{
+                                marginLeft: 6
+                            }}></FAIcon>
+                        </TouchableOpacity>
+                    </View>}
                 </View>
                 <TouchableOpacity onPress={onClose} style={{
                     position: 'absolute',

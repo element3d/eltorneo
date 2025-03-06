@@ -9,6 +9,7 @@ class DataManager {
         this.firstSeasonStartYear = 2024
         this.getTableByPoints()
         this.fetchTopScorers()
+        this.fetchTrailers()
 
         this.settings = {
             blockForAd: false,
@@ -71,6 +72,10 @@ class DataManager {
         return this.topScorers
     }
 
+    getTrailers() {
+        return this.trailers
+    }
+
     setMatch(m) {
         if (m.predict && (m.predict.team1_score < 0 || m.predict.team2_score < 0)) m.predict = null
         this.match = m
@@ -117,13 +122,15 @@ class DataManager {
 
             //   return `${strings.matchday} ${week.week}`
         } else if (week.type == 1) {
-            return '(R16)'
+            return '(KR)'
         } else if (week.type == 2) {
             return '(QF)'
         } else if (week.type == 3) {
             return '(SF)'
         } else if (week.type == 4) {
             return '(F)'
+        } else if (week.type == 5) {
+            return '(R16)'
         }
     }
 
@@ -131,14 +138,17 @@ class DataManager {
         if (week.type == 0) {
             return `${strings.matchday} ${week.week}`
         } else if (week.type == 1) {
-            return 'Round of 16'
+            return 'KR Play-offs'
         } else if (week.type == 2) {
             return 'Quarter final'
         } else if (week.type == 3) {
             return 'Semi final'
         } else if (week.type == 4) {
             return 'Final'
+        } else if (week.type == 5) {
+            return 'Round of 16'
         }
+
     }
 
     getSettings() {
@@ -262,6 +272,20 @@ class DataManager {
             .then(response => response.json())
             .then(data => {
                 this.topScorers = data
+            })
+    }
+
+    fetchTrailers() {
+        fetch(`${SERVER_BASE_URL}/api/v1/trailers`, {
+            method: 'GET',
+            // headers: { 'Content-Type': 'application/json' },
+        })
+            .then(response => response.json())
+            .then(data => {
+                this.trailers = data
+            })
+            .catch((e) => {
+             
             })
     }
 

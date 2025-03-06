@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, FlatList, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import moment from 'moment';
 import CalendarIcon from './assets/calendar_black.svg';
@@ -9,8 +9,8 @@ import dataManager from './DataManager';
 import authManager from './AuthManager';
 import Colors from './Colors';
 
-const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, hasNext1, renderTopPart, page, setPage, predicts, totalPredicts, selectedLeague, onShowMatchPreview }) => {
 
+const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, hasNext1, renderTopPart, page, setPage, predicts, totalPredicts, selectedLeague, onShowMatchPreview, onShowMatchTrailer }) => {
   const numPages = Math.ceil(totalPredicts / 100);
   const hasNext = globalPage < numPages
   const hasMore = (globalPage - 1) * 100 + predicts.length < totalPredicts
@@ -38,9 +38,9 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
 
     if (loading) return false
     // if (hasMore && ((globalPage - 1) * 100 + predicts.length < totalPredicts )) return true
-    if (!hasMore && globalPage > 1 && ((globalPage - 1) * 100 + predicts.length >= totalPredicts )) return true
+    if (!hasMore && globalPage > 1 && ((globalPage - 1) * 100 + predicts.length >= totalPredicts)) return true
     if (hasMore && predicts.length >= 100) return true
- 
+
     return false
   }
 
@@ -132,13 +132,47 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
         width: '90%',
         alignSelf: 'center'
       }}>
-        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} />
+        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
       </View>
     );
   }, [onNavMatch, onShowMatchPreview]);
 
   let currMatchDate = null;
-  const renderMatch = useCallback(({ item, index }) => {
+
+  const renderMatch = ({ item, index }) => {
+    // let renderTime = false;
+
+    // if (currMatchDate == null || !isSameDay(new Date(currMatchDate), new Date(item.date))) {
+    //   renderTime = true;
+    //   currMatchDate = item.date;
+    // }
+
+
+    return (
+      <View style={{
+        width: '90%',
+        // height: 130,
+        alignSelf: 'center'
+      }}>
+        {/* {renderTime || index == 0 ? (
+          <View style={styles.dateContainer}>
+            { Colors.mode == 1 ? <CalendarIcon width={26} height={26} /> : <CalendarWhiteIcon width={26} height={26} /> }
+            <Text style={{
+              marginLeft: 10,
+              fontWeight: 'bold',
+              color: Colors.titleColor,
+            }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
+          </View>
+        ) : null} */}
+        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} showDate/>
+      </View>
+    );
+
+  }
+
+  const renderMatch1 = useCallback(({ item, index }) => {
+    return <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} />
+
     let renderTime = false;
 
     if (currMatchDate == null || !isSameDay(new Date(currMatchDate), new Date(item.date))) {
@@ -150,9 +184,10 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
     return (
       <View style={{
         width: '90%',
+        height: 100,
         alignSelf: 'center'
       }}>
-        {renderTime || index == 0 ? (
+        {/* {renderTime || index == 0 ? (
           <View style={styles.dateContainer}>
             { Colors.mode == 1 ? <CalendarIcon width={26} height={26} /> : <CalendarWhiteIcon width={26} height={26} /> }
             <Text style={{
@@ -161,7 +196,7 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
               color: Colors.titleColor,
             }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
           </View>
-        ) : null}
+        ) : null} */}
         <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} />
       </View>
     );

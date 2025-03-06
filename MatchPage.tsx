@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FAIcon from 'react-native-vector-icons/FontAwesome5';
+import FAIcon2 from 'react-native-vector-icons/Fontisto';
+
 
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
 import BottomNavBar from './BottomNavBar';
@@ -41,6 +43,7 @@ import gsingin from './GSignin';
 import SpecialAwardPanel from './SpecialAwardPanel';
 import NativeAdComp from './NativeAdComp';
 import MatchPreviewDialog from './MatchPreviewDialog';
+import MatchBeatBetPanel from './MatchBeatBetPanel';
 
 const EMODE_DEFAULT = 0
 const EMODE_EDIT = 1
@@ -135,7 +138,7 @@ function MatchDatePanel({ match, isShowTopMatchTime }) {
       </View> :
 
         <Text style={{
-          marginTop: 1,
+          marginTop: 2,
           fontSize: 12,
           lineHeight: 12,
           color: '#AEAEB2',
@@ -866,7 +869,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   }
 
   function getStatusText() {
-    if (match.status == 'HT' || match.status == 'FT') return match.status
+    if (match.status == 'HT' || match.status == 'FT' || match.status == 'BT') return match.status
 
     return '  ' + match.elapsed + " '"
   }
@@ -894,12 +897,30 @@ function MatchPage({ navigation, route }): JSX.Element {
   // }
 
   function onShowMatchPress(match) {
+    match.isTeaser = false
+    setShowMatchPreview(true)
+    setPreviewMatch(match)
+  }
+
+  function onShowMatchTrailerPress(match) {
+    match.isTeaser = true
     setShowMatchPreview(true)
     setPreviewMatch(match)
   }
 
   function onCloseMatchPreview() {
     setShowMatchPreview(false)
+  }
+
+  function getScoreBottonMargin() {
+    if (isMatchLive()) return 37
+
+    if (match.playOff && isMatchEnded() && match.team1_score_90 > -1 && match.team2_score_90 > -1 && match.team1_score_pen > -1 && match.team2_score_pen > -1) return 10
+    if (match.playOff && isMatchEnded() && match.team1_score_90 > -1 && match.team2_score_90 > -1) return 35
+
+    if (isMatchLive() || isMatchEnded()) return 55
+
+    return 55
   }
 
   return (
@@ -923,7 +944,7 @@ function MatchPage({ navigation, route }): JSX.Element {
             style={{
               flex: 1,
             }}>
-            <Image resizeMode="cover" src={`${SERVER_BASE_URL}/data/leagues/${match?.leagueName}_banner.png${dataManager.getImageCacheTime()}`} style={{
+            <Image resizeMode="cover" src={`${SERVER_BASE_URL}/data/leagues/${match?.leagueName}${match?.league_country}_banner.png${dataManager.getImageCacheTime()}`} style={{
               position: 'absolute',
               width: '100%',
 
@@ -946,7 +967,23 @@ function MatchPage({ navigation, route }): JSX.Element {
               paddingBottom: 10
             }}>
 
-              {match.preview ? <TouchableOpacity onPress={()=>onShowMatchPress(match)} style={{
+              {match.teaser ? <TouchableOpacity onPress={() => onShowMatchTrailerPress(match)} style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                backgroundColor: '#FACC15',// 'white',
+                position: 'absolute',
+                top: 8,
+                left: match.preview ? 8 : '',
+                right: !match.preview ? 8 : '',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+              }}>
+                <FAIcon2 name='film' color={'black'} size={20} />
+              </TouchableOpacity> : null}
+
+              {match.preview ? <TouchableOpacity onPress={() => onShowMatchPress(match)} style={{
                 width: 36,
                 height: 36,
                 borderRadius: 18,
@@ -975,148 +1012,244 @@ function MatchPage({ navigation, route }): JSX.Element {
 
                 <View style={{
                   position: 'absolute',
-                  flexDirection: 'row',
+                  flexDirection: 'column',
                   // backgroundColor: 'blue',
+                  // height: '100%',
                   // width: '50%',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bottom: isMatchLive() || isMatchEnded() ? 30 : 55
+                  bottom: getScoreBottonMargin()
                 }}>
-                  {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
-                    width: 45,
-                    marginRight: 4,
-                    height: 50,
-                    fontSize: 20,
-                    textAlign: 'center',
-                    color: Colors.titleColor,
-                    backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
-                    borderRadius: 10,
-                    fontFamily: 'OpenSans-Bold'
-                  }}></TextInput> : null}
-                  {isShowScoreText() ? <Text style={{
-                    width: 30,
-                    // marginRight: 4,
-                    height: 50,
-                    fontSize: 30,
-                    color: Colors.titleColor,
-                    textAlign: 'center',
-                    // backgroundColor: '#00000011',
-                    // borderRadius: 10,
-                    fontFamily: 'OpenSans-Bold'
-                  }}>{match?.team1_score}</Text> : null}
 
-                  {isMatchLive() ?
-
-                    <View style={{
-                      marginTop: 20
-                    }}>
-                      <View style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        // marginTop: 20,
-                        marginBottom: 5
-                      }}>
-                        <Text style={{
-                          color: Colors.titleColor,
-                          fontSize: 24,
-                          fontWeight: 'bold',
-                          marginRight: 10
-                        }}>{match.team1_score_live}</Text>
-                        <Text style={{
-                          color: Colors.titleColor,
-                          fontSize: 20,
-                          fontWeight: 'bold'
-                        }}>:</Text>
-                        <Text style={{
-                          color: Colors.titleColor,
-                          fontSize: 24,
-                          fontWeight: 'bold',
-                          marginLeft: 10
-                        }}>{match.team2_score_live}</Text>
-                      </View>
-                      <View style={{
-                        // marginTop: 4,
-                        backgroundColor: '#00C56619',
-                        borderWidth: 1,
-                        borderColor: '#00C566',
-                        paddingLeft: 8,
-                        paddingRight: 8,
-                        marginBottom: 8,
-                        height: 30,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 15
-                      }}>
-                        <Text style={{
-                          width: 40,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontFamily: 'NotoSansArmenian-Bold',
-                          fontSize: 14,
-                          color: '#00C566',
-                          textAlign: 'center'
-                        }}>{getStatusText()}</Text>
-                      </View>
-                    </View> : null}
-                  {(!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
-                    fontSize: 30,
-                    height: 50,
-                    // backgroundColor: 'red',
-                    // alignItems: 'center',
-                    // justifyContent: 'center',
-                    textAlignVertical: isShowScoreInput() ? 'center' : 'top',
-                    paddingBottom: 6,
-                    color: Colors.titleColor
-                  }}>:</Text> : null}
-                  {!isMatchLive() && !isMatchEnded() && !isShowScoreInput() ? <View style={{
-                    marginTop: 4,
-                    backgroundColor: '#00C56619',
-                    borderWidth: 1,
-                    borderColor: '#00C566',
-                    paddingLeft: 8,
-                    paddingRight: 8,
-                    height: 30,
+                  <View style={{
+                    flexDirection: 'row',
+                    // backgroundColor: 'blue',
+                    // width: '50%',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: 15
                   }}>
-                    <Text style={{
-                      fontFamily: 'NotoSansArmenian-Bold',
-                      fontSize: 14,
-                      color: '#00C566'
-                    }}>{moment(match?.date).format('HH:mm')}</Text>
+
+                    {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
+                      width: 45,
+                      marginRight: 4,
+                      height: 50,
+                      fontSize: 20,
+                      textAlign: 'center',
+                      color: Colors.titleColor,
+                      backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
+                      borderRadius: 10,
+                      fontFamily: 'OpenSans-Bold'
+                    }}></TextInput> : null}
+                    {isShowScoreText() ? <Text style={{
+                      width: 30,
+                      // marginRight: 4,
+                      height: 30,
+                      fontSize: 30,
+                      lineHeight: 30,
+                      color: Colors.titleColor,
+                      textAlign: 'center',
+                      // backgroundColor: 'red',
+                      // borderRadius: 10,
+                      fontFamily: 'OpenSans-Bold'
+                    }}>{match?.team1_score}</Text> : null}
+
+                    {isMatchLive() ?
+                      <View style={{
+                        marginTop: 20
+                      }}>
+                        <View style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          // marginTop: 20,
+                          marginBottom: 5
+                        }}>
+                          <Text style={{
+                            color: Colors.titleColor,
+                            fontSize: 24,
+                            fontWeight: 'bold',
+                            marginRight: 10
+                          }}>{match.team1_score_live}</Text>
+                          <Text style={{
+                            color: Colors.titleColor,
+                            fontSize: 20,
+                            fontWeight: 'bold'
+                          }}>:</Text>
+                          <Text style={{
+                            color: Colors.titleColor,
+                            fontSize: 24,
+                            fontWeight: 'bold',
+                            marginLeft: 10
+                          }}>{match.team2_score_live}</Text>
+                        </View>
+                        <View style={{
+                          // marginTop: 4,
+                          backgroundColor: '#00C56619',
+                          borderWidth: 1,
+                          borderColor: '#00C566',
+                          paddingLeft: 8,
+                          paddingRight: 8,
+                          marginBottom: 8,
+                          height: 30,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: 15
+                        }}>
+                          <Text style={{
+                            width: 40,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontFamily: 'NotoSansArmenian-Bold',
+                            fontSize: 14,
+                            color: '#00C566',
+                            textAlign: 'center'
+                          }}>{getStatusText()}</Text>
+                        </View>
+                      </View> : null}
+
+                    {(!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
+                      fontSize: 30,
+                      height: 30,
+                      lineHeight: 30,
+                      marginBottom: isShowScoreInput() ? -4 : 3,
+                      // backgroundColor: 'red',
+                      // alignItems: 'center',
+                      // justifyContent: 'center',
+                      textAlignVertical: isShowScoreInput() ? 'center' : 'top',
+                      paddingBottom: 6,
+                      color: Colors.titleColor
+                    }}>:</Text> : null}
+                    {!isMatchLive() && !isMatchEnded() && !isShowScoreInput() ? <View style={{
+                      marginTop: 4,
+                      backgroundColor: '#00C56619',
+                      borderWidth: 1,
+                      borderColor: '#00C566',
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      height: 30,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 15
+                    }}>
+                      <Text style={{
+                        fontFamily: 'NotoSansArmenian-Bold',
+                        fontSize: 14,
+                        color: '#00C566'
+                      }}>{moment(match?.date).format('HH:mm')}</Text>
+                    </View> : null}
+
+                    {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' value={team2Score} onChangeText={onTeam2Change} style={{
+                      width: 45,
+                      height: 50,
+                      marginLeft: 4,
+                      fontSize: 20,
+                      backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
+                      borderRadius: 10,
+                      color: Colors.titleColor,
+                      textAlign: 'center',
+                      // borderBottomColor: 'red',
+                      // borderBottomWidth: 2,
+                      fontFamily: 'OpenSans-Bold'
+                    }}></TextInput> : null}
+                    {isShowScoreText() ? <Text style={{
+                      width: 30,
+                      // marginRight: 4,
+                      lineHeight: 30,
+                      height: 30,
+                      fontSize: 30,
+                      color: Colors.titleColor,
+                      textAlign: 'center',
+                      // backgroundColor: '#00000011',
+                      // borderRadius: 10,
+                      fontFamily: 'OpenSans-Bold'
+                    }}>{match?.team2_score}</Text> : null}
+                  </View>
+
+                  {match.status == 'AET' || match.status == 'PEN' ? <View style={{
+                    // width: '100%',
+                    height: 24,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    paddingLeft: 15,
+                    paddingRight: 2,
+                    borderRadius: 11,
+                    borderWidth: 1,
+                    
+                    borderColor: Colors.titleColor,
+                  }}>
+                    <View>
+                      <Text style={{
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        color: Colors.titleColor
+                        // color: Colors.gray800,
+                      }}>{match.team1_score_90} : {match.team2_score_90}</Text>
+                    </View>
+                    <View style={{
+                      width: 18,
+                      height: 18,
+                      marginLeft: 6,
+                      backgroundColor: Colors.titleColor,
+                      // backgroundColor: Colors.gray800,
+                      borderRadius: 9,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Text style={{
+                        color: Colors.gray800,
+                        // color: Colors.titleColor,
+                        fontWeight: 900,
+                        fontSize: 11
+                      }}>90</Text>
+                    </View>
                   </View> : null}
 
-                  {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' value={team2Score} onChangeText={onTeam2Change} style={{
-                    width: 45,
-                    height: 50,
-                    marginLeft: 4,
-                    fontSize: 20,
-                    backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
-                    borderRadius: 10,
-                    color: Colors.titleColor,
-                    textAlign: 'center',
-                    // borderBottomColor: 'red',
-                    // borderBottomWidth: 2,
-                    fontFamily: 'OpenSans-Bold'
-                  }}></TextInput> : null}
-                  {isShowScoreText() ? <Text style={{
-                    width: 30,
-                    // marginRight: 4,
-                    height: 50,
-                    fontSize: 30,
-                    color: Colors.titleColor,
-                    textAlign: 'center',
-                    // backgroundColor: '#00000011',
-                    // borderRadius: 10,
-                    fontFamily: 'OpenSans-Bold'
-                  }}>{match?.team2_score}</Text> : null}
-
+                  {match.status == 'PEN' ? <View style={{
+                    marginTop: 6,
+                    height: 24,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'row',
+                    paddingLeft: 15,
+                    paddingRight: 2,
+                    borderRadius: 11,
+                    borderWidth: 1,
+                    borderColor: Colors.titleColor,
+                    // backgroundColor: Colors.titleColor
+                  }}>
+                    <View>
+                      <Text style={{
+                        fontSize: 14,
+                        fontWeight: 'bold',
+                        color: Colors.titleColor
+                        // color: Colors.gray800
+                      }}>{match.team1_score_pen} : {match.team2_score_pen}</Text>
+                    </View>
+                    <View style={{
+                      // marginTop:
+                      paddingLeft: 4,
+                      paddingRight: 4,
+                      height: 18,
+                      marginLeft: 6,
+                      backgroundColor: Colors.titleColor,
+                      // backgroundColor: Colors.gray800,
+                      borderRadius: 10,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Text style={{
+                        // color: Colors.titleColor,
+                        color: Colors.gray800,
+                        fontWeight: 900,
+                        fontSize: 11
+                      }}>PEN</Text>
+                    </View>
+                  </View> : null}
 
                 </View>
-
               </View>
+
               {(!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
                 width: '100%',
                 // minHeight: 40,
@@ -1135,7 +1268,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                     height: 30,
                     width: 'auto',
                     paddingLeft: authManager.getMeSync() ? 20 : 10,
-                    paddingRight: 20,
+                    paddingRight: authManager.getMeSync() && match.playOff ? 4 : 20,
                     borderRadius: 20,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1161,7 +1294,23 @@ function MatchPage({ navigation, route }): JSX.Element {
                       // fontWeight: 'bold',
                       fontFamily: 'Poppins-Bold'
                     }}>{authManager.getMeSync() ? strings.predict : strings.sign_in_to_predict}</Text>
-
+                    {authManager.getMeSync() && match.playOff ?
+                      <View style={{
+                        width: 22,
+                        height: 22,
+                        backgroundColor: 'white',
+                        borderRadius: 11,
+                        marginLeft: 6,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Text style={{
+                          color: 'black',
+                          fontWeight: 900,
+                          fontSize: 12
+                        }}>90</Text>
+                      </View>
+                      : null}
                     {showAd && loaded && authManager.getMeSync() ? <Icon name='play-circle-filled' size={20} color='white' style={{
                       marginLeft: 4
                     }} /> : null}
@@ -1170,6 +1319,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                     }} size={'small'} /> : null}
                   </View>
                 </TouchableOpacity> : null}
+
                 {predict ? <View style={{
                   flexDirection: 'row',
                   // backgroundColor: 'red'
@@ -1177,12 +1327,13 @@ function MatchPage({ navigation, route }): JSX.Element {
                   {mode == EMODE_DEFAULT ? <View style={{
                     height: 30,
                     paddingLeft: 20,
-                    paddingRight: 20,
+                    paddingRight: match.playOff ? 4 : 20,
                     // borderWidth: 1,
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 15,
                     overflow: 'hidden',
+                    flexDirection: 'row',
                     backgroundColor: getBgColor(predict),
                     borderColor: getBorderColor(predict)
                   }}>
@@ -1191,6 +1342,23 @@ function MatchPage({ navigation, route }): JSX.Element {
                       color: getBorderColor(predict),
                       fontFamily: 'NotoSansArmenian-Bold'
                     }}>{dataManager.getPredictTitle(predict)}{dataManager.getPredictValue(predict)}</Text>
+
+                    {match.playOff ? <View style={{
+                      width: 22,
+                      height: 22,
+                      backgroundColor: Colors.gray800,
+                      borderRadius: 11,
+                      marginLeft: 8,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Text style={{
+                        color: Colors.titleColor,
+                        fontWeight: 900,
+                        fontSize: 12
+                      }}>90</Text>
+                    </View> : null}
+
                   </View> : <TouchableOpacity onPress={onSavePredict} disabled={isSaveDisabled()} activeOpacity={.8} style={{
                     opacity: !isSaveDisabled() ? 1 : .8
                   }}>
@@ -1230,6 +1398,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                   </TouchableOpacity> : null}
                 </View> : null}
               </View> : null}
+
             </View>
 
             {match.is_special && match.special_match_title == 'quest' ? <View style={{
@@ -1274,7 +1443,7 @@ function MatchPage({ navigation, route }): JSX.Element {
 
               <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={() => { setView(EVIEW_PREDICTIONS), scrollToStart() }} />
               <ViewChip title={'H2H'} selected={view == EVIEW_H2H} onClick={() => { setView(EVIEW_H2H), scrollToStart() }} />
-              <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE), scrollToStart() }} />
+              {match.league < 8 && match.league != 1 ? <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE), scrollToStart() }} /> : null}
 
               {header?.statistics ? <ViewChip title={strings.statistics} selected={view == EVIEW_STATISTICS} onClick={() => { setView(EVIEW_STATISTICS), scrollToEnd() }} /> : null}
               {header?.events ? <ViewChip title={strings.events} selected={view == EVIEW_EVENTS} onClick={() => { setView(EVIEW_EVENTS), scrollToEnd() }} /> : null}
@@ -1292,6 +1461,7 @@ function MatchPage({ navigation, route }): JSX.Element {
               {view == EVIEW_PREDICTIONS ? <View style={{
                 marginTop: 20,
               }}>
+                {predictsReqFinished && predicts && predicts.beatBet ? <MatchBeatBetPanel predict={predict} match={match} beatBet={predicts.beatBet} /> : null}
                 {predictsReqFinished && predicts && predicts.numPredicts ? <MatchPredictsSummaryPanel2 match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}></MatchPredictsSummaryPanel2> : null}
                 {predictsReqFinished && top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts} /> : null}
                 {predictsReqFinished && !predicts?.numPredicts ? <Text style={{
@@ -1302,7 +1472,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                 }}>{strings.no_pred_for_match}</Text> : null}
                 {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
               </View> : null}
-              {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} onShowMatchPreview={onShowMatchPress} /> : null}
+              {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} onShowMatchPreview={onShowMatchPress} onShowMatchTrailer={onShowMatchTrailerPress} /> : null}
               {view == EVIEW_STATISTICS && statistics ? <MatchStatisticsPanel statistics={statistics} /> : view == EVIEW_STATISTICS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
               {view == EVIEW_EVENTS && events ? <MatchEventsPanel events={events} /> : view == EVIEW_EVENTS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
               {view == EVIEW_LINEUPS && lineups ? <MatchLineupsPanel match={match} lineups={lineups} /> : view == EVIEW_LINEUPS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
@@ -1314,7 +1484,7 @@ function MatchPage({ navigation, route }): JSX.Element {
           </ScrollView>
           <BottomNavBar navigation={navigation} />
         </View>
-        { showMatchPreview ? <MatchPreviewDialog match={previewMatch} onClose={onCloseMatchPreview} /> : null }
+        {showMatchPreview ? <MatchPreviewDialog match={previewMatch} onClose={onCloseMatchPreview} /> : null}
       </SafeAreaView>
     </GestureHandlerRootView>
   );

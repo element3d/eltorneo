@@ -30,7 +30,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
             m.status = 'FT'
         }
 
-        if (m.status == 'HT' || m.status == 'FT') return m.status
+        if (m.status == 'HT' || m.status == 'FT' || m.status == 'BT') return m.status
 
         if (!isLive) {
             return moment(m.date).format('HH:mm')
@@ -55,7 +55,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
     function getDate() {
         const today = moment().startOf('day');
         const tomorrow = moment().add(1, 'day').startOf('day');
-    
+
         if (moment(matchDate).isSame(today, 'day')) {
             return strings.today;
         } else if (moment(matchDate).isSame(tomorrow, 'day')) {
@@ -67,7 +67,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
 
     function getBanner() {
         if (!match.special_match_title.length) {
-            return `${SERVER_BASE_URL}/data/leagues/${m.league_name}_banner2.png${dataManager.getImageCacheTime()}`
+            return `${SERVER_BASE_URL}/data/leagues/${m.league_name}${m.league_country || ''}_banner2.png${dataManager.getImageCacheTime()}`
         }
 
         return `${SERVER_BASE_URL}/data/special/${m.special_match_title}.png${dataManager.getImageCacheTime()}`
@@ -131,7 +131,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                             fontSize: 24,
                             fontWeight: 'bold',
                             marginRight: 10
-                        }}>{ m.team1_score > -1 ? m.team1_score : m.team1_score_live}</Text>
+                        }}>{m.team1_score > -1 ? m.team1_score : m.team1_score_live}</Text>
                         <Text style={{
                             color: 'white',
                             fontSize: 20,
@@ -142,7 +142,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                             fontSize: 24,
                             fontWeight: 'bold',
                             marginLeft: 10
-                        }}>{ m.team2_score > -1 ? m.team2_score : m.team2_score_live}</Text>
+                        }}>{m.team2_score > -1 ? m.team2_score : m.team2_score_live}</Text>
                     </View> : <Text style={{
                         textAlign: 'center',
                         fontSize: 16,
@@ -178,12 +178,13 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                 padding: 10,
                 // backgroundColor: 'red'
             }}>
-                { m.predict && m.predict?.team1_score > -1 && m.predict?.team2_score > -1 ? <View style={{
+                {m.predict && m.predict?.team1_score > -1 && m.predict?.team2_score > -1 ? <View style={{
                     height: 25,
                     borderRadius: 20,
                     paddingLeft: 20,
-                    paddingRight: 20,
+                    paddingRight: m.playOff ? 4 : 20,
                     marginBottom: 5,
+                    flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center',
                     backgroundColor: 'white'
@@ -192,6 +193,23 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                         color: 'black',
                         fontWeight: 'bold'
                     }}>{strings.prediction} {m.predict.team1_score} : {m.predict.team2_score}</Text>
+
+                    {match.playOff ? <View style={{
+                        width: 18,
+                        height: 18,
+                        backgroundColor: 'black',
+                        borderRadius: 9,
+                        marginLeft: 6,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <Text style={{
+                            fontSize: 12,
+                            fontWeight: 900,
+                            color: 'white'
+                        }}>90</Text>
+                    </View> : null}
+
                 </View> : null}
             </View>
         </TouchableOpacity>

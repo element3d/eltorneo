@@ -40,7 +40,6 @@ import strings from './Strings';
 import adsManager from './AdsManager';
 import Colors from './Colors';
 import LiveMatchItem from './LiveMatchItem';
-import { useFocusEffect } from '@react-navigation/native';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EventCard from './EventCard';
@@ -49,6 +48,10 @@ import AdMobIcon from './assets/admob.svg'
 import NativeAdComp from './NativeAdComp';
 
 import MatchPreviewDialog from './MatchPreviewDialog';
+import { useFocusEffect } from '@react-navigation/native';
+import Drawer from './Drawer';
+import TrailerItem from './TrailerItem';
+import TrailerVideoDialog from './TrailerVideoDialog';
 
 AdManager.setRequestConfiguration({
   testDeviceIds: ["DC5FB0E024817B77B466572E6959C152"]
@@ -84,8 +87,10 @@ function CarsPage({ navigation, route }): JSX.Element {
   const [randomItem, setRandomItem] = useState(5)
   const [specialMatch, setSpecialMatch] = useState(null)
   const [showMatchPreview, setShowMatchPreview] = useState(false)
+  const [showTrailer, setShowTrailer] = useState(false)
+  const [trailer, setTrailer] = useState(null)
   const [previewMatch, setPreviewMatch] = useState(null)
-
+  const [showDrawer, setShowDrawer] = useState(true)
   const weeksScrollRef = useRef(null)
   const currentWeekRef = useRef(null)
   const [loaded, setLoaded] = useState(false);
@@ -103,10 +108,11 @@ function CarsPage({ navigation, route }): JSX.Element {
     AsyncStorage.getItem('specialMatchLastDate')
       .then((storedDate) => {
         const currentDate = moment();
-        const fiveHours = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
+        const fiveHours = 2 * 60 * 60 * 1000; // 5 hours in milliseconds
 
         // If no date is stored, treat as if more than 5 minutes elapsed
-        if (!storedDate || currentDate.diff(moment(parseInt(storedDate)), 'milliseconds') > fiveHours) {
+        if (!storedDate || currentDate.diff(moment(parseInt(storedDate)), 'milliseconds') > fiveHours) 
+          {
           // Fetch the special match
           dataManager.fetchSpecialMatch(strings.getLanguage(), authManager.getToken())
             .then((m) => {
@@ -225,9 +231,21 @@ function CarsPage({ navigation, route }): JSX.Element {
         let weeks = []
         if (league.type == 0) {
           weeks = Array.from({ length: Math.min(league.week + NUM_NEXT_WEEKS, league.num_weeks) }, (_, index) => { return { week: index + 1, type: 0 } });
+          if (league.id == 1) {
+            if (weeks.length > 8)
+              weeks[8].type = 1
+            if (weeks.length > 9)
+              weeks[9].type = 5
+            if (weeks.length > 10)
+              weeks[10].type = 2
+            if (weeks.length > 11)
+              weeks[11].type = 3
+            if (weeks.length > 12)
+              weeks[12].type = 4
+          }
           setWeeks(weeks)
         } else {
-          weeks = league.weeks.slice(0, league.week + NUM_NEXT_WEEKS);
+          weeks = league.weeks.slice(0, league.week );
           setWeeks(weeks);
         }
 
@@ -430,6 +448,12 @@ function CarsPage({ navigation, route }): JSX.Element {
           setMatchOfDay(getRandomMatch(data))
           const randomNumber = Math.floor(Math.random() * 6);
           setRandomItem(randomNumber)
+
+          if (dataManager.getTrailers()) {
+            const rn = Math.floor(Math.random() * dataManager.getTrailers().length);
+            if (dataManager.getTrailers()) setTrailer(dataManager.getTrailers()[rn])
+          }
+
         }
         setMatches(data)
         // weeksScrollRef.current.scrollTo({x: (selectedWeek - 1) * 80});
@@ -485,11 +509,23 @@ function CarsPage({ navigation, route }): JSX.Element {
     let weeks = []
     if (l.type == 0) {
       weeks = Array.from({ length: Math.min(week + NUM_NEXT_WEEKS, l.num_weeks) }, (_, index) => { return { week: index + 1, type: 0 } });
+      if (l.id == 1) {
+        if (weeks.length > 8)
+          weeks[8].type = 1
+        if (weeks.length > 9)
+          weeks[9].type = 5
+        if (weeks.length > 10)
+          weeks[10].type = 2
+        if (weeks.length > 11)
+          weeks[11].type = 3
+        if (weeks.length > 12)
+          weeks[12].type = 4
+      }
       setWeeks(weeks)
     } else {
       const league = l
       const currentWeekIndex = league.weeks.findIndex(w => w.week === league.week);
-      weeks = league.weeks.slice(0, currentWeekIndex + NUM_NEXT_WEEKS);
+      weeks = league.weeks.slice(0, currentWeekIndex + 1);
       setWeeks(weeks);
       // return
     }
@@ -512,6 +548,13 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   function onShowPreviewMatch(match) {
+    match.isTeaser = false
+    setShowMatchPreview(true)
+    setPreviewMatch(match)
+  }
+
+  function onShowMatchTeaser(match) {
+    match.isTeaser = true
     setShowMatchPreview(true)
     setPreviewMatch(match)
   }
@@ -541,7 +584,18 @@ function CarsPage({ navigation, route }): JSX.Element {
     setSpecialMatch(null)
   }
 
+  function onTrailerPress() {
+    if (specialMatch.match.teaser?.length) {
+      setSpecialMatch(null)
+      setShowMatchPreview(true)
+      specialMatch.match.isTeaser = true
+      setPreviewMatch(specialMatch.match)
+      return
+    }
+  }
+
   function onNavSpecialMatch() {
+    
     dataManager.setMatch(specialMatch.match)
     setSpecialMatch(null)
     AsyncStorage.setItem('specialMatchLastDate', (new Date().getTime().toString()))
@@ -957,8 +1011,10 @@ function CarsPage({ navigation, route }): JSX.Element {
 
   function renderCard() {
 
-
-    if (!mathOfDay) return <TopScorerItem />
+    // if (!trailer) return <TopScorerItem />
+    if (trailer && randomItem != 1 && randomItem != 3 && randomItem != 5) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer}/>
+    // return <TopScorerItem />
+    // return <TrailerItem onViewPress={onShowTrailer} trailer={trailer}/>
 
     if (!dataManager.getTopScorers()) {
       return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
@@ -970,6 +1026,10 @@ function CarsPage({ navigation, route }): JSX.Element {
     if (randomItem != 1 && randomItem != 3) return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
 
     return <TopScorerItem />
+  }
+
+  function onShowTrailer() {
+    setShowTrailer(true)
   }
 
   return (
@@ -1001,7 +1061,7 @@ function CarsPage({ navigation, route }): JSX.Element {
               backgroundColor: Colors.gray800,
               marginBottom: 20
             }}>
-              <AppBar setMode={setMode} title={selectedLeague?.name} showMode={true} showLang={true} showLogo={false} showBack={false} navigation={navigation} />
+              <AppBar showDrawer={() => {setShowDrawer(true)}} setMode={setMode} title={selectedLeague?.name} showMode={true} showLang={true} showLogo={false} showBack={false} navigation={navigation} />
 
               {compareVersions(dataManager.getSettings()?.version, DeviceInfo.getVersion()) ? <View style={{
                 width: '100%',
@@ -1056,7 +1116,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                 >
 
                   {leagues.map((l, i) => {
-                    // if (l.is_special) return
+                    if (!l.is_main) return
                     return (<LeagueChip compact={true} key={`league_${i}`} league={l} selected={l == selectedLeague} onPress={() => { onLeaguePress(l) }} />)
                   })}
                 </ScrollView>
@@ -1159,13 +1219,13 @@ function CarsPage({ navigation, route }): JSX.Element {
               </TouchableOpacity>
             </View> : null}
 
-            {!loading && dataManager.getSettings().enableAds && leagues.length ? <View style={{
+            {/* {!loading && dataManager.getSettings().enableAds && leagues.length ? <View style={{
               width: '100%',
               // marginTop: 20,
               paddingHorizontal: 20
             }}>
               <NativeAdComp forceNativeAd={true} />
-            </View> : null}
+            </View> : null} */}
 
             {loading ? <ActivityIndicator style={{
               // marginTop: 30,
@@ -1193,7 +1253,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                 {renderCard()}
                 {/* <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} /> */}
                 {/* {topScorers ? <TopScorerItem /> : null} */}
-                <View style={{
+             { selectedLeague.id != 1 && selectedLeague.id != 8 && selectedLeague.id != 9 ? <View style={{
                   width: '100%',
                   height: 46,
                   padding: 4,
@@ -1228,7 +1288,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                       fontWeight: 'bold'
                     }}>{strings.table}</Text>
                   </TouchableOpacity>
-                </View>
+                </View> : null }
               </View> : null}
 
               {tab == ETAB_MATCHES ? <View style={{
@@ -1263,7 +1323,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                         color: Colors.titleColor
                       }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')} </Text>
                     </View> : null}
-                    <MatchItem onPress={() => { onNavMatch(m) }} match={m} onShowMatchPreview={onShowPreviewMatch} />
+                    <MatchItem onPress={() => { onNavMatch(m) }} match={m} onShowMatchPreview={onShowPreviewMatch} onShowMatchTrailer={onShowMatchTeaser} />
                   </View>
                 }) : null}
 
@@ -1295,8 +1355,10 @@ function CarsPage({ navigation, route }): JSX.Element {
           </ScrollView>
           {!loading && !leagues.length ? null : <BottomNavBar page={EPAGE_HOME} navigation={navigation} />}
         </View>
-        {specialMatch ? <EventCard onPress={onNavSpecialMatch} onClose={onEventClose} match={specialMatch} /> : null}
+        {specialMatch ? <EventCard onPress={onNavSpecialMatch} onTrailerPress={onTrailerPress} onClose={onEventClose} match={specialMatch} /> : null}
         { showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch}/> : null }
+        { showTrailer ? <TrailerVideoDialog trailer={trailer} onClose={() => {setShowTrailer(false)}}/> : null }
+        {/* { showDrawer ?  <Drawer setMode={setMode} navigation={navigation} onClose={() => {setShowDrawer(false)}} /> : null } */}
       </SafeAreaView>
 
     </GestureHandlerRootView>
