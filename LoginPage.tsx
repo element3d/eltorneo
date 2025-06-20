@@ -29,7 +29,7 @@ import SERVER_BASE_URL from './AppConfig';
 import authManager from './AuthManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import dataManager from './DataManager';
-import { ESTAT_TOTAL } from './ProfilePage';
+import { ESTAT_TOTAL, ETAB_PREDICTS } from './ProfilePage';
 
 function LoginPage({ navigation }): JSX.Element {
   const [lang, setLang] = useState('ru')
@@ -147,7 +147,8 @@ function LoginPage({ navigation }): JSX.Element {
                   navigation.replace('Profile', {
                     globalPage: 1,
                     routeSelectedLeague: -1,
-                    selectedStat: ESTAT_TOTAL
+                    selectedStat: ESTAT_TOTAL,
+                    tab: ETAB_PREDICTS
                   });
                 }
               } 
@@ -335,6 +336,7 @@ function LoginPage({ navigation }): JSX.Element {
           <TextInput value={username} onChangeText={onChangeUsername} style={{
             width: 320,
             height: 52,
+            color: Colors.titleColor,
             borderColor: Colors.borderColor,
             borderWidth: 2,
             borderRadius: 26,
@@ -361,6 +363,7 @@ function LoginPage({ navigation }): JSX.Element {
               height: 52,
               borderColor: Colors.borderColor,
               borderWidth: 2,
+              color: Colors.titleColor,
               // backgroundColor: Colors.gray800,
               borderRadius: 26,
               paddingLeft: 23

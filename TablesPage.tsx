@@ -21,7 +21,7 @@ import dataManager from './DataManager';
 import strings from './Strings';
 import AppBar from './AppBar';
 import authManager from './AuthManager';
-import { ESTAT_TOTAL } from './ProfilePage';
+import { ESTAT_TOTAL, ETAB_BETS, ETAB_PREDICTS } from './ProfilePage';
 import CupIcon from './assets/Trophy.svg';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MDIcon from 'react-native-vector-icons/MaterialIcons';
@@ -76,6 +76,7 @@ function TablesPage({ navigation, route }): JSX.Element {
   const [refreshing, setRefreshing] = useState(false)
   const [me, setMe] = useState(authManager.getMeSync())
   const [myLeague, setMyLeague] = useState(me?.league || 1)
+  const [season, setSeason] = useState('24/25')
 
   const backgroundStyle = {
     backgroundColor: Colors.gray800,
@@ -129,6 +130,7 @@ function TablesPage({ navigation, route }): JSX.Element {
 
   useEffect(() => {
     getTableByPoints()
+    setTableLoading(true)
   }, [league])
 
   function getTableByPoints() {
@@ -218,9 +220,10 @@ function TablesPage({ navigation, route }): JSX.Element {
       params: {
         id: u.id,
         globalPage: 1,
-        selectedStat: ESTAT_TOTAL
+        selectedStat: ESTAT_TOTAL,
+        tab: ETAB_PREDICTS
       },
-      key: `user_${u.id}`
+      key: `profile_${u.id}_${ETAB_PREDICTS}`
     })
   }
 
@@ -285,78 +288,78 @@ function TablesPage({ navigation, route }): JSX.Element {
   }
 
   function renderTable() {
-    if (!table?.length && page == 1) {
-      return (
-        <View style={{
-          width: '100%',
-          alignItems: 'center',
-          marginTop: 20,
-          justifyContent: 'center'
-        }}>
-          <Text style={{
-            color: '#8E8E93',
-            fontWeight: 'bold'
-          }}>{strings.no_players}</Text>
+    // if (!table?.length && page == 1 && !tableLoading) {
+    //   return (
+    //     <View style={{
+    //       width: '100%',
+    //       alignItems: 'center',
+    //       marginTop: 20,
+    //       justifyContent: 'center'
+    //     }}>
+    //       <Text style={{
+    //         color: '#8E8E93',
+    //         fontWeight: 'bold'
+    //       }}>{strings.no_players}</Text>
 
-          {!me ? <TouchableOpacity activeOpacity={.8} onPress={onSignIn} style={{
-            height: 30,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 15,
-            marginTop: 10,
-            flexDirection: 'row',
-            alignSelf: 'center',
-            paddingHorizontal: 20,
-            paddingRight: 5,
-            marginBottom: 30,
-            backgroundColor: '#FF2882'
-          }}>
-            <Text style={{
-              fontSize: 16,
-              lineHeight: 22,
-              fontWeight: 'bold',
-              // fontFamily: 'Poppins-Bold',
-              color: 'white'
-            }}>{strings.sign_in_to_predict}</Text>
-            <View style={{
-              width: 20,
-              height: 20,
-              marginLeft: 5,
-              backgroundColor: 'white',
-              borderRadius: 10,
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <GoogleIcon style={{
-                width: 18,
-                height: 18
-              }} />
-            </View>
-          </TouchableOpacity> : null}
-          {me?.league == league ? <TouchableOpacity activeOpacity={.8} onPress={onPredict} style={{
-            height: 30,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 15,
-            flexDirection: 'row',
-            alignSelf: 'center',
-            paddingHorizontal: 20,
-            // paddingRight: 5,
-            marginTop: 10,
-            backgroundColor: '#FF2882'
-          }}>
-            <Text style={{
-              fontSize: 16,
-              lineHeight: 22,
-              fontWeight: 'bold',
-              // fontFamily: 'Poppins-Bold',
-              color: 'white'
-            }}>{strings.predict}</Text>
+    //       {!me ? <TouchableOpacity activeOpacity={.8} onPress={onSignIn} style={{
+    //         height: 30,
+    //         alignItems: 'center',
+    //         justifyContent: 'center',
+    //         borderRadius: 15,
+    //         marginTop: 10,
+    //         flexDirection: 'row',
+    //         alignSelf: 'center',
+    //         paddingHorizontal: 20,
+    //         paddingRight: 5,
+    //         marginBottom: 30,
+    //         backgroundColor: '#FF2882'
+    //       }}>
+    //         <Text style={{
+    //           fontSize: 16,
+    //           lineHeight: 22,
+    //           fontWeight: 'bold',
+    //           // fontFamily: 'Poppins-Bold',
+    //           color: 'white'
+    //         }}>{strings.sign_in_to_predict}</Text>
+    //         <View style={{
+    //           width: 20,
+    //           height: 20,
+    //           marginLeft: 5,
+    //           backgroundColor: 'white',
+    //           borderRadius: 10,
+    //           alignItems: 'center',
+    //           justifyContent: 'center'
+    //         }}>
+    //           <GoogleIcon style={{
+    //             width: 18,
+    //             height: 18
+    //           }} />
+    //         </View>
+    //       </TouchableOpacity> : null}
+    //       {me?.league == league ? <TouchableOpacity activeOpacity={.8} onPress={onPredict} style={{
+    //         height: 30,
+    //         alignItems: 'center',
+    //         justifyContent: 'center',
+    //         borderRadius: 15,
+    //         flexDirection: 'row',
+    //         alignSelf: 'center',
+    //         paddingHorizontal: 20,
+    //         // paddingRight: 5,
+    //         marginTop: 10,
+    //         backgroundColor: '#FF2882'
+    //       }}>
+    //         <Text style={{
+    //           fontSize: 16,
+    //           lineHeight: 22,
+    //           fontWeight: 'bold',
+    //           // fontFamily: 'Poppins-Bold',
+    //           color: 'white'
+    //         }}>{strings.predict}</Text>
 
-          </TouchableOpacity> : null}
-        </View>
-      )
-    }
+    //       </TouchableOpacity> : null}
+    //     </View>
+    //   )
+    // }
 
     return table?.map((u, i) => {
       return (
@@ -427,6 +430,11 @@ function TablesPage({ navigation, route }): JSX.Element {
 
   function onNext() {
     navigation.navigate({ name: 'Tables', params: { page: page + 1, league: league }, key: `${page + 1}_${league}` })
+  }
+
+  function onMyPosition() {
+    const page = Math.ceil(me.position / 20);
+    navigation.navigate({ name: 'Tables', params: { page: page, league: me.league }, key: `${page}_${league}` })
   }
 
   function onLeague1() {
@@ -549,14 +557,60 @@ function TablesPage({ navigation, route }): JSX.Element {
             </View>
 
             <View style={{
-              height: selectedTable == ETABLE_GENERAL ? 0 : 20
+              height: selectedTable == ETABLE_GENERAL ? 10 : 20
             }}></View>
+
+            <View style={{
+              width: '100%',
+              paddingLeft: 20,
+              // height: 40,
+              flexDirection: 'row',
+              alignItems: 'center',
+              // backgroundColor: 'red'
+            }}>
+              <TouchableOpacity activeOpacity={.6} style={{
+                marginRight: 10,
+                paddingHorizontal: 20,
+                height: 40,
+                backgroundColor: season == '24/25' ? Colors.primary : Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color:  season == '24/25' ? 'white' : Colors.titleColor
+                }}>{strings.season} 24/25</Text>
+              
+              </TouchableOpacity>
+
+              <TouchableOpacity disabled activeOpacity={.6} style={{
+                marginRight: 10,
+                opacity: .5,
+                paddingHorizontal: 20,
+                height: 40,
+                backgroundColor: season == '25/26' ? Colors.primary : Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: season == '25/26' ? 'white' : Colors.titleColor
+                }}>{strings.season} 25/26</Text>
+              
+              </TouchableOpacity>
+            </View>
 
             {selectedTable == ETABLE_GENERAL ?
               <View style={{
                 padding: 20,
                 paddingVertical: 10,
-                marginTop: 10,
+                // marginTop: 10,
                 marginBottom: 10,
                 // backgroundColor: Colors.gray800
               }}>
@@ -596,15 +650,37 @@ function TablesPage({ navigation, route }): JSX.Element {
             showsHorizontalScrollIndicator={false}
               horizontal={true}
               contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{
+              contentContainerStyle={{
               // width: '100%',
               flexDirection: 'row',
             
               // justifyContent: 'flex-start',
               paddingRight: 40
             }}>
-              <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague1() }} style={{
+              {me?.position > 0 ? <TouchableOpacity activeOpacity={.6} onPress={() => { onMyPosition() }} style={{
                 marginLeft: 20,
+                marginRight: 10,
+                // paddingHorizontal: 20,
+                height: 40,
+                width: 40,
+                backgroundColor: Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
+                borderRadius: 20,
+                alignItems: 'center',
+                // flex: 1,
+                justifyContent: 'center'
+              }}>
+
+                <Text style={{
+                  fontWeight: 'bold',
+                  color: Colors.titleColor
+                }}><Icon name='crosshairs' size={22}></Icon></Text>
+               
+              </TouchableOpacity> : null }
+
+              <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague1() }} style={{
+                marginLeft: me?.position > 0 ? 0 : 20,
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
@@ -700,9 +776,9 @@ function TablesPage({ navigation, route }): JSX.Element {
               <TouchableOpacity onPress={onMoveToLeague} style={{
                 width: 40,
                 height: 40,
-                backgroundColor: Colors.primary,
-                // borderWidth: 1,
-                // borderColor: Colors.borderColor,
+                backgroundColor: Colors.gray800,
+                borderWidth: 1,
+                borderColor: Colors.borderColor,
                 borderRadius: 20,
                 alignItems: 'center',
                 // flex: 1,
@@ -710,7 +786,7 @@ function TablesPage({ navigation, route }): JSX.Element {
               }}>
                 <Text style={{
                   fontWeight: 'bold',
-                  color: 'white'
+                  color: Colors.titleColor
                 }}><Icon name='info' size={18}></Icon></Text>
               </TouchableOpacity>
             </ScrollView>

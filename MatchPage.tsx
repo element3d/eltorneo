@@ -16,6 +16,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FAIcon from 'react-native-vector-icons/FontAwesome5';
 import FAIcon2 from 'react-native-vector-icons/Fontisto';
+import BBIcon from './assets/bbicon.svg'
 
 
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
@@ -44,6 +45,7 @@ import SpecialAwardPanel from './SpecialAwardPanel';
 import NativeAdComp from './NativeAdComp';
 import MatchPreviewDialog from './MatchPreviewDialog';
 import MatchBeatBetPanel from './MatchBeatBetPanel';
+import MatchBetPanel from './MatchBetPanel';
 
 const EMODE_DEFAULT = 0
 const EMODE_EDIT = 1
@@ -151,22 +153,26 @@ function MatchDatePanel({ match, isShowTopMatchTime }) {
   )
 }
 
-function ViewChip({ title, selected, onClick }) {
+function ViewChip({ title, selected, onClick, isBet = false }) {
   return <TouchableOpacity onPress={onClick} activeOpacity={.8} style={{
     height: 40,
     borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: selected ? 0 : 1,
-    borderColor: Colors.borderColor,
-    backgroundColor: selected ? '#FF2882' : Colors.gray800,
-    paddingLeft: 20,
+    borderWidth: 1,
+    borderColor: selected ? '#FF2882' : ( isBet ? '#37003C' : Colors.borderColor),//.borderColor,
+    backgroundColor: selected ? '#FF2882' : ( isBet ? '#37003C' : Colors.gray800),
+    paddingLeft: isBet ? 10 : 20,
     paddingRight: 20,
     marginRight: 10,
+    flexDirection: 'row'
   }}>
+    {isBet ? <BBIcon width={20} height={20} style={{
+      marginRight: 5
+    }}/> : null }
     <Text style={{
       fontWeight: 'bold',
-      color: selected ? 'white' : '#8E8E93'
+      color: selected || isBet ? 'white' : '#8E8E93'
     }}>
       {title}
     </Text>
@@ -178,6 +184,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   const { id } = route.params;
 
   const dmMatch = dataManager.getMatch()
+
   const dmPredict = dmMatch.predict
   let dmTeam1Score = ''
   let dmTeam2Score = ''
@@ -203,6 +210,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   const [statistics, setStatistics] = useState(null)
   const [events, setEvents] = useState(null)
   const [lineups, setLineups] = useState(null)
+  const [odds, setOdds] = useState(null)
   const [table, setTable] = useState(null)
   const [mode, setMode] = useState(EMODE_DEFAULT)
   const [header, setHeader] = useState(null)
@@ -216,6 +224,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   const EVIEW_LINEUPS = 4
   const EVIEW_H2H = 5
   const EVIEW_TABLE = 6
+  const EVIEW_BET = 7
 
   const [view, setView] = useState(EVIEW_PREDICTIONS)
 
@@ -285,6 +294,7 @@ function MatchPage({ navigation, route }): JSX.Element {
     } else if (view == EVIEW_LINEUPS) {
       fetch(`${SERVER_BASE_URL}/api/v1/match/lineups?match_id=${match.id}`, {
         method: 'GET',
+
       })
         .then(response => response.json())
         .then(data => {
@@ -295,6 +305,21 @@ function MatchPage({ navigation, route }): JSX.Element {
         });
     } else if (view == EVIEW_TABLE) {
       getTable()
+    } else if (view == EVIEW_BET) {
+      fetch(`${SERVER_BASE_URL}/api/v1/match/odds?match_id=${match.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authentication': authManager.getToken() || ""
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          setOdds(data)
+        })
+        .catch(error => {
+          // setEvents(null)
+        });
     }
 
   }, [view])
@@ -379,7 +404,7 @@ function MatchPage({ navigation, route }): JSX.Element {
       .then(data => {
         setPredictsReqFinished(true)
 
-        if (data.statistics || data.events || data.lineups) {
+        if (data.odds || data.statistics || data.events || data.lineups) {
           setHeader(data)
         }
 
@@ -869,7 +894,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   }
 
   function getStatusText() {
-    if (match.status == 'HT' || match.status == 'FT' || match.status == 'BT') return match.status
+    if (match.status == 'HT' || match.status == 'FT' || match.status == 'BT' || match.status == "P") return match.status
 
     return '  ' + match.elapsed + " '"
   }
@@ -923,6 +948,18 @@ function MatchPage({ navigation, route }): JSX.Element {
     return 55
   }
 
+  function scrollOnTableClick() {
+    if (!header) return
+
+    if (!header.odds) {
+      return scrollToStart()
+    }
+
+    if (header.statistics && header.events && header.lineups) return
+
+    return scrollToEnd()
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
@@ -967,7 +1004,7 @@ function MatchPage({ navigation, route }): JSX.Element {
               paddingBottom: 10
             }}>
 
-              {match.teaser ? <TouchableOpacity onPress={() => onShowMatchTrailerPress(match)} style={{
+              {match?.teaser ? <TouchableOpacity onPress={() => onShowMatchTrailerPress(match)} style={{
                 width: 36,
                 height: 36,
                 borderRadius: 18,
@@ -1007,8 +1044,8 @@ function MatchPage({ navigation, route }): JSX.Element {
                 justifyContent: 'center'
               }}>
 
-                <TeamItem team={match.team1} isHome={true} />
-                <TeamItem team={match.team2} isHome={false} />
+                <TeamItem team={match.team1} league={match.league} isHome={true} />
+                <TeamItem team={match.team2} league={match.league} isHome={false} />
 
                 <View style={{
                   position: 'absolute',
@@ -1041,13 +1078,14 @@ function MatchPage({ navigation, route }): JSX.Element {
                       fontFamily: 'OpenSans-Bold'
                     }}></TextInput> : null}
                     {isShowScoreText() ? <Text style={{
-                      width: 30,
+                      width: 40,
                       // marginRight: 4,
                       height: 30,
                       fontSize: 30,
                       lineHeight: 30,
                       color: Colors.titleColor,
-                      textAlign: 'center',
+                      textAlign: 'right',
+                      paddingRight: 5,
                       // backgroundColor: 'red',
                       // borderRadius: 10,
                       fontFamily: 'OpenSans-Bold'
@@ -1152,13 +1190,14 @@ function MatchPage({ navigation, route }): JSX.Element {
                       fontFamily: 'OpenSans-Bold'
                     }}></TextInput> : null}
                     {isShowScoreText() ? <Text style={{
-                      width: 30,
+                      width: 40,
                       // marginRight: 4,
                       lineHeight: 30,
                       height: 30,
                       fontSize: 30,
                       color: Colors.titleColor,
-                      textAlign: 'center',
+                      textAlign: 'left',
+                      paddingLeft: 5,
                       // backgroundColor: '#00000011',
                       // borderRadius: 10,
                       fontFamily: 'OpenSans-Bold'
@@ -1175,7 +1214,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                     paddingRight: 2,
                     borderRadius: 11,
                     borderWidth: 1,
-                    
+
                     borderColor: Colors.titleColor,
                   }}>
                     <View>
@@ -1442,8 +1481,9 @@ function MatchPage({ navigation, route }): JSX.Element {
               showsHorizontalScrollIndicator={false}>
 
               <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={() => { setView(EVIEW_PREDICTIONS), scrollToStart() }} />
+              {header?.odds ? <ViewChip isBet title={strings.bet} selected={view == EVIEW_BET} onClick={() => { setView(EVIEW_BET), scrollToStart() }} /> : null}
               <ViewChip title={'H2H'} selected={view == EVIEW_H2H} onClick={() => { setView(EVIEW_H2H), scrollToStart() }} />
-              {match.league < 8 && match.league != 1 ? <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE), scrollToStart() }} /> : null}
+              {(match.league < 8 && match.league != 1) || match.league == 16 ? <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE), scrollOnTableClick() }} /> : null}
 
               {header?.statistics ? <ViewChip title={strings.statistics} selected={view == EVIEW_STATISTICS} onClick={() => { setView(EVIEW_STATISTICS), scrollToEnd() }} /> : null}
               {header?.events ? <ViewChip title={strings.events} selected={view == EVIEW_EVENTS} onClick={() => { setView(EVIEW_EVENTS), scrollToEnd() }} /> : null}
@@ -1472,6 +1512,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                 }}>{strings.no_pred_for_match}</Text> : null}
                 {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
               </View> : null}
+              {view == EVIEW_BET ? <MatchBetPanel navigation={navigation} match={match} odds={odds} /> : null}
               {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} onShowMatchPreview={onShowMatchPress} onShowMatchTrailer={onShowMatchTrailerPress} /> : null}
               {view == EVIEW_STATISTICS && statistics ? <MatchStatisticsPanel statistics={statistics} /> : view == EVIEW_STATISTICS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
               {view == EVIEW_EVENTS && events ? <MatchEventsPanel events={events} /> : view == EVIEW_EVENTS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}

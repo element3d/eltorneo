@@ -90,7 +90,7 @@ function CarsPage({ navigation, route }): JSX.Element {
   const [showTrailer, setShowTrailer] = useState(false)
   const [trailer, setTrailer] = useState(null)
   const [previewMatch, setPreviewMatch] = useState(null)
-  const [showDrawer, setShowDrawer] = useState(true)
+  const [showDrawer, setShowDrawer] = useState(false)
   const weeksScrollRef = useRef(null)
   const currentWeekRef = useRef(null)
   const [loaded, setLoaded] = useState(false);
@@ -242,13 +242,21 @@ function CarsPage({ navigation, route }): JSX.Element {
               weeks[11].type = 3
             if (weeks.length > 12)
               weeks[12].type = 4
+
+          } else if (league.id == 7) {
+            if (weeks.length > 6)
+              weeks[6].type = 2
+            if (weeks.length > 7)
+              weeks[7].type = 3
+            if (weeks.length > 8)
+              weeks[8].type = 4
           }
           setWeeks(weeks)
         } else {
           weeks = league.weeks.slice(0, league.week );
           setWeeks(weeks);
         }
-
+  
         setSelectedWeek(weeks[league.week - 1])
         getMatches(league, league.week, selectedSeason)
         getTable(league)
@@ -332,13 +340,13 @@ function CarsPage({ navigation, route }): JSX.Element {
           <View style={{
             marginTop: 2
           }}>
-            <Text style={{
+           { topScorers.firstname.length ? <Text style={{
               fontSize: 14,
               lineHeight: 18,
               // fontWeight: 900,
               fontFamily: 'Poppins-Bold',
               color: 'white'
-            }}>{topScorers.firstname.toUpperCase()}</Text>
+            }}>{topScorers.firstname.toUpperCase()}</Text> : null }
             <Text style={{
               fontSize: 18,
               lineHeight: 20,
@@ -520,6 +528,13 @@ function CarsPage({ navigation, route }): JSX.Element {
           weeks[11].type = 3
         if (weeks.length > 12)
           weeks[12].type = 4
+      } else if (l.id == 7) {
+        if (weeks.length > 6)
+          weeks[6].type = 2
+        if (weeks.length > 7)
+          weeks[7].type = 3
+        if (weeks.length > 8)
+          weeks[8].type = 4
       }
       setWeeks(weeks)
     } else {
@@ -529,6 +544,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       setWeeks(weeks);
       // return
     }
+   
     setSelectedWeek(weeks[week - 1])
     if (this.effect) {
       getMatches(l, week, selectedSeason)
@@ -718,6 +734,17 @@ function CarsPage({ navigation, route }): JSX.Element {
   let currentGroup = 0
   let currentPos = 1
 
+  function getWorldClubCupGroupName(index) {
+    if (index == 0) return "A"
+    if (index == 1) return "B"
+    if (index == 2) return "C"
+    if (index == 3) return "D"
+    if (index == 4) return "E"
+    if (index == 5) return "F"
+    if (index == 6) return "G"
+    if (index == 7) return "H"
+  }
+
   function getGroupName(lindex, index) {
     let word = ''
     if (lindex == 0) word = "A"
@@ -809,7 +836,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       {table?.map((team, index) => {
         let renderGroupName = false
 
-        if (selectedLeague.num_leagues > 1 && (index == 0 || team.group_index != currentGroup)) {
+        if ((selectedLeague.num_leagues > 1 || selectedLeague.id == 16) && (index == 0 || team.group_index != currentGroup)) {
           currentGroup = team.group_index
           renderGroupName = true
           currentPos = 1
@@ -826,7 +853,7 @@ function CarsPage({ navigation, route }): JSX.Element {
             color: Colors.titleColor,
             marginLeft: 15,
             marginTop: 20
-          }}>{strings.group} {getGroupName(team.league_index, team.group_index)}</Text> : null}
+          }}>{strings.group} { selectedLeague.id == 16 ? getWorldClubCupGroupName(team.group_index) : getGroupName(team.league_index, team.group_index)}</Text> : null}
           <View style={{
             width: '100%',
             height: 52,
@@ -1010,7 +1037,6 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   function renderCard() {
-
     // if (!trailer) return <TopScorerItem />
     if (trailer && randomItem != 1 && randomItem != 3 && randomItem != 5) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer}/>
     // return <TopScorerItem />
@@ -1358,7 +1384,7 @@ function CarsPage({ navigation, route }): JSX.Element {
         {specialMatch ? <EventCard onPress={onNavSpecialMatch} onTrailerPress={onTrailerPress} onClose={onEventClose} match={specialMatch} /> : null}
         { showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch}/> : null }
         { showTrailer ? <TrailerVideoDialog trailer={trailer} onClose={() => {setShowTrailer(false)}}/> : null }
-        {/* { showDrawer ?  <Drawer setMode={setMode} navigation={navigation} onClose={() => {setShowDrawer(false)}} /> : null } */}
+        { showDrawer ?  <Drawer setMode={setMode} navigation={navigation} onClose={() => {setShowDrawer(false)}} /> : null }
       </SafeAreaView>
 
     </GestureHandlerRootView>

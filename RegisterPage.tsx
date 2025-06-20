@@ -29,7 +29,7 @@ import SERVER_BASE_URL from './AppConfig';
 import authManager from './AuthManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import dataManager from './DataManager';
-import { ESTAT_TOTAL } from './ProfilePage';
+import { ESTAT_TOTAL, ETAB_PREDICTS } from './ProfilePage';
 
 function RegisterPage({ navigation }): JSX.Element {
     const [lang, setLang] = useState('ru')
@@ -123,7 +123,7 @@ function RegisterPage({ navigation }): JSX.Element {
             .then(response => {
                 if (response.status == 200)
                     return response.text()
-             
+
                 if (response.status == 403) {
                     setError(strings.err_user_exists)
                 }
@@ -147,7 +147,8 @@ function RegisterPage({ navigation }): JSX.Element {
                                     navigation.replace('Profile', {
                                         globalPage: 1,
                                         routeSelectedLeague: -1,
-                                        selectedStat: ESTAT_TOTAL
+                                        selectedStat: ESTAT_TOTAL,
+                                        tab: ETAB_PREDICTS
                                     });
                                 }
                             }
@@ -163,6 +164,10 @@ function RegisterPage({ navigation }): JSX.Element {
     function onNavLogin() {
         navigation.navigate('Login')
     }
+
+    const handleSignIn = async () => {
+        gsingin.signin(navigation)
+    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
@@ -239,6 +244,73 @@ function RegisterPage({ navigation }): JSX.Element {
                         {strings.login_desc}
                     </Text>
 
+
+                    <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
+                        width: 320,
+                        height: 52,
+                        marginTop: 20,
+                        borderRadius: 30,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        borderWidth: 2,
+                        borderColor: Colors.borderColor
+                        // backgroundColor: '#FF2882',
+                    }}>
+                        <Text style={{
+                            fontSize: 20,
+                            color: Colors.titleColor,
+                            fontFamily: 'Poppins-Bold',
+                            lineHeight: 28,
+                            // fontWeight: 'bold'
+                        }}>
+                            {strings.join_now}
+                        </Text>
+                        <View style={{
+                            width: 40,
+                            height: 40,
+                            position: 'absolute',
+                            right: 5,
+                            // backgroundColor: 'white',
+                            borderRadius: 30,
+                            // marginTop: 20,
+                            // borderWidth: 3,
+                            borderColor: 'black',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <GoogleIcon width={32} height={32} />
+                        </View>
+                    </TouchableOpacity>
+
+                    <View style={{
+                        width: 280,
+                        marginTop: 40,
+                        flexDirection: 'row',
+                        // backgroundColor: 'red',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <View style={{
+                            flex: 1,
+                            height: 2,
+                            backgroundColor: Colors.borderColor
+                        }}></View>
+                        <Text style={{
+                            fontSize: 16,
+                            color: Colors.titleColor,
+                            fontWeight: 'bold',
+                            marginLeft: 20,
+                            marginRight: 20
+                        }}>{strings.or}</Text>
+                        <View style={{
+                            flex: 1,
+                            height: 2,
+                            backgroundColor: Colors.borderColor
+                        }}></View>
+                    </View>
+
+
                     <Text style={{
                         width: 320,
                         marginTop: 20,
@@ -250,6 +322,7 @@ function RegisterPage({ navigation }): JSX.Element {
                     <TextInput value={username} onChangeText={onChangeUsername} style={{
                         width: 320,
                         height: 52,
+                        color: Colors.titleColor,
                         borderColor: Colors.borderColor,
                         borderWidth: 2,
                         borderRadius: 26,
@@ -269,6 +342,7 @@ function RegisterPage({ navigation }): JSX.Element {
                         height: 52,
                         borderColor: Colors.borderColor,
                         borderWidth: 2,
+                        color: Colors.titleColor,
                         borderRadius: 26,
                         paddingLeft: 23
                     }}></TextInput>
@@ -291,6 +365,7 @@ function RegisterPage({ navigation }): JSX.Element {
                             height: 52,
                             borderColor: Colors.borderColor,
                             borderWidth: 2,
+                            color: Colors.titleColor,
                             // backgroundColor: Colors.gray800,
                             borderRadius: 26,
                             paddingLeft: 23

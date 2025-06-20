@@ -68,7 +68,7 @@ export default function ProfileStats({predictsJson}) {
                 color: Colors.titleColor,
                 fontWeight: 'bold'
             }}>
-                {predictsJson.totalFailPredicts}  {predictsJson.totalPredicts > 0 ? `(${Number.parseInt(predictsJson.totalFailPredicts / predictsJson.totalPredicts * 100)}%)` : null}
+                {predictsJson.totalFailPredicts} {predictsJson.totalPredicts > 0 ? `(${Number.parseInt(predictsJson.totalFailPredicts / predictsJson.totalPredicts * 100)}%)` : null}
             </Text>
         </View>
     </View>

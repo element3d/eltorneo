@@ -3,7 +3,7 @@ import SERVER_BASE_URL from "./AppConfig";
 import strings from "./Strings";
 import Colors from "./Colors";
 
-export default function TeamItem({team, isHome, compact = false}) {
+export default function TeamItem({team, league, isHome, compact = false}) {
     return (
       <View style={{
         alignItems: 'center',
@@ -31,7 +31,7 @@ export default function TeamItem({team, isHome, compact = false}) {
             lineHeight: 14,
             color: '#AEAEB2',
             fontWeight: 'bold'
-          }}>{isHome ? strings.home : strings.away}</Text>
+          }}>{ league == 16 ? '' : (isHome ? strings.home : strings.away)}</Text>
       </View>
     )
   }

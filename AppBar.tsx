@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import MoonIcon from './assets/moon.svg';
-import MoonDarkIcon from './assets/moon_dark.svg';
+import MoonIcon from './assets/menu.svg';
+import MoonDarkIcon from './assets/menu-dark.svg';
 
 import strings from './Strings';
 import Colors, { ColorsClassDark } from './Colors';
@@ -18,8 +18,8 @@ function AppBar({navigation, title, showDrawer, setMode,  showLang, showMode=fal
   }
 
   function onSetMode() {
-    // showDrawer()
-    // return
+    showDrawer()
+    return
     
     Colors.swap()
     setMode(Colors.mode)

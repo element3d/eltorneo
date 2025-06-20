@@ -13,14 +13,35 @@ export default function MatchTablePanel({ match, table }) {
         return dataManager.getLeagues().find(league => league.id === match.league);
     }
 
-    function getGroupName(lindex, index) {
+    function getGroupName(lid, lindex, index) {
         let word = ''
-        if (lindex == 0) word = "A"
-        if (lindex == 1) word = "B"
-        if (lindex == 2) word = "C"
-        if (lindex == 3) word = "D"
+        if (lid == 7) {
+            if (lindex == 0) word = "A"
+            if (lindex == 1) word = "B"
+            if (lindex == 2) word = "C"
+            if (lindex == 3) word = "D"
 
-        return `${word}${index + 1}`
+            return `${word}${index + 1}`
+        } else if (lid == 16) {
+            switch(index) {
+                case 0:
+                    return "A";
+                case 1:
+                    return "B";
+                case 2:
+                    return "C";
+                case 3:
+                    return "D";
+                case 4:
+                    return "E";
+                case 5:
+                    return "F";
+                case 6:
+                    return "G";
+                case 7:
+                    return "H";
+            }
+        }
 
     }
 
@@ -102,10 +123,11 @@ export default function MatchTablePanel({ match, table }) {
             </View>
 
             {table?.map((team, index) => {
+              
                 if (team.group_index != match.team1.group_index) return
                 let renderGroupName = false
 
-                if (getLeague().num_leagues > 1 && (index == 0 || team.group_index != currentGroup)) {
+                if ((getLeague().num_leagues > 1 || getLeague().id == 16 ) && (index == 0 || team.group_index != currentGroup)) {
                     currentGroup = team.group_index
                     renderGroupName = true
                     currentPos = 1
@@ -123,7 +145,7 @@ export default function MatchTablePanel({ match, table }) {
                         color: Colors.titleColor,
                         // marginLeft: 15,
                         marginTop: 20
-                    }}>{strings.group} {getGroupName(team.league_index, team.group_index)}</Text> : null}
+                    }}>{strings.group} {getGroupName(getLeague().id, team.league_index, team.group_index)}</Text> : null}
                     <View style={{
                         width: '100%',
                         height: 52,

@@ -4,7 +4,7 @@ import ProfileIcon from './assets/Profile2.svg'
 import SERVER_BASE_URL from "./AppConfig";
 import dataManager from "./DataManager";
 import strings from "./Strings";
-import { ESTAT_TOTAL } from "./ProfilePage";
+import { ESTAT_TOTAL, ETAB_PREDICTS } from "./ProfilePage";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useEffect, useState } from "react";
 import Colors from "./Colors";
@@ -33,7 +33,8 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
       params: {
         id: u.id,
         globalPage: 1,
-        selectedStat: ESTAT_TOTAL
+        selectedStat: ESTAT_TOTAL,
+        tab: ETAB_PREDICTS
       },
       key: `user_${u.id}`
     })
@@ -52,6 +53,13 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
     else if (user.league == 4) txt += " " + strings.beginner
 
     return txt
+  }
+
+  function getBalanceColor(user) {
+    if (user.balance > 0) return '#00C566'
+    if (user.balance < 0) return '#FF4747'
+
+    return '#8E8E93'
   }
 
   return (
@@ -130,16 +138,46 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
 
                     {/* {predict.user.league == 2 ? strings.place_in_league2 : strings.place_in_el_torneo}: {predict.user.position}, {strings.points}: {predict.user.points} */}
                   </Text>
-                  <Text style={{
-                    fontSize: 12,
-                    lineHeight: 14,
-                    color: '#8E8E93',
-                    fontWeight: 'bold'
-                    // marginBottom: 10,
-                    // fontFamily: 'NotoSansArmenian-Bold'
+                  <View style={{
+                    flexDirection: 'row'
                   }}>
-                    {strings.points}: {predict.user.points}
-                  </Text>
+                    <Text style={{
+                      fontSize: 12,
+                      lineHeight: 14,
+                      color: '#8E8E93',
+                      fontWeight: 'bold'
+                      // marginBottom: 10,
+                      // fontFamily: 'NotoSansArmenian-Bold'
+                    }}>
+                      {strings.points}: {predict.user.points},
+                    </Text>
+                    <View style={{
+                      flexDirection: 'row',
+                      marginLeft: 10
+                    }}>
+                      <Text style={{
+                        fontSize: 12,
+                        lineHeight: 14,
+                        color: '#8E8E93',
+                        fontWeight: 'bold'
+                        // marginBottom: 10,
+                        // fontFamily: 'NotoSansArmenian-Bold'
+                      }}>
+                        {strings.balance}: 
+                      </Text>
+                      <Text style={{
+                        fontSize: 12,
+                        lineHeight: 14,
+                        color: getBalanceColor(predict.user),
+                        fontWeight: 'bold',
+                        marginLeft: 4,
+                        // marginBottom: 10,
+                        // fontFamily: 'NotoSansArmenian-Bold'
+                      }}>
+                        {predict.user.balance.toFixed(2)}$
+                      </Text>
+                    </View>
+                  </View>
                 </View>
                 : <Text style={{
                   fontSize: 12,

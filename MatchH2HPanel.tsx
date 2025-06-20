@@ -136,6 +136,17 @@ export default function MatchH2HPanel({ navigation, match, onShowMatchPreview, o
         marginTop: 30
       }} size={'large'} color={'#FF2882'} /> : null}
 
+      {!loading && !matches.length ? <View style={{
+        width: '100%',
+        marginTop: 20,
+        alignItems: 'center'
+      }}><Text style={{
+        fontWeight: 'bold',
+        color: "#8E8E93",
+      }}>
+        {strings.no_matches_found}
+      </Text></View> : null}
+
       {!loading ? matches.map((item, index) => {
         let renderTime = false;
 
@@ -173,6 +184,6 @@ export default function MatchH2HPanel({ navigation, match, onShowMatchPreview, o
       marginTop: 10
     }}>
       <NativeAdComp />
-    </View> : null }
+    </View> : null}
   </View>
 }

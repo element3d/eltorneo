@@ -37,6 +37,9 @@ export const ESTAT_TOTAL = 0
 const ESTAT_SCORE = 1
 const ESTAT_WINNER = 2
 
+export const ETAB_PREDICTS = 1
+export const ETAB_BETS = 2
+
 function ProfileCheap({ title, selected, onPress, value }) {
   return (
     <TouchableOpacity activeOpacity={.8} onPress={onPress} style={{
@@ -64,12 +67,15 @@ function ProfileCheap({ title, selected, onPress, value }) {
 function ProfilePage({ navigation, route }): JSX.Element {
   const { id } = route.params ? route.params : 0;
   const { globalPage } = route.params;
+  const { tab } = route.params;
   const { routeSelectedLeague } = route.params;
 
   const isMe = !id;
   const [page, setPage] = useState((globalPage - 1) * 5 + 1)
   const [predictsJson, setPredictsJson] = useState(null)
   const [predicts, setPredicts] = useState([])
+  const [betsJson, setBetsJson] = useState(null)
+  const [bets, setBets] = useState([])
   const [selectedLeague, setSelectedLeague] = useState(null)
   const [stats, setStats] = useState(null)
   const [hasMore, setHasMore] = useState(true);
@@ -100,7 +106,10 @@ function ProfilePage({ navigation, route }): JSX.Element {
   }, [])
 
   useEffect(() => {
-    getPredicts()
+    if (tab == ETAB_PREDICTS)
+      getPredicts()
+    else 
+      getBets()
   }, [page]);
 
   function onCloseMatchPreview() {
@@ -117,6 +126,49 @@ function ProfilePage({ navigation, route }): JSX.Element {
     match.isTeaser = true
     setShowMatchPreview(true)
     setPreviewMatch(match)
+  }
+
+  function getBets() {
+    if (!user) return
+
+    setLoading(true)
+    fetch(`${SERVER_BASE_URL}/api/v1/user/bets?page=${page}&user_id=${user.id}&league_id=${routeSelectedLeague ? routeSelectedLeague : -1}`, {
+      method: 'GET',
+      headers: {
+        // 'Authentication': authManager.getToken()
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+
+        if (data.bets.length <= 0) {
+          setBetsJson(data)
+
+          setLoading(false)
+          // setHasMore(false)
+          // setHasNext(false)
+
+          return
+        } else if (data.bets.length < 20) {
+          // setHasMore(false)
+          // setHasNext(false)
+          setLoading(false)
+        }
+
+        // setLoading(false)
+        setBets((prevBets) => [...prevBets, ...data.bets])
+        setBetsJson(data)
+        if (page % 5 == 0 && data.bets.length >= 20) {
+          // setHasNext(true)
+          setLoading(false)
+        }
+      })
+      .catch(error => {
+        setLoading(false)
+        // setHasMore(false)
+        // setHasNext(false)
+        console.error('Error fetching leagues:', error)
+      });
   }
 
   function getPredicts() {
@@ -166,9 +218,11 @@ function ProfilePage({ navigation, route }): JSX.Element {
     <ProfileHeader navigation={navigation}
       user={user}
       isMe={isMe}
-      predictsJson={predictsJson} />
+      betsJson={betsJson}
+      predictsJson={predictsJson} 
+      tab={tab}/>
 
-  ), [navigation, user, isMe, predictsJson]);
+  ), [navigation, user, isMe, predictsJson, betsJson, tab]);
 
   function onUnlock() {
     adsManager.showAd()
@@ -211,7 +265,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
           justifyContent: 'space-between'
         }}>
 
-          {!predicts.length || !predictsJson || blockForAd ?
+          {((!predicts.length || !predictsJson) && (!bets.length || !betsJson)) || blockForAd ?
             <View style={{
               width: '100%',
               flex: 1,
@@ -219,19 +273,21 @@ function ProfilePage({ navigation, route }): JSX.Element {
               {<ProfileHeader navigation={navigation}
                 user={user}
                 isMe={isMe}
-                predictsJson={predictsJson} />}
+                betsJson={betsJson}
+                predictsJson={predictsJson} 
+                tab={tab}/>}
               {!blockForAd ? <View style={{
                 flex: 1,
                 height: 200,
                 // backgroundColor: 'red',
-                paddingTop: 30
+                paddingTop: 0
               }}>
                 {loading ? <ActivityIndicator color={'#FF2882'} size="large" /> : <Text style={{
                   color: '#8E8E93',
                   fontSize: 14,
                   fontWeight: 'bold',
                   alignSelf: 'center'
-                }}>{strings.no_predicts}</Text>}
+                }}>{ tab == ETAB_BETS ? strings.no_bets : strings.no_predicts}</Text>}
               </View> : <View style={{
                 height: 80,
                 alignItems: 'center',
@@ -261,7 +317,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
                 </TouchableOpacity>
               </View>}
             </View> :
-            <UserMatchesList navigation={navigation} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={predicts} totalPredicts={predictsJson.allPredicts} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
+            <UserMatchesList navigation={navigation} tab={tab} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={tab==ETAB_PREDICTS ? predicts : bets} totalPredicts={ tab == ETAB_PREDICTS ? predictsJson.allPredicts : betsJson.allBets} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
           }
 
           <BottomNavBar page={isMe ? EPAGE_PROFILE : null} navigation={navigation} />

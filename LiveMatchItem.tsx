@@ -7,7 +7,7 @@ import moment from "moment"
 import Colors from "./Colors"
 
 export default function LiveMatchItem({ match, leagueName, navigation }) {
-
+    
     const m = match
     if (!m.league_name) {
         m.league_name = leagueName
@@ -30,7 +30,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
             m.status = 'FT'
         }
 
-        if (m.status == 'HT' || m.status == 'FT' || m.status == 'BT') return m.status
+        if (m.status == 'HT' || m.status == 'FT' || m.status == 'BT' || m.status == 'P') return m.status
 
         if (!isLive) {
             return moment(m.date).format('HH:mm')
@@ -117,7 +117,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                 justifyContent: 'center',
                 flexDirection: 'row'
             }}>
-                <TeamItem team={m.team1} isHome={true} compact={true} />
+                <TeamItem team={m.team1} league={m.league} isHome={true} compact={true} />
                 <View>
                     {isLive ? <View style={{
                         flexDirection: 'row',
@@ -171,7 +171,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                         }}>{getStatusText(m)}</Text>
                     </View>
                 </View>
-                <TeamItem team={m.team2} compact={true} />
+                <TeamItem team={m.team2} league={m.league} compact={true} />
 
             </View>
             <View style={{

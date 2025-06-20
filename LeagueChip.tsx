@@ -44,8 +44,8 @@ export default function LeagueChip({ league, selected, onPress, compact = true }
       uri: `${SERVER_BASE_URL}/data/leagues/${selected ? l.name + '_white' : l.name + (Colors.mode == 1 ? '_colored' : "") }.png${dataManager.getImageCacheTime()}`,
       cache: 'reload'
     }} style={{
-      width: compact ? 34 : 28,
-      height: compact ? 34 : 28,
+      width: compact ? 40 : 28,
+      height: compact ? 36 : 28,
       objectFit: 'contain',
       marginRight: compact ? 0 : 10
     }}></Image>

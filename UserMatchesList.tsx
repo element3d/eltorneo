@@ -8,9 +8,10 @@ import strings from './Strings';
 import dataManager from './DataManager';
 import authManager from './AuthManager';
 import Colors from './Colors';
+import { ETAB_BETS } from './ProfilePage';
 
 
-const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, hasNext1, renderTopPart, page, setPage, predicts, totalPredicts, selectedLeague, onShowMatchPreview, onShowMatchTrailer }) => {
+const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, hasNext1, renderTopPart, page, setPage, predicts, totalPredicts, selectedLeague, onShowMatchPreview, onShowMatchTrailer, tab }) => {
   const numPages = Math.ceil(totalPredicts / 100);
   const hasNext = globalPage < numPages
   const hasMore = (globalPage - 1) * 100 + predicts.length < totalPredicts
@@ -26,6 +27,7 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
       name: 'Profile', params: {
         globalPage: globalPage + 1,
         id: id,
+        tab: tab
       }, key: `profile_page_${globalPage + 1}_${id}`
     })
   }
@@ -164,7 +166,7 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
             }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
           </View>
         ) : null} */}
-        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} showDate/>
+        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} tab={tab} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} showDate/>
       </View>
     );
 

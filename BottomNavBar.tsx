@@ -30,7 +30,7 @@ import authManager from './AuthManager';
 import SERVER_BASE_URL from './AppConfig';
 import LinearGradient from 'react-native-linear-gradient';
 import moment from 'moment';
-import { ESTAT_TOTAL } from './ProfilePage';
+import { ESTAT_TOTAL, ETAB_PREDICTS } from './ProfilePage';
 import Colors from './Colors';
 const Pulse = require('react-native-pulse').default;
 
@@ -71,7 +71,7 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
   }
 
   function navTables() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: me && me.league ? me.league : 1 }, key: 1 })
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: me && me.league ? me.league : 1 }, key: "tables" })
   }
 
 
@@ -86,8 +86,9 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
           name: 'Profile', params: {
             globalPage: 1,
             routeSelectedLeague: -1,
-            selectedStat: ESTAT_TOTAL
-          }, key: -1
+            selectedStat: ESTAT_TOTAL,
+            tab: ETAB_PREDICTS
+          }, key: `profile_${authManager.getMeSync().id}_${ETAB_PREDICTS}`
         })
         return
       }

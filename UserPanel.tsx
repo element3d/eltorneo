@@ -20,6 +20,13 @@ export default function UserPanel({ navigation, place, user, isMe }) {
       return txt
     }
   
+    function getBalanceColor() {
+      if (user.balance > 0) return '#00C566'
+      if (user.balance < 0) return '#FF4747'
+
+      return '#8E8E93'
+    }
+
     if (user) {
       return (
         <View style={{
@@ -59,7 +66,7 @@ export default function UserPanel({ navigation, place, user, isMe }) {
               fontFamily: 'NotoSansArmenian-Bold'
             }}>{user.name}</Text>
             {place > 0 ? <Text style={{
-              marginTop: 2,
+              // marginTop: 2,
               color: '#8E8E93',
               fontSize: 14,
               // lineHeight: 20,
@@ -75,6 +82,26 @@ export default function UserPanel({ navigation, place, user, isMe }) {
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
             }}>{strings.points}:  {user.points}</Text>
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <Text style={{
+                // marginTop: 2,
+                color: '#8E8E93',
+                fontSize: 14,
+                lineHeight: 16,
+                fontWeight: 'bold'
+                // fontFamily: 'NotoSansArmenian-Bold'
+              }}>{strings.balance}:  </Text>
+                <Text style={{
+                // marginTop: 2,
+                color: getBalanceColor(),
+                fontSize: 14,
+                lineHeight: 16,
+                fontWeight: 'bold'
+                // fontFamily: 'NotoSansArmenian-Bold'
+              }}>{user.balance.toFixed(2)}$</Text>
+            </View>
           </View>
           {isMe ? <TouchableOpacity activeOpacity={.6} onPress={onNavEdit} style={{
             width: 50,

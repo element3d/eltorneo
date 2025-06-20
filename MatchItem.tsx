@@ -12,9 +12,10 @@ import Colors from './Colors';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import moment from 'moment';
 import FAIcon from 'react-native-vector-icons/Fontisto';
+import { ETAB_BETS, ETAB_PREDICTS } from './ProfilePage';
 
 
-export default function MatchItem({ onPress, match, showLeague, onShowMatchPreview, onShowMatchTrailer, showDate = false }) {
+export default function MatchItem({ onPress, match, showLeague, onShowMatchPreview, onShowMatchTrailer, tab = ETAB_PREDICTS, showDate = false }) {
 
   function getTime(ts) {
     const date = new Date(ts);
@@ -36,6 +37,18 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
     if (p.status == 1) return '#00C566'
     if (p.status == 2) return match.is_special ? 'gold' : '#ff7539'
     if (p.status == 3 || p.status == 4) return '#FF4747'
+  }
+
+  function getBetStatusValue(b) {
+    if (b.status == 0) return `${b.amount.toFixed(1)}$`
+    if (b.status == 2) return `-${b.amount.toFixed(1)}$`
+    if (b.status == 1) return `+${(b.odd * b.amount).toFixed(2)}$`
+  }
+
+  function getBetStatusColor(p) {
+    if (p.status == 0) return 'black'//'#8E8E93'
+    if (p.status == 1) return '#00C566'
+    if (p.status == 2) return '#FF4747'
   }
 
   function getBgColor(p) {
@@ -65,6 +78,11 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
     return true
   }
 
+  function hasBet() {
+    if (!match.bet || match.bet.status == -1 /*|| (ts > match.date && match.predict.status == 0)*/) return false
+    return true
+  }
+
   function isMatchLive() {
     if (match.status == 'PST') return false
     if (isMatchEnded()) return false
@@ -75,7 +93,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
   }
 
   function getStatusText(m) {
-    if (m.status == 'HT' || m.status == 'FT' || m.status == "BT") return m.status
+    if (m.status == 'HT' || m.status == 'FT' || m.status == "BT" || m.status == 'P') return m.status
 
     return '  ' + m.elapsed + " '"
   }
@@ -102,9 +120,13 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
   function get90BGColor() {
     if (match.is_special) {
-      if (match.predict.status == 0)
-        return 'black'
-
+      if (tab == ETAB_PREDICTS) {
+        if (match.predict.status == 0)
+          return 'black'
+      } else {
+        // if (match.bet.status == 0)
+          return 'black'
+      }
       return 'white'
     }
     return Colors.gray800
@@ -112,9 +134,13 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
   function get90TitleColor() {
     if (match.is_special) {
-      if (match.predict.status == 0)
-        return 'white'
-
+      if (tab == ETAB_PREDICTS) {
+        if (match.predict.status == 0)
+          return 'white'
+      } else {
+        // if (match.bet.status == 0)
+          return 'white'
+      }
       return 'black'
     }
     return Colors.titleColor
@@ -161,6 +187,16 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
         color: '#AEAEB2',
       }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')} </Text>
     </View >
+  }
+
+  function getBetString(bet) {
+    if (bet == "w1") return "W1"
+    if (bet == "w2") return "W2"
+    if (bet == "x") return "X"
+    if (bet == "x1") return "1X"
+    if (bet == "x12") return "12"
+    if (bet == "x2") return "2X"
+    return ""
   }
 
   return (
@@ -401,6 +437,68 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
           </View>
         </View>
 
+        {hasBet() ? <View style={{
+          width: '100%',
+          height: 24,
+          alignItems: 'center',
+          justifyContent: 'center',
+          // backgroundColor: 'blue'
+        }}>
+          <View style={{
+            // borderWidth: 1,
+            backgroundColor: match.is_special ? 'white' : "#F7F7F7",
+            // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
+            alignItems: 'center',
+            // borderWidth: match.is_special ? 1 : 0,
+            justifyContent: 'center',
+            borderRadius: 12,
+            paddingLeft: 10,
+            paddingRight: match.playOff ? 2 : 10,
+            flexDirection: 'row',
+            height: 20,
+            marginTop: 2
+          }}>
+            <Text style={{
+              fontSize: 12,
+              // marginBottom: 2,
+              color: 'black',
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
+            }}>{strings.bet} {getBetString(match.bet.bet)}</Text>
+            <Text style={{
+              fontSize: 12,
+              // marginBottom: 2,
+              color: '#AEAEB2',
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
+            }}>({match.bet.odd.toFixed(2)})</Text>
+             <Text style={{
+              fontSize: 12,
+              marginLeft: 10,
+              // marginBottom: 2,
+              color: getBetStatusColor(match.bet),
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
+            }}>{getBetStatusValue(match.bet)}</Text>
+
+            {match.playOff ? <View style={{
+              width: 18,
+              height: 18,
+              backgroundColor: get90BGColor(),
+              borderRadius: 9,
+              marginLeft: 6,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Text style={{
+                fontSize: 12,
+                fontWeight: 900,
+                color: get90TitleColor()
+              }}>90</Text>
+            </View> : null}
+          </View>
+        </View> : null}
+
         {hasPredict() ? <View style={{
           width: '100%',
           height: 24,
@@ -447,17 +545,17 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
             </View> : null}
           </View>
         </View> : null}
-        {showLeague || hasPredict() ? <View style={{
+        {showLeague || hasPredict() || (tab == ETAB_BETS && hasBet()) ? <View style={{
           height: 5
         }}></View> : null}
-        {showLeague && !match.is_special && !hasPredict() ? <View style={{
+        {showLeague && !match.is_special && !hasPredict() && !hasBet() ? <View style={{
           height: 6
         }}></View> : null}
-        {showLeague && match.is_special && !hasPredict() ? <View style={{
+        {showLeague && match.is_special && !hasPredict() && !hasBet() ? <View style={{
           height: 6
         }}></View> : null}
 
-        {match.is_special && !showLeague && !hasPredict() ? <View style={{
+        {match.is_special && !showLeague && !hasPredict() && !hasBet() ? <View style={{
           height: 28,
           // alignItems: 'center',
           justifyContent: 'center',

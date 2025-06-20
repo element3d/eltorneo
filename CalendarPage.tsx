@@ -83,6 +83,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
   }
 
   let currentLeague = null
+  let currentWeek = null
 
   function onClosePreview() {
     setShowMatchPreview(false)
@@ -103,7 +104,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
 
   function onNavMatch(match) {
     const now = Date.now(); // Get current timestamp in milliseconds
-    const twoDaysInMillis = 2 * 24 * 60 * 60 * 1000; // 2 days in milliseconds    
+    const twoDaysInMillis = 4 * 24 * 60 * 60 * 1000; // 2 days in milliseconds    
     const allow = (match.date - now) < twoDaysInMillis;
 
     if (!allow) {
@@ -207,6 +208,12 @@ function CalendarPage({ navigation, route }): JSX.Element {
                 let renderLeague = false;
                 if (!currentLeague || currentLeague != m.league_name) {
                   currentLeague = m.league_name
+                  currentWeek = m.week
+                  renderLeague = true;
+                }
+                if (!currentWeek || currentWeek != m.week) {
+                  currentLeague = m.league_name
+                  currentWeek = m.week
                   renderLeague = true;
                 }
                 return <View key={`match_${i}`}>
