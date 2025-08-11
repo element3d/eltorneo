@@ -9,20 +9,33 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useEffect, useState } from "react";
 import Colors from "./Colors";
 import NativeAdComp from "./NativeAdComp";
+import FirstIcon from "./assets/first.svg"
+import AwardWhiteIcon from './assets/award_white.svg'
+import AwardBlackIcon from './assets/award_black.svg'
+import AwardGoldIcon from './assets/award_gold.svg'
+import FirstIcon2 from './assets/first2.svg';
 
 export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoaded, blockForAd, match, isMatchEnded, navigation }) {
   function getBorderColor(p) {
     if (p.status == 0) return 'black'//'#8E8E93'
-    if (p.status == 1) return '#00C566'
+    if (p.status == 1 || p.status == 5) return '#00C566'
     if (p.status == 2) return '#ff7539'
     if (p.status == 3) return '#FF4747'
   }
 
   function getBgColor(p) {
     if (p.status == 0) return '#F7F7F7'
-    if (p.status == 1) return '#00C56619'
+    if (p.status == 1 || p.status == 5) return '#00C56619'
     if (p.status == 2) return '#FACC1519'
     if (p.status == 3) return '#FF474719'
+  }
+
+  function getPoints(p) {
+    if (p.status == 0) return ''
+    if (p.status == 1) return '+1'
+    if (p.status == 5) return '+2'
+    if (p.status == 2) return '+3'
+    if (p.status == 3) return '-1'
   }
 
   function onNavUser(u) {
@@ -55,11 +68,71 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
     return txt
   }
 
+  function getAwardLeagueText(league) {
+    let txt = strings.place_in_league
+    if (league == 1) txt += " " + strings.legend
+    else if (league == 2) txt += " " + strings.pro
+    else if (league == 3) txt += " " + strings.amateur
+    else if (league == 4) txt += " " + strings.beginner
+
+    return txt
+  }
+
   function getBalanceColor(user) {
     if (user.balance > 0) return '#00C566'
     if (user.balance < 0) return '#FF4747'
 
     return '#8E8E93'
+  }
+
+  function getAwardText(user, award, league) {
+
+    if (award.place > 1 || award.league != 1) return getAwardLeagueText(award.league)
+
+    return strings.winner_of_eltorneo
+  }
+
+  function getAwardIcon(user) {
+    const award = user.awards[0]
+    if (award.place == 1) {
+      if (award.league == 1)
+        return <FirstIcon style={{ marginLeft: 0 }} width={22} height={22}></FirstIcon>
+      else
+        return <FirstIcon2 style={{ marginLeft: 0 }} width={22} height={22}></FirstIcon2>
+    }
+    if (award.league == 1) return <AwardGoldIcon width={26} height={26} style={{
+      // marginTop: 6,
+      // marginLeft: -2
+      // top: 1,
+      position: 'absolute'
+    }}></AwardGoldIcon>
+    if (Colors.mode == 2) return <AwardWhiteIcon width={26} height={26} style={{
+      // marginTop: 6,
+      position: 'absolute',
+      // top: 1,
+      // marginLeft: -2
+    }}></AwardWhiteIcon>
+    else return <AwardBlackIcon width={26} height={26} style={{
+      // marginTop: 6,
+      // top: 1,
+      position: 'absolute'
+      // marginLeft: -2
+    }}></AwardBlackIcon>
+  }
+
+  function getSpecialPoints() {
+    return match.special_match_points.split(':')
+  }
+
+  function getPoint(p) {
+    const sp = getSpecialPoints()
+
+    if (p.status == 0) return '0'
+    if (p.status == 1) return match.is_special ? '+' + sp[1] : '+1'
+    if (p.status == 2) return match.is_special ? '+' + sp[0] : '+3'
+    if (p.status == 3) return match.is_special ? sp[2] : '-1'
+    if (p.status == 4) return '-2'
+    if (p.status == 5) return match.is_special ? '+' + sp[1] : '+2'
   }
 
   return (
@@ -163,7 +236,7 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
                         // marginBottom: 10,
                         // fontFamily: 'NotoSansArmenian-Bold'
                       }}>
-                        {strings.balance}: 
+                        {strings.balance}:
                       </Text>
                       <Text style={{
                         fontSize: 12,
@@ -199,16 +272,17 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
                 borderColor: '#00000033',
                 padding: 1,
                 paddingLeft: 8,
-                paddingRight: 8,
-                borderRadius: 8,
+                paddingRight: predict.status == 0 ? 8 : 3,
+                borderRadius: 6,
                 marginBottom: 4
               }}>
                 <Text style={{
                   color: getBorderColor(predict),
                   fontWeight: 'bold',
                   marginBottom: 1,
+                  fontSize: predict.status == 0 ? 14 : 12,
                   // fontFamily: 'NotoSansArmenian-Bold'
-                }}>{predict.team1_score} : {predict.team2_score}</Text>
+                }}>{predict.team1_score} : {predict.team2_score}{predict.status == 0 ? '' : ` (${getPoint(predict)})`}</Text>
               </View> : <Icon color={Colors.titleColor} size={20} name='lock' />}
               <View style={{
                 // borderWidth: 1,
@@ -226,7 +300,45 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
               </View>
             </View>
           </View>
+          {predict.user.awards?.length ? <View style={{
+            width: '100%',
+            // height: 20,
+            paddingLeft: 10,
+            marginBottom: 4,
+            alignItems: 'center',
+            flexDirection: 'row',
+            // backgroundColor: 'red'
+          }}>
+            {/* {predict.user.awards[0].place > 1 ?  */}
+            <View style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 26,
+              height: 26,
+              // backgroundColor: 'red'
+            }}>
+              {getAwardIcon(predict.user)}
+              {predict.user.awards[0].place > 1 ? <Text style={{
+                fontWeight: 900,
+                // lineHeight: 18,
+                // fontFamily: 'Poppins-Bold',
+                // right: predict./user.awards[0].place < 10 ? 8 : 6,
+                // top: predict.user.awards[0].place < 10 ? 2 : 4,
+                fontSize: predict.user.awards[0].place < 10 ? 14 : 12,
+                color: predict.user.awards[0].league == 1 ? '#FF9100' : Colors.titleColor,
+                // position: 'absolute'
+              }}>{predict.user.awards[0].place}</Text> : null}
+            </View>
+            {/* : null} */}
+            {/* {predict.user.awards[0].place == 1 && predict.user.league == 1 ? <FirstIcon width={16} height={16}></FirstIcon> : null} */}
 
+            <Text style={{
+              fontSize: 13,
+              color: '#8E8E93',
+              marginLeft: 6,
+              fontWeight: 'bold'
+            }}>{getAwardText(predict.user, predict.user.awards[0], predict.user.league)} (2024/25)</Text>
+          </View> : null}
         </TouchableOpacity>)
       })}
 

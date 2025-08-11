@@ -4,15 +4,16 @@ import {
   Image,
   ImageBackground,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  useColorScheme,
+  SafeAreaView,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_TABLES } from './BottomNavBar';
 import SERVER_BASE_URL from './AppConfig';
@@ -26,6 +27,8 @@ import CupIcon from './assets/Trophy.svg';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MDIcon from 'react-native-vector-icons/MaterialIcons';
 import GoogleIcon from './assets/google.svg';
+import FirstIcon from './assets/first.svg';
+import FirstIcon2 from './assets/first2.svg';
 
 import adsManager from './AdsManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -34,6 +37,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Colors from './Colors';
 import NativeAdComp from './NativeAdComp';
 import gsingin from './GSignin';
+import WinnerPanel from './WinnerPanel';
 
 const league1Img = require('./assets/throphy.png')
 const league2Img = require('./assets/second.png')
@@ -66,7 +70,7 @@ function TableCheap({ title, selected, onPress }) {
 }
 
 function TablesPage({ navigation, route }): JSX.Element {
-  const { page, league } = route.params;
+  const { page, league, season } = route.params;
   const [table, setTable] = useState([])
   const [selectedTable, setSelectedTable] = useState(ETABLE_GENERAL)
   const [selectedLeague, setSelectedLeague] = useState(null)
@@ -76,7 +80,7 @@ function TablesPage({ navigation, route }): JSX.Element {
   const [refreshing, setRefreshing] = useState(false)
   const [me, setMe] = useState(authManager.getMeSync())
   const [myLeague, setMyLeague] = useState(me?.league || 1)
-  const [season, setSeason] = useState('24/25')
+  // const [season, setSeason] = useState(dataManager.getSettings() ? dataManager.getSettings().season : '25/26')
 
   const backgroundStyle = {
     backgroundColor: Colors.gray800,
@@ -141,7 +145,7 @@ function TablesPage({ navigation, route }): JSX.Element {
       },
     };
 
-    fetch(`${SERVER_BASE_URL}/api/v1/table/points?page=${page}&league=${league}`, requestOptions)
+    fetch(`${SERVER_BASE_URL}/api/v1/table/points?page=${page}&league=${league}&season=${season}`, requestOptions)
       .then(response => {
         if (response.status == 200)
           return response.json()
@@ -232,11 +236,17 @@ function TablesPage({ navigation, route }): JSX.Element {
     if (selectedTable == ETABLE_GENERAL) i = index + 20 * (page - 1)
     if (i == 0) {
       return <View style={{
-        width: 50,
+        width: 40,
+        // backgroundColor: 'red',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <Icon name="trophy" color={'#FFCC00'} size={20}></Icon>
+        {league == 1 ? <FirstIcon width={24} height={24} style={{
+          // marginLeft: 6
+        }}></FirstIcon> : <FirstIcon2 width={24} height={24} style={{
+          marginLeft: 6
+        }}></FirstIcon2>}
+        {/* <Icon name="trophy" color={'#FFCC00'} size={20}></Icon> */}
       </View>
     }
 
@@ -270,7 +280,7 @@ function TablesPage({ navigation, route }): JSX.Element {
     // }
 
     return <Text style={{
-      width: 50,
+      width: 40,
       color: Colors.titleColor,
       fontWeight: 'bold',
       textAlign: 'center'
@@ -374,7 +384,7 @@ function TablesPage({ navigation, route }): JSX.Element {
           justifyContent: 'center'
         }}>
           {getIcon(i)}
-          <Text style={{
+          <Text numberOfLines={1} style={{
             // width: '90%',
             flex: 1,
             color: Colors.titleColor,
@@ -425,32 +435,32 @@ function TablesPage({ navigation, route }): JSX.Element {
   }
 
   function onPrev() {
-    navigation.navigate({ name: 'Tables', params: { page: page - 1, league: league }, key: `${page - 1}_${league}` })
+    navigation.navigate({ name: 'Tables', params: { page: page - 1, league: league, season: season }, key: `${page - 1}_${league}_${season}` })
   }
 
   function onNext() {
-    navigation.navigate({ name: 'Tables', params: { page: page + 1, league: league }, key: `${page + 1}_${league}` })
+    navigation.navigate({ name: 'Tables', params: { page: page + 1, league: league, season: season }, key: `${page + 1}_${league}_${season}` })
   }
 
   function onMyPosition() {
     const page = Math.ceil(me.position / 20);
-    navigation.navigate({ name: 'Tables', params: { page: page, league: me.league }, key: `${page}_${league}` })
+    navigation.navigate({ name: 'Tables', params: { page: page, league: me.league, season: season }, key: `${page}_${league}_${season}` })
   }
 
   function onLeague1() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 1 }, key: `${1}_${league}` })
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 1, season: season }, key: `${1}_${league}_${season}` })
   }
 
   function onLeague2() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 2 }, key: `${1}_${league}` })
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 2, season: season }, key: `${1}_${league}_${season}` })
   }
 
   function onLeague3() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 3 }, key: `${1}_${league}` })
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 3, season: season }, key: `${1}_${league}_${season}` })
   }
 
   function onLeague4() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 4 }, key: `${1}_${league}` })
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: 4, season: season }, key: `${1}_${league}_${season}` })
   }
 
   const onRefresh = () => {
@@ -478,17 +488,29 @@ function TablesPage({ navigation, route }): JSX.Element {
     // navigation.navigate('AwardsInfo')
   }
 
+  function setSeason(s) {
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: myLeague, season: s }, key: `${1}_${league}_${s}` })
+  }
+
   function onMoveToLeague() {
     navigation.navigate("MoveToLeague")
   }
+  const insets = useSafeAreaInsets();
 
   const showPrev = page != 1
   const showNext = table?.length >= 20
-
+  const settings = dataManager.getSettings()
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+    <GestureHandlerRootView style={{
+      flex: 1, backgroundColor: Colors.bgColor,
+ 
+    }}>
 
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+        <View style={{
+          height: insets.top,
+          backgroundColor: Colors.gray800,
+        }} />
         <StatusBar
           barStyle={Colors.statusBar}
 
@@ -568,11 +590,11 @@ function TablesPage({ navigation, route }): JSX.Element {
               alignItems: 'center',
               // backgroundColor: 'red'
             }}>
-              <TouchableOpacity activeOpacity={.6} style={{
+              <TouchableOpacity activeOpacity={.6} onPress={() => { setSeason('24/25') }} style={{
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
-                backgroundColor: season == '24/25' ? Colors.primary : Colors.gray800,
+                backgroundColor: !season || season == '24/25' ? Colors.primary : Colors.gray800,
                 borderWidth: 1,
                 borderColor: Colors.borderColor,
                 borderRadius: 20,
@@ -581,14 +603,14 @@ function TablesPage({ navigation, route }): JSX.Element {
               }}>
                 <Text style={{
                   fontWeight: 'bold',
-                  color:  season == '24/25' ? 'white' : Colors.titleColor
-                }}>{strings.season} 24/25</Text>
-              
+                  color: !season || season == '24/25' ? 'white' : Colors.titleColor
+                }}>{strings.season} 2024/25</Text>
+
               </TouchableOpacity>
 
-              <TouchableOpacity disabled activeOpacity={.6} style={{
+              <TouchableOpacity onPress={() => { setSeason('25/26') }} disabled={dataManager.getSettings()?.season != '25/26'} activeOpacity={.6} style={{
                 marginRight: 10,
-                opacity: .5,
+                opacity: dataManager.getSettings()?.season != '25/26' ? .5 : 1,
                 paddingHorizontal: 20,
                 height: 40,
                 backgroundColor: season == '25/26' ? Colors.primary : Colors.gray800,
@@ -601,8 +623,8 @@ function TablesPage({ navigation, route }): JSX.Element {
                 <Text style={{
                   fontWeight: 'bold',
                   color: season == '25/26' ? 'white' : Colors.titleColor
-                }}>{strings.season} 25/26</Text>
-              
+                }}>{strings.season} 2025/26</Text>
+
               </TouchableOpacity>
             </View>
 
@@ -629,7 +651,8 @@ function TablesPage({ navigation, route }): JSX.Element {
                     borderRadius: 20,
                     // marginBottom: 20
                   }}>
-                    <AwardsPanel onReadMore={onNavAwardsInfo} league={league} />
+                    {!settings?.season || settings?.season == season ? <AwardsPanel onReadMore={onNavAwardsInfo} league={league} season={season} />
+                      : <WinnerPanel winner={table ? table[0] : null} season={season} league={league}></WinnerPanel>}
                   </ImageBackground>
                 </TouchableOpacity>
               </View>
@@ -647,17 +670,17 @@ function TablesPage({ navigation, route }): JSX.Element {
               // width: '100%',
               // backgroundColor: 'red',
             }}
-            showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
               horizontal={true}
               contentInsetAdjustmentBehavior="automatic"
               contentContainerStyle={{
-              // width: '100%',
-              flexDirection: 'row',
-            
-              // justifyContent: 'flex-start',
-              paddingRight: 40
-            }}>
-              {me?.position > 0 ? <TouchableOpacity activeOpacity={.6} onPress={() => { onMyPosition() }} style={{
+                // width: '100%',
+                flexDirection: 'row',
+
+                // justifyContent: 'flex-start',
+                paddingRight: 40
+              }}>
+              {me?.position > 0 && (!settings?.season || settings?.season == season) ? <TouchableOpacity activeOpacity={.6} onPress={() => { onMyPosition() }} style={{
                 marginLeft: 20,
                 marginRight: 10,
                 // paddingHorizontal: 20,
@@ -676,11 +699,11 @@ function TablesPage({ navigation, route }): JSX.Element {
                   fontWeight: 'bold',
                   color: Colors.titleColor
                 }}><Icon name='crosshairs' size={22}></Icon></Text>
-               
-              </TouchableOpacity> : null }
+
+              </TouchableOpacity> : null}
 
               <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague1() }} style={{
-                marginLeft: me?.position > 0 ? 0 : 20,
+                marginLeft: me?.position > 0 && (!settings?.season || settings?.season == season) ? 0 : 20,
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
@@ -704,7 +727,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                 }}>{strings.your_league}</Text> : null}
               </TouchableOpacity>
 
-              <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague2() }} style={{
+              {settings.numLevels >= 2 || settings?.season != season ? <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague2() }} style={{
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
@@ -725,9 +748,9 @@ function TablesPage({ navigation, route }): JSX.Element {
                   lineHeight: 10,
                   color: league == 2 ? 'white' : Colors.titleColor
                 }}>{strings.your_league}</Text> : null}
-              </TouchableOpacity>
+              </TouchableOpacity> : null}
 
-               {dataManager.getSettings().numLevels >= 3 ? <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague3() }} style={{
+              {settings.numLevels >= 3 || settings?.season != season ? <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague3() }} style={{
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
@@ -748,9 +771,9 @@ function TablesPage({ navigation, route }): JSX.Element {
                   lineHeight: 10,
                   color: league == 3 ? 'white' : Colors.titleColor
                 }}>{strings.your_league}</Text> : null}
-              </TouchableOpacity> : null }
+              </TouchableOpacity> : null}
 
-              {dataManager.getSettings().numLevels >= 4 ? <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague4() }} style={{
+              {settings.numLevels >= 4 || settings?.season != season ? <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague4() }} style={{
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
@@ -771,7 +794,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                   lineHeight: 10,
                   color: league == 4 ? 'white' : Colors.titleColor
                 }}>{strings.your_league}</Text> : null}
-              </TouchableOpacity> : null }
+              </TouchableOpacity> : null}
 
               <TouchableOpacity onPress={onMoveToLeague} style={{
                 width: 40,
@@ -813,7 +836,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                 justifyContent: 'center'
               }}>
                 <Text style={{
-                  width: 50,
+                  width: 40,
                   color: Colors.titleColor,
                   fontWeight: 'bold',
                   textAlign: 'center'
@@ -848,7 +871,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                   {renderTable()}
 
 
-                  {selectedTable == ETABLE_GENERAL ? <View style={{
+                  {selectedTable == ETABLE_GENERAL && settings?.season == season ? <View style={{
                     height: 50,
 
                     // backgroundColor: 'red',
@@ -985,6 +1008,10 @@ function TablesPage({ navigation, route }): JSX.Element {
           </ScrollView>
           <BottomNavBar page={EPAGE_TABLES} navigation={navigation} />
         </View>
+        <View style={{
+          height: insets.bottom,
+          backgroundColor: Colors.gray800,
+        }} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );

@@ -47,7 +47,7 @@ export default function MatchPreviewDialog({ onClose, match }) {
                         }}>
                             {match.team1.shortName}
                         </Text>
-                        <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team1.name}.png`} style={{
+                        <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team1.name.replace(/ö/g, 'o')}.png`} style={{
                             width: 30,
                             height: 30,
                             marginLeft: 4,
@@ -97,7 +97,7 @@ export default function MatchPreviewDialog({ onClose, match }) {
                         alignItems: 'center',
                         justifyContent: 'flex-start'
                     }}>
-                        <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team2.name}.png`} style={{
+                        <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team2.name.replace(/ö/g, 'o')}.png`} style={{
                             width: 30,
                             height: 30,
                             marginRight: 4,

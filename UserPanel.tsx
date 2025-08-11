@@ -4,31 +4,122 @@ import SERVER_BASE_URL from "./AppConfig"
 import ProfileIcon from './assets/Profile2.svg';
 import strings from "./Strings";
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import FirstIcon from './assets/first.svg'
+import FirstIcon2 from './assets/first2.svg';
+import AwardWhiteIcon from './assets/award_white.svg'
+import AwardBlackIcon from './assets/award_black.svg'
+import AwardGoldIcon from './assets/award_gold.svg'
+
+import dataManager from "./DataManager";
+import ButtonPrimary from "./ButtonPrimary";
+import LinkAccountPanel from "./LinkAccountPanel";
 
 export default function UserPanel({ navigation, place, user, isMe }) {
-    function onNavEdit() {
-      navigation.navigate("ProfileEdit")
+
+  function onNavEdit() {
+    navigation.navigate("ProfileEdit")
+  }
+
+  function getLeagueText() {
+    let txt = strings.place_in_league
+    if (user.league == 1) txt += " " + strings.legend
+    else if (user.league == 2) txt += " " + strings.pro
+    else if (user.league == 3) txt += " " + strings.amateur
+    else if (user.league == 4) txt += " " + strings.beginner
+
+    return txt
+  }
+
+  function getAwardLeagueText(league) {
+    let txt = strings.place_in_league
+    if (league == 1) txt += " " + strings.legend
+    else if (league == 2) txt += " " + strings.pro
+    else if (league == 3) txt += " " + strings.amateur
+    else if (league == 4) txt += " " + strings.beginner
+
+    return txt
+  }
+
+  function getBalanceColor() {
+    if (user.balance > 0) return '#00C566'
+    if (user.balance < 0) return '#FF4747'
+
+    return '#8E8E93'
+  }
+
+  function getAwardText(award, league) {
+
+    if (award.place > 1 || league != 1) return getAwardLeagueText(league)
+
+    return strings.winner_of_eltorneo
+  }
+
+  function getAwardIcon(user, award) {
+    if (award.place == 1) {
+      if (award.league == 1)
+        return <FirstIcon style={{ marginLeft: 0 }} width={22} height={22}></FirstIcon>
+      else
+        return <FirstIcon2 style={{ marginLeft: 0 }} width={20} height={20}></FirstIcon2>
     }
+    if (award.league == 1) return <AwardGoldIcon width={28} height={28} style={{
+      // top: 1,
+      position: 'absolute'
+    }}></AwardGoldIcon>
+    if (Colors.mode == 2) return <AwardWhiteIcon width={28} height={28} style={{
+      // top: 1,
+      position: 'absolute'
+    }}></AwardWhiteIcon>
+    else return <AwardBlackIcon width={28} height={28} style={{
+      // top: 1,
+      position: 'absolute'
+    }}></AwardBlackIcon>
+  }
 
-    function getLeagueText() {
-      let txt = strings.place_in_league
-      if (user.league == 1) txt += " " + strings.legend
-      else if (user.league == 2) txt += " " + strings.pro
-      else if (user.league == 3) txt += " " + strings.amateur
-      else if (user.league == 4) txt += " " + strings.beginner
+  function getAward(award) {
+    return <View key={`award_${award.place}`} style={{
+      // width: 200,
+      height: 30,
+      paddingLeft: 15,
+      marginTop: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      // backgroundColor: 'red'
+    }}>
+      {/* {award.place > 1 ?  */}
+      <View style={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 30,
+        height: 30,
+        // backgroundColor: 'red'
+      }}>
+        {getAwardIcon(user, award)}
+        {award.place > 1 ? <Text style={{
+          fontWeight: 900,
+          // fontFamily: 'Poppins-Bold',
+          // top:  award.place < 10 ? 2 : 4,
+          fontSize: award.place < 10 ? 14 : 12,
+          color: award.league == 1 ? '#FF9100' : Colors.titleColor,
+          position: 'absolute'
+        }}>{award.place}</Text> : null}
+      </View>
+      {/* : null} */}
 
-      return txt
-    }
-  
-    function getBalanceColor() {
-      if (user.balance > 0) return '#00C566'
-      if (user.balance < 0) return '#FF4747'
+      {/* { award.place == 1 && user.league == 1 ? <FirstIcon width={20} height={20}></FirstIcon> : null } */}
+      <Text style={{
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#8E8E93',
+        marginLeft: 6
+      }}>{getAwardText(award, award.league)} (2024/25)</Text>
+    </View>
+  }
 
-      return '#8E8E93'
-    }
-
-    if (user) {
-      return (
+  if (user) {
+    return (
+      <View style={{
+        width: '100%'
+      }}>
         <View style={{
           width: '100%',
           paddingLeft: 15,
@@ -38,6 +129,7 @@ export default function UserPanel({ navigation, place, user, isMe }) {
           // marginTop: 10,
           flexDirection: 'row'
         }}>
+          {/* <View></View> */}
           <View style={{
             width: 70,
             height: 70,
@@ -45,22 +137,33 @@ export default function UserPanel({ navigation, place, user, isMe }) {
             borderWidth: 2,
             backgroundColor: Colors.bgColor,
             borderRadius: 80,
-            overflow: 'hidden',
+            // overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            {user.avatar?.length ? <Image style={{
+            <View style={{
               width: 70,
               height: 70,
-              objectFit: 'cover'
-            }} src={`${SERVER_BASE_URL}/${user.avatar}`} /> : <ProfileIcon width={60} height={60} style={{ marginTop: 10 }} />}
+              borderRadius: 80,
+
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+            }}>
+              {user.avatar?.length ? <Image style={{
+                width: 70,
+                height: 70,
+                objectFit: 'cover'
+              }} src={`${SERVER_BASE_URL}/${user.avatar}`} /> : <ProfileIcon width={60} height={60} style={{ marginTop: 10 }} />}
+            </View>
           </View>
           <View style={{
             marginLeft: 15,
             flex: 1
           }}>
-            <Text style={{
+            <Text numberOfLines={1} style={{
               // marginTop: 10,
+
               color: Colors.titleColor,
               fontSize: user.name.length > 20 ? 16 : 18,
               fontFamily: 'NotoSansArmenian-Bold'
@@ -73,7 +176,7 @@ export default function UserPanel({ navigation, place, user, isMe }) {
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
             }}>
-               {`${getLeagueText()}:  ${place}`}</Text> : null} 
+              {`${getLeagueText()}:  ${place}`}</Text> : null}
             <Text style={{
               // marginTop: 2,
               color: '#8E8E93',
@@ -93,7 +196,7 @@ export default function UserPanel({ navigation, place, user, isMe }) {
                 fontWeight: 'bold'
                 // fontFamily: 'NotoSansArmenian-Bold'
               }}>{strings.balance}:  </Text>
-                <Text style={{
+              <Text style={{
                 // marginTop: 2,
                 color: getBalanceColor(),
                 fontSize: 14,
@@ -115,56 +218,63 @@ export default function UserPanel({ navigation, place, user, isMe }) {
             <Icon name='chevron-right' size={20} color={'#8E8E93'}></Icon>
           </TouchableOpacity> : null}
         </View>
-      )
-    } else {
-      return (
+        {user.awards?.length ?
+          user.awards.map((award) => {
+            return getAward(award)
+          })
+          : null}
+
+          { isMe && user.isGuest ? <LinkAccountPanel navigation={navigation}/> : null }
+      </View>
+    )
+  } else {
+    return (
+      <View style={{
+        width: '100%',
+        paddingLeft: 15,
+        paddingRight: 15,
+        alignItems: 'center',
+        marginBottom: 20,
+        marginTop: 10,
+        flexDirection: 'row'
+      }}>
         <View style={{
-          width: '100%',
-          paddingLeft: 15,
-          paddingRight: 15,
+          width: 70,
+          height: 70,
+          borderColor: '#EAEDF1',
+          borderWidth: 2,
+          backgroundColor: '#F7F7F7',
+          borderRadius: 80,
+          overflow: 'hidden',
           alignItems: 'center',
-          marginBottom: 20,
-          marginTop: 10,
-          flexDirection: 'row'
+          justifyContent: 'center'
         }}>
-          <View style={{
-            width: 70,
-            height: 70,
-            borderColor: '#EAEDF1',
-            borderWidth: 2,
-            backgroundColor: '#F7F7F7',
-            borderRadius: 80,
-            overflow: 'hidden',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-  
-          </View>
-          <View style={{
-            marginLeft: 15,
-            flex: 1,
-            alignItems: 'flex-start'
-          }}>
-            <Text style={{
-              // marginTop: 10,
-              color: 'transparent',
-              fontSize: 18,
-              backgroundColor: '#F7F7F7',
-              borderRadius: 10,
-              fontFamily: 'NotoSansArmenian-Bold'
-            }}>First Name</Text>
-            <Text style={{
-              marginTop: 2,
-              backgroundColor: '#F7F7F7',
-              borderRadius: 10,
-              color: 'transparent',
-              fontSize: 12,
-              fontFamily: 'NotoSansArmenian-Bold'
-            }}>10 Points</Text>
-          </View>
-  
+
         </View>
-      )
-    }
+        <View style={{
+          marginLeft: 15,
+          flex: 1,
+          alignItems: 'flex-start'
+        }}>
+          <Text style={{
+            // marginTop: 10,
+            color: 'transparent',
+            fontSize: 18,
+            backgroundColor: '#F7F7F7',
+            borderRadius: 10,
+            fontFamily: 'NotoSansArmenian-Bold'
+          }}>First Name</Text>
+          <Text style={{
+            marginTop: 2,
+            backgroundColor: '#F7F7F7',
+            borderRadius: 10,
+            color: 'transparent',
+            fontSize: 12,
+            fontFamily: 'NotoSansArmenian-Bold'
+          }}>10 Points</Text>
+        </View>
+
+      </View>
+    )
   }
-  
+}

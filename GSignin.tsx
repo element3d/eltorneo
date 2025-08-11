@@ -3,7 +3,7 @@ import SERVER_BASE_URL from './AppConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import authManager from './AuthManager';
 import dataManager from './DataManager';
-import { ESTAT_TOTAL } from './ProfilePage';
+import { ESTAT_TOTAL, ETAB_PREDICTS } from './ProfilePage';
 
 class GSignin {
   constructor() {
@@ -37,7 +37,8 @@ class GSignin {
                   navigation.replace('Profile', {
                     globalPage: 1,
                     routeSelectedLeague: -1,
-                    selectedStat: ESTAT_TOTAL
+                    selectedStat: ESTAT_TOTAL,
+                    tab: ETAB_PREDICTS
                   });
                 }
               } else if (callback) {
@@ -55,9 +56,44 @@ class GSignin {
       })
   }
 
+  internalLink(email, name, navigation, callback) {
+    this.linkGoogle(email, name)
+      .then((token) => {
+        AsyncStorage.setItem(
+          'token',
+          token,
+        ).then((d) => {
+          authManager.getMe(token)
+            ?.then((me) => {
+              authManager.setMe(me)
+              authManager.setToken(token)
+              if (navigation) {
+                navigation.replace('Profile', {
+                  globalPage: 1,
+                  routeSelectedLeague: -1,
+                  selectedStat: ESTAT_TOTAL,
+                  tab: ETAB_PREDICTS
+                });
+              } else if (callback) {
+                callback(me)
+              }
+            })
+
+        })
+          .catch((err) => {
+            console.log(err)
+            if (callback) callback(null)
+          });
+      })
+      .catch((err) => {
+        console.log(err)
+        if (callback) callback(null)
+      })
+  }
+
   async signin(navigation, callback) {
-    // this.internalSignIn("narekhovhannisyanim3@gmail.com", 'Narek', navigation, callback)
-    
+    // this.internalSignIn("narekhovhannisyanim77@gmail.com", 'Narek', navigation, callback)
+
     // return
 
     try {
@@ -87,6 +123,36 @@ class GSignin {
     }
   }
 
+  async link(navigation, callback) {
+    // this.internalLink("nareko888@gmail.com", 'Narek', navigation, callback)
+
+    // return
+
+    try {
+      await GoogleSignin.hasPlayServices();
+
+      let userInfo = null
+      try {
+        userInfo = await GoogleSignin.signIn();
+      } catch (error) {
+        console.error('Google sign-in error:', error);
+        return
+      }
+      this.internalLink(userInfo.user.email, userInfo.user.name, navigation, callback)
+    } catch (error) {
+      console.log('Google login error', error);
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // play services not available or outdated
+      } else {
+        // some other error happened
+      }
+    }
+  }
+
   signinGoogle(email, name) {
     const requestOptions = {
       method: 'POST',
@@ -96,6 +162,25 @@ class GSignin {
       })
     };
     return fetch(`${SERVER_BASE_URL}/api/v1/signin/googlemail`, requestOptions)
+      .then(response => {
+        if (response.status == 200)
+          return response.text()
+
+        // setError(t('incorrect_login'))
+        return null
+      })
+  }
+
+  linkGoogle(email, name) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Authentication': authManager.getToken() },
+      body: JSON.stringify({
+        email: email,
+        name: name
+      })
+    };
+    return fetch(`${SERVER_BASE_URL}/api/v1/link/googlemail`, requestOptions)
       .then(response => {
         if (response.status == 200)
           return response.text()

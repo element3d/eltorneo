@@ -5,6 +5,7 @@ import strings from "./Strings";
 import Colors from "./Colors";
 import NativeAdComp from "./NativeAdComp";
 import dataManager from "./DataManager";
+import KitImage from "./KitImage";
 
 const win = Dimensions.get('window');
 const pitch = require('./assets/pitch.png')
@@ -14,9 +15,9 @@ export default function MatchLineupsPanel({ match, lineups }) {
 
     function getKitImage(name) {
         if (match.league != 7) {
-            return `${SERVER_BASE_URL}/data/teams/150x150/${name}_kit.png`
+            return `${SERVER_BASE_URL}/data/teams/150x150/${name.replace(/ö/g, 'o')}_kit.png`
         }
-        return `${SERVER_BASE_URL}/data/teams/150x150/${name}.png`
+        return `${SERVER_BASE_URL}/data/teams/150x150/${name.replace(/ö/g, 'o')}.png`
     }
 
     function getKgNumber(team) {
@@ -195,11 +196,12 @@ export default function MatchLineupsPanel({ match, lineups }) {
                     alignItems: 'center',
                     justifyContent: 'center'
                 }}>
-                    <Image src={getKitImage(match.team1.name)} style={{
+                    <KitImage width={match.league != 7 ? 40 : 40} height={match.league != 7 ? 50 : 40} match={match} team={match.team1} />
+                    {/* <Image src={getKitImage(match.team1.name)} style={{
                         width: match.league != 7 ? 40 : 40,
                         height: match.league != 7 ? 50 : 40,
                         objectFit: match.league != 7 ? 'cover' : 'contain'
-                    }} />
+                    }} /> */}
                     <View style={{
                         marginLeft: 5
                     }}>
@@ -236,11 +238,13 @@ export default function MatchLineupsPanel({ match, lineups }) {
                             fontSize: 13
                         }}>{lineups.team2.formation}</Text>
                     </View>
-                    <Image src={getKitImage(match.team2.name)} style={{
+                    <KitImage width={match.league != 7 ? 40 : 40} height={match.league != 7 ? 50 : 40} match={match} team={match.team2} />
+
+                    {/* <Image src={getKitImage(match.team2.name)} style={{
                         width: match.league != 7 ? 40 : 40,
                         height: match.league != 7 ? 50 : 40,
                         objectFit: match.league != 7 ? 'cover' : 'contain'
-                    }} />
+                    }} /> */}
 
                 </View>
             </View>
@@ -504,12 +508,12 @@ export default function MatchLineupsPanel({ match, lineups }) {
                 </View>
             </View>
 
-            { dataManager.getSettings().enableAds ? <View style={{
+            {dataManager.getSettings().enableAds ? <View style={{
                 width: '100%',
                 marginTop: 30
             }}>
                 <NativeAdComp />
-            </View> : null }
+            </View> : null}
         </View>
     );
 }

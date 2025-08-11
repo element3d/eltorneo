@@ -7,7 +7,6 @@ import {
   Linking,
   RefreshControl,
   requireNativeComponent,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -15,7 +14,10 @@ import {
   TouchableOpacity,
   useColorScheme,
   View,
+  SafeAreaView
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import DropShadow from 'react-native-drop-shadow';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -97,6 +99,8 @@ function CarsPage({ navigation, route }): JSX.Element {
 
   const isDarkMode = useColorScheme() === 'light';
 
+  const insets = useSafeAreaInsets();
+
   const backgroundStyle = {
     backgroundColor: Colors.gray800,
   };
@@ -111,8 +115,7 @@ function CarsPage({ navigation, route }): JSX.Element {
         const fiveHours = 2 * 60 * 60 * 1000; // 5 hours in milliseconds
 
         // If no date is stored, treat as if more than 5 minutes elapsed
-        if (!storedDate || currentDate.diff(moment(parseInt(storedDate)), 'milliseconds') > fiveHours) 
-          {
+        if (!storedDate || currentDate.diff(moment(parseInt(storedDate)), 'milliseconds') > fiveHours) {
           // Fetch the special match
           dataManager.fetchSpecialMatch(strings.getLanguage(), authManager.getToken())
             .then((m) => {
@@ -152,7 +155,7 @@ function CarsPage({ navigation, route }): JSX.Element {
 
   useFocusEffect(
     useCallback(() => {
-      changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
+      // changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
     }, [mode])
   );
 
@@ -185,19 +188,19 @@ function CarsPage({ navigation, route }): JSX.Element {
         AsyncStorage.multiGet(['mode', 'installDate'])
           .then((obj) => {
             const mode = obj[0][1]
-            let installDate = obj[1][1]
-            if (!installDate) {
-              installDate = new Date().getTime().toString()
-              AsyncStorage.setItem('installDate', new Date().getTime().toString())
-            }
-            if (new Date().getTime() - new Date(Number.parseInt(installDate)).getTime() < 7 * 24 * 60 * 60 * 1000) {
-              if (dataManager.getSettings()) {
-                dataManager.getSettings().newUser = true
-                dataManager.getSettings().enableAds = false
-                dataManager.getSettings().enableNativeAds = false
-                dataManager.getSettings().blockForAd = false
-              }
-            }
+            // let installDate = obj[1][1]
+            // if (!installDate) {
+            //   installDate = new Date().getTime().toString()
+            //   AsyncStorage.setItem('installDate', new Date().getTime().toString())
+            // }
+            // if (new Date().getTime() - new Date(Number.parseInt(installDate)).getTime() < 7 * 24 * 60 * 60 * 1000) {
+            //   if (dataManager.getSettings()) {
+            //     dataManager.getSettings().newUser = true
+            //     dataManager.getSettings().enableAds = false
+            //     dataManager.getSettings().enableNativeAds = false
+            //     dataManager.getSettings().blockForAd = false
+            //   }
+            // }
 
             if (!mode) {
               SplashScreen.hide();
@@ -253,10 +256,10 @@ function CarsPage({ navigation, route }): JSX.Element {
           }
           setWeeks(weeks)
         } else {
-          weeks = league.weeks.slice(0, league.week );
+          weeks = league.weeks.slice(0, league.week);
           setWeeks(weeks);
         }
-  
+
         setSelectedWeek(weeks[league.week - 1])
         getMatches(league, league.week, selectedSeason)
         getTable(league)
@@ -340,13 +343,13 @@ function CarsPage({ navigation, route }): JSX.Element {
           <View style={{
             marginTop: 2
           }}>
-           { topScorers.firstname.length ? <Text style={{
+            {topScorers.firstname.length ? <Text style={{
               fontSize: 14,
               lineHeight: 18,
               // fontWeight: 900,
               fontFamily: 'Poppins-Bold',
               color: 'white'
-            }}>{topScorers.firstname.toUpperCase()}</Text> : null }
+            }}>{topScorers.firstname.toUpperCase()}</Text> : null}
             <Text style={{
               fontSize: 18,
               lineHeight: 20,
@@ -358,7 +361,7 @@ function CarsPage({ navigation, route }): JSX.Element {
               flexDirection: 'row',
               alignItems: 'center'
             }}>
-              <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${topScorers.team_name}.png`} style={{
+              <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${topScorers.team_name.replace(/ö/g, 'o')}.png`} style={{
                 width: 20,
                 height: 20
               }}>
@@ -435,6 +438,8 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   function getMatches(league, week, season, showPreload = true) {
+    const currentSeason = `20${league.season}`
+
     if (week == -1) return
 
     if (showPreload) {
@@ -442,7 +447,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       setLoading(true)
     }
 
-    const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${season}&lang=${strings.getLanguage()}`
+    const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${currentSeason}&lang=${strings.getLanguage()}`
     fetch(url, {
       method: 'GET',
       headers: {
@@ -544,7 +549,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       setWeeks(weeks);
       // return
     }
-   
+
     setSelectedWeek(weeks[week - 1])
     if (this.effect) {
       getMatches(l, week, selectedSeason)
@@ -611,7 +616,7 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   function onNavSpecialMatch() {
-    
+
     dataManager.setMatch(specialMatch.match)
     setSpecialMatch(null)
     AsyncStorage.setItem('specialMatchLastDate', (new Date().getTime().toString()))
@@ -756,6 +761,23 @@ function CarsPage({ navigation, route }): JSX.Element {
 
   }
 
+  function onNavTeam(team) {
+    team.leagueName = selectedLeague.name
+    team.leagueCountry = selectedLeague.country
+    team.leagueId = selectedLeague.id
+    team.name = team.team.name
+    team.venue = team.team.venue
+    team.id = team.team.id
+    dataManager.setTeam(team)
+     navigation.navigate({
+      name: 'Team',
+      params: {
+        id: team.id,
+      },
+      key: `${team.id}_${team.name}`
+    })
+  }
+
   function renderTable() {
     return <View style={{
       width: '100%',
@@ -842,7 +864,7 @@ function CarsPage({ navigation, route }): JSX.Element {
           currentPos = 1
         }
 
-        return <View key={team.team.name} style={{
+        return <TouchableOpacity key={team.team.name} activeOpacity={.6} onPress={() => { onNavTeam(team) }} style={{
           paddingLeft: 20,
           paddingRight: 20,
         }}>
@@ -853,7 +875,7 @@ function CarsPage({ navigation, route }): JSX.Element {
             color: Colors.titleColor,
             marginLeft: 15,
             marginTop: 20
-          }}>{strings.group} { selectedLeague.id == 16 ? getWorldClubCupGroupName(team.group_index) : getGroupName(team.league_index, team.group_index)}</Text> : null}
+          }}>{strings.group} {selectedLeague.id == 16 ? getWorldClubCupGroupName(team.group_index) : getGroupName(team.league_index, team.group_index)}</Text> : null}
           <View style={{
             width: '100%',
             height: 52,
@@ -877,7 +899,7 @@ function CarsPage({ navigation, route }): JSX.Element {
               flexDirection: 'row',
               alignItems: 'center'
             }}>
-              <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${team.team.name}.png`} style={{
+              <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${encodeURIComponent(team.team.name.replace(/ö/g, 'o'))}.png`} style={{
                 width: 30,
                 height: 30,
                 // marginLeft: 5>
@@ -915,7 +937,7 @@ function CarsPage({ navigation, route }): JSX.Element {
               {team.points}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
       })}
 
       {/* <View style={{
@@ -1038,10 +1060,10 @@ function CarsPage({ navigation, route }): JSX.Element {
 
   function renderCard() {
     // if (!trailer) return <TopScorerItem />
-    if (trailer && randomItem != 1 && randomItem != 3 && randomItem != 5) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer}/>
+    if (trailer && randomItem != 1 && randomItem != 3 && randomItem != 5) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
     // return <TopScorerItem />
     // return <TrailerItem onViewPress={onShowTrailer} trailer={trailer}/>
-
+    if (!matches.length) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
     if (!dataManager.getTopScorers()) {
       return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
     } else if (!dataManager.getTopScorers()[selectedLeague.id.toString()]) {
@@ -1059,23 +1081,36 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+    <GestureHandlerRootView style={{
+      flex: 1,
+      backgroundColor: Colors.bgColor,
+    }}>
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
-        <StatusBar
-          barStyle={Colors.statusBar}
+      <SafeAreaView style={{
+        flex: 1, backgroundColor: Colors.bgColor,
+      }}>
+        <View style={{
+          height: insets.top,
+          backgroundColor: Colors.gray800,
+        }} />
+        <View style={{
+          flex: 1,
+        }}>
+          <StatusBar
+            barStyle={Colors.statusBar}
+            backgroundColor={Colors.gray800}
+          />
 
-          backgroundColor={backgroundStyle.backgroundColor}
-        />
-
-        <View style={{ flex: 1 }}>
           <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             contentContainerStyle={{
               // backgroundColor: 'red',
               // minHeight: '100%'
             }}
-            style={{ flex: 1 }}
+            style={{
+              flex: 1,
+
+            }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
@@ -1087,7 +1122,7 @@ function CarsPage({ navigation, route }): JSX.Element {
               backgroundColor: Colors.gray800,
               marginBottom: 20
             }}>
-              <AppBar showDrawer={() => {setShowDrawer(true)}} setMode={setMode} title={selectedLeague?.name} showMode={true} showLang={true} showLogo={false} showBack={false} navigation={navigation} />
+              <AppBar showDrawer={() => { setShowDrawer(true) }} setMode={setMode} title={selectedLeague?.name} showMode={true} showLang={true} showLogo={false} showBack={false} navigation={navigation} />
 
               {compareVersions(dataManager.getSettings()?.version, DeviceInfo.getVersion()) ? <View style={{
                 width: '100%',
@@ -1147,7 +1182,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                   })}
                 </ScrollView>
 
-                {dataManager.getSeasons().length > 1 ? <ScrollView
+                {/* {dataManager.getSeasons().length > 1 ? <ScrollView
                   horizontal={true}
                   contentInsetAdjustmentBehavior="automatic"
                   contentContainerStyle={{
@@ -1187,7 +1222,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                       </Text>
                     </TouchableOpacity>)
                   })}
-                </ScrollView> : null}
+                </ScrollView> : null} */}
 
                 <ScrollView
                   ref={weeksScrollRef}
@@ -1279,7 +1314,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                 {renderCard()}
                 {/* <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} /> */}
                 {/* {topScorers ? <TopScorerItem /> : null} */}
-             { selectedLeague.id != 1 && selectedLeague.id != 8 && selectedLeague.id != 9 ? <View style={{
+                {selectedLeague.id != 1 && selectedLeague.id != 8 && selectedLeague.id != 9 ? <View style={{
                   width: '100%',
                   height: 46,
                   padding: 4,
@@ -1314,7 +1349,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                       fontWeight: 'bold'
                     }}>{strings.table}</Text>
                   </TouchableOpacity>
-                </View> : null }
+                </View> : null}
               </View> : null}
 
               {tab == ETAB_MATCHES ? <View style={{
@@ -1361,7 +1396,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                 </Text> : null}
               </View> : !loading ? renderTable() : null}
             </View> : null}
-           
+
             {!loading && dataManager.getSettings().enableAds ? <View style={{
               paddingHorizontal: 20,
               marginTop: 10
@@ -1380,11 +1415,17 @@ function CarsPage({ navigation, route }): JSX.Element {
 
           </ScrollView>
           {!loading && !leagues.length ? null : <BottomNavBar page={EPAGE_HOME} navigation={navigation} />}
+
+          {specialMatch ? <EventCard onPress={onNavSpecialMatch} onTrailerPress={onTrailerPress} onClose={onEventClose} match={specialMatch} /> : null}
+          {showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch} /> : null}
+          {showTrailer ? <TrailerVideoDialog trailer={trailer} onClose={() => { setShowTrailer(false) }} /> : null}
+          {showDrawer ? <Drawer setMode={setMode} navigation={navigation} onClose={() => { setShowDrawer(false) }} /> : null}
+
         </View>
-        {specialMatch ? <EventCard onPress={onNavSpecialMatch} onTrailerPress={onTrailerPress} onClose={onEventClose} match={specialMatch} /> : null}
-        { showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch}/> : null }
-        { showTrailer ? <TrailerVideoDialog trailer={trailer} onClose={() => {setShowTrailer(false)}}/> : null }
-        { showDrawer ?  <Drawer setMode={setMode} navigation={navigation} onClose={() => {setShowDrawer(false)}} /> : null }
+        <View style={{
+          height: insets.bottom,
+          backgroundColor: Colors.gray800,
+        }} />
       </SafeAreaView>
 
     </GestureHandlerRootView>

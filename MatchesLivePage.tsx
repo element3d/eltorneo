@@ -3,14 +3,15 @@ import {
   ActivityIndicator,
   Image,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_CALENDAR } from './BottomNavBar';
@@ -107,11 +108,18 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
 
   let currentLeague = null
 
+  const insets = useSafeAreaInsets();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+    <GestureHandlerRootView style={{
+      flex: 1, backgroundColor: Colors.bgColor,
+    }}>
 
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+        <View style={{
+          height: insets.top,
+          backgroundColor: Colors.gray800,
+        }} />
         <StatusBar
           barStyle={Colors.statusBar}
 
@@ -132,7 +140,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
               // paddingBottom: 20,
               backgroundColor: Colors.gray800
             }}>
-              <AppBar navigation={navigation} />
+              <AppBar navigation={navigation} showLogo={false} title={'Live'} />
             </View>
 
 
@@ -161,14 +169,37 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 <NativeAdComp forceNativeAd={true} />
               </View> : null}
 
-              {matchesReqFinished && matches.length ? <Text style={{
+              {matchesReqFinished && matches.length ? <View style={{
+                flexDirection: 'row',
                 width: '100%',
-                fontWeight: 'bold',
-                fontSize: 18,
+                alignItems: 'center',
                 marginBottom: 10,
-                textAlign: 'left',
-                color: Colors.titleColor
-              }}>{strings.live_matches}</Text> : null}
+              }}>
+                <View style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 25,
+                  borderWidth: 2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderColor: '#00C566'
+                }}>
+                  <View style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: 10,
+                    backgroundColor: '#00C566'
+                  }}></View>
+                </View>
+                <Text style={{
+                  // width: '100%',
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                  marginLeft: 10,
+                  // marginBottom: 10,
+                  textAlign: 'left',
+                  color: Colors.titleColor
+                }}>{strings.live_matches}</Text></View> : null}
 
               {matches.map((m, i) => {
                 let renderLeague = false;
@@ -183,14 +214,36 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 </View>
               })}
 
-              {upcoming.length ? <Text style={{
+              {upcoming.length ? <View style={{
+                flexDirection: 'row',
                 width: '100%',
-                fontWeight: 'bold',
-                fontSize: 18,
+                alignItems: 'center',
                 marginBottom: 10,
-                textAlign: 'left',
-                color: Colors.titleColor
-              }}>{strings.upcoming_matches}</Text> : null}
+              }}>
+                <View style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 25,
+                  borderWidth: 2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderColor: '#FF4747'
+                }}>
+                  <View style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: 10,
+                    backgroundColor: '#FF4747'
+                  }}></View>
+                </View>
+                <Text style={{
+                  width: '100%',
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                  marginLeft: 10,
+                  textAlign: 'left',
+                  color: Colors.titleColor
+                }}>{strings.upcoming_matches}</Text></View> : null}
 
               {upcoming.map((m, i) => {
                 let renderLeague = false;
@@ -218,6 +271,10 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
           </ScrollView>
           <BottomNavBar navigation={navigation} />
         </View>
+        <View style={{
+          height: insets.bottom,
+          backgroundColor: Colors.gray800,
+        }} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );

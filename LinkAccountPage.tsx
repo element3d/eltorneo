@@ -33,17 +33,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import dataManager from './DataManager';
 import { ESTAT_TOTAL, ETAB_PREDICTS } from './ProfilePage';
 
-function RegisterPage({ navigation }): JSX.Element {
+function LinkAccountPage({ navigation }): JSX.Element {
     const [lang, setLang] = useState('ru')
     const [username, setUsername] = useState('')
     const [name, setName] = useState('')
     const [password, setPassword] = useState('')
     const [showPass, setShowPass] = useState(false)
     const [error, setError] = useState(null)
-
-    const backgroundStyle = {
-        backgroundColor: '#f7f7f7'
-    };
+    const [googleError, setGoogleError] = useState(null)
 
     useFocusEffect(
         React.useCallback(() => {
@@ -115,13 +112,14 @@ function RegisterPage({ navigation }): JSX.Element {
         setError(null)
         const requestOptions = {
             method: 'POST',
+            headers: { 'Authentication': authManager.getToken() },
             body: JSON.stringify({
                 username: username,
                 name: name,
                 password: password
             })
         };
-        return fetch(`${SERVER_BASE_URL}/api/v1/signup`, requestOptions)
+        return fetch(`${SERVER_BASE_URL}/api/v1/link/username`, requestOptions)
             .then(response => {
                 if (response.status == 200)
                     return response.text()
@@ -143,16 +141,12 @@ function RegisterPage({ navigation }): JSX.Element {
                             authManager.setMe(me)
                             authManager.setToken(token)
                             if (navigation) {
-                                if (dataManager.getPendingPredict()) {
-                                    navigation.goBack();
-                                } else {
-                                    navigation.replace('Profile', {
-                                        globalPage: 1,
-                                        routeSelectedLeague: -1,
-                                        selectedStat: ESTAT_TOTAL,
-                                        tab: ETAB_PREDICTS
-                                    });
-                                }
+                                navigation.replace('Profile', {
+                                    globalPage: 1,
+                                    routeSelectedLeague: -1,
+                                    selectedStat: ESTAT_TOTAL,
+                                    tab: ETAB_PREDICTS
+                                });
                             }
                         })
 
@@ -168,7 +162,11 @@ function RegisterPage({ navigation }): JSX.Element {
     }
 
     const handleSignIn = async () => {
-        gsingin.signin(navigation)
+        setGoogleError(null)
+
+        gsingin.link(navigation, (me) => {
+            if (!me) setGoogleError(strings.err_user_exists)
+        })
     };
     const insets = useSafeAreaInsets();
 
@@ -224,7 +222,7 @@ function RegisterPage({ navigation }): JSX.Element {
                                 fontSize: 34,
                                 color: Colors.titleColor,
                                 fontFamily: 'Poppins-Bold'
-                            }}>el Torneo</Text>                           
+                            }}>el Torneo</Text>
                         </View>
 
                         <Text style={{
@@ -240,7 +238,6 @@ function RegisterPage({ navigation }): JSX.Element {
                             {strings.login_desc}
                         </Text>
 
-
                         <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
                             width: 320,
                             height: 52,
@@ -254,13 +251,13 @@ function RegisterPage({ navigation }): JSX.Element {
                             // backgroundColor: '#FF2882',
                         }}>
                             <Text style={{
-                                fontSize: 20,
+                                fontSize: 18,
                                 color: Colors.titleColor,
                                 fontFamily: 'Poppins-Bold',
                                 lineHeight: 28,
                                 // fontWeight: 'bold'
                             }}>
-                                {strings.join_now}
+                                {strings.complete_account}
                             </Text>
                             <View style={{
                                 width: 40,
@@ -278,6 +275,18 @@ function RegisterPage({ navigation }): JSX.Element {
                                 <GoogleIcon width={32} height={32} />
                             </View>
                         </TouchableOpacity>
+
+                        {googleError ? <View style={{
+                            marginTop: 20,
+                            marginBottom: -10,
+                            width: 320,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                            <Text style={{
+                                color: '#FF4747'
+                            }}>{googleError}</Text>
+                        </View> : null}
 
                         <View style={{
                             width: 280,
@@ -405,7 +414,7 @@ function RegisterPage({ navigation }): JSX.Element {
                                 fontFamily: 'Poppins-Bold',
                                 lineHeight: 28,
                             }}>
-                                {strings.register}
+                                {strings.complete_account}
                             </Text>
                         </TouchableOpacity>
 
@@ -459,4 +468,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default RegisterPage;
+export default LinkAccountPage;

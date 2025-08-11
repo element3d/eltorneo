@@ -32,6 +32,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import moment from 'moment';
 import { ESTAT_TOTAL, ETAB_PREDICTS } from './ProfilePage';
 import Colors from './Colors';
+import dataManager from './DataManager';
 const Pulse = require('react-native-pulse').default;
 
 export const EBOTTOM_NAVBAR_MODE_ADD = 0
@@ -71,7 +72,7 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
   }
 
   function navTables() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: me && me.league ? me.league : 1 }, key: "tables" })
+    navigation.navigate({ name: 'Tables', params: { page: 1, league: me && me.league ? me.league : 1, season: dataManager.getSettings() ? dataManager.getSettings().season : '25/26' }, key: "tables" })
   }
 
 

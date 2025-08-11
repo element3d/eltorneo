@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
     Image,
-    SafeAreaView,
     ScrollView,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
-    useColorScheme,
+    SafeAreaView,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_CALENDAR } from './BottomNavBar';
@@ -34,11 +34,18 @@ function TrailersPage({ navigation, route }): JSX.Element {
     function onClose() {
         setShowTrailer(false)
     }
+    const insets = useSafeAreaInsets();
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.gray800 }}>
+        <GestureHandlerRootView style={{
+            flex: 1, backgroundColor: Colors.gray800,
+        }}>
 
-            <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor}}>
+            <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+                <View style={{
+                    height: insets.top,
+                    backgroundColor: Colors.gray800,
+                }} />
                 <StatusBar
                     barStyle={Colors.statusBar}
                     backgroundColor={Colors.gray800}
@@ -57,7 +64,7 @@ function TrailersPage({ navigation, route }): JSX.Element {
                             // paddingBottom: 20,
                             backgroundColor: Colors.gray800
                         }}>
-                            <AppBar navigation={navigation}/>
+                            <AppBar navigation={navigation} title={strings.trailers_page} showLogo={false} />
                         </View>
                         <View style={{
                             width: '100%',
@@ -65,7 +72,7 @@ function TrailersPage({ navigation, route }): JSX.Element {
                             paddingHorizontal: 20
                             // height: 400,
                             // backgroundColor: 'red'
-                        }}> 
+                        }}>
                             {dataManager.getTrailers().map((t) => {
                                 return <TrailerItem onViewPress={() => onShowTrailer(t)} key={t.subtitle} showViewAll={false} trailer={t}></TrailerItem>
                             })}
@@ -73,7 +80,11 @@ function TrailersPage({ navigation, route }): JSX.Element {
                     </ScrollView>
                     <BottomNavBar navigation={navigation} />
                 </View>
-                { showTrailer ? <TrailerVideoDialog trailer={trailer} onClose={() => {setShowTrailer(false)}}/> : null }
+                {showTrailer ? <TrailerVideoDialog trailer={trailer} onClose={() => { setShowTrailer(false) }} /> : null}
+                <View style={{
+                    height: insets.bottom,
+                    backgroundColor: Colors.gray800,
+                }} />
             </SafeAreaView>
         </GestureHandlerRootView>
     );

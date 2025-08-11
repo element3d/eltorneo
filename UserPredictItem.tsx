@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Image,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from 'react-native';
 import DropShadow from 'react-native-drop-shadow';
@@ -98,7 +96,7 @@ export default function UserPredictItem({onPress, predict}) {
                     color: '#2b2d41',
                     fontFamily: 'OpenSans-ExtraBold'
                   }}>{predict.team1.shortName.toUpperCase()}</Text>
-                  <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${predict.team1.name}.png`} style={{
+                  <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${predict.team1.name.replace(/ö/g, 'o')}.png`} style={{
                     width: 36,
                     height: 36
                   }}/>
@@ -140,7 +138,7 @@ export default function UserPredictItem({onPress, predict}) {
                   alignItems: 'center',
                   justifyContent: 'flex-start'
                 }}>
-                  <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${predict.team2.name}.png`} style={{
+                  <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${predict.team2.name.replace(/ö/g, 'o')}.png`} style={{
                     width: 36,
                     height: 36
                   }}/>

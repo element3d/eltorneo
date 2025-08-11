@@ -34,7 +34,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
   function getBorderColor(p) {
     if (p.status == 0) return 'black'//'#8E8E93'
-    if (p.status == 1) return '#00C566'
+    if (p.status == 1 || p.status == 5) return '#00C566'
     if (p.status == 2) return match.is_special ? 'gold' : '#ff7539'
     if (p.status == 3 || p.status == 4) return '#FF4747'
   }
@@ -53,7 +53,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
   function getBgColor(p) {
     if (p.status == 0) return '#F7F7F7'
-    if (p.status == 1) return '#00C56619'
+    if (p.status == 1 || p.status == 5) return '#00C56619'
     if (p.status == 2) return '#FACC1519'
     if (p.status == 3 || p.status == 4) return '#FF474719'
   }
@@ -66,6 +66,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
     if (p.status == 2) return match.is_special ? '+' + sp[0] : '+3'
     if (p.status == 3) return match.is_special ? sp[2] : '-1'
     if (p.status == 4) return '-2'
+    if (p.status == 5) return match.is_special ? '+' + sp[1] : '+2'
   }
 
   function isMatchEnded() {
@@ -125,7 +126,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
           return 'black'
       } else {
         // if (match.bet.status == 0)
-          return 'black'
+        return 'black'
       }
       return 'white'
     }
@@ -139,7 +140,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
           return 'white'
       } else {
         // if (match.bet.status == 0)
-          return 'white'
+        return 'white'
       }
       return 'black'
     }
@@ -258,6 +259,13 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
               // lineHeight: 10,
               fontWeight: 'bold'
             }}>{dataManager.getWeekTitleShort({ week: match.week, type: match.week_type })}</Text>
+            <Text style={{
+              color: '#AEAEB2',
+              fontSize: 14,
+              marginLeft: 5,
+              // lineHeight: 10,
+              fontWeight: 'bold'
+            }}>{dataManager.getSettings().season == match.season ? "" : match.season}</Text>
           </View>
 
           {/* <Text style={{
@@ -316,7 +324,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
               color: match.is_special ? 'white' : Colors.titleColor,
               fontFamily: 'OpenSans-ExtraBold'
             }}>{match.team1.shortName}</Text>
-            <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team1.name}.png`} style={{
+            <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team1.name.replace(/ö/g, 'o')}.png`} style={{
               width: 36,
               height: 36
             }} />
@@ -421,7 +429,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
             alignItems: 'center',
             justifyContent: 'flex-start'
           }}>
-            <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team2.name}.png`} style={{
+            <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team2.name.replace(/ö/g, 'o')}.png`} style={{
               width: 36,
               height: 36
             }} />
@@ -472,7 +480,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
             }}>({match.bet.odd.toFixed(2)})</Text>
-             <Text style={{
+            <Text style={{
               fontSize: 12,
               marginLeft: 10,
               // marginBottom: 2,
@@ -603,6 +611,24 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
             borderRadius: 10,
             alignItems: 'center',
             justifyContent: 'center',
+            borderColor: '#00C566',
+            borderWidth: 1,
+            backgroundColor: '#34C75955'
+          }}>
+            <Text style={{
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: '#00C566'
+            }}>+{getSpecialPoints()[1]}</Text>
+          </View>
+          <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 5,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
             borderWidth: 1,
             borderColor: '#FF4747',
             backgroundColor: '#FF474755'
@@ -617,7 +643,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
         </View> : null}
 
       </View>
-      { showDate ? renderDate() : null }
+      {showDate ? renderDate() : null}
 
       {hasPredict() && match.predict.status > 0 ? <View style={{
         position: 'absolute',
@@ -636,7 +662,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
           color: getBorderColor(match.predict)
         }}>{strings.points}: {getPoints(match.predict)}</Text>
       </View> : null}
-      
+
       {match.teaser ? <TouchableOpacity onPress={onShowMatchTrailerPress} style={{
         width: 26,
         height: 26,

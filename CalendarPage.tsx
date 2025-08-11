@@ -3,18 +3,19 @@ import {
   ActivityIndicator,
   Image,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   View,
+  SafeAreaView,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_CALENDAR } from './BottomNavBar';
 import SERVER_BASE_URL from './AppConfig';
 import CalendarIcon from './assets/calendar_black.svg';
 import CalendarWhiteIcon from './assets/calendar_white.svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import MatchItem from './MatchItem';
 import Calendar from './Calendar';
@@ -37,13 +38,15 @@ function CalendarPage({ navigation, route }): JSX.Element {
   const [showMatchPreview, setShowMatchPreview] = useState(false)
   const [previewMatch, setPreviewMatch] = useState(null)
 
+  const insets = useSafeAreaInsets();
+
   const backgroundStyle = {
     backgroundColor: 'white',
   };
 
-  useEffect(()=> {
+  useEffect(() => {
     this.effect = true
-  
+
     // getMatches()
   }, [date])
 
@@ -136,10 +139,15 @@ function CalendarPage({ navigation, route }): JSX.Element {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+      <SafeAreaView style={{
+        flex: 1, backgroundColor: Colors.bgColor,
+      }}>
+        <View style={{
+          height: insets.top,
+          backgroundColor: Colors.gray800,
+        }} />
         <StatusBar
           barStyle={Colors.statusBar}
-
           backgroundColor={Colors.gray800}
         />
 
@@ -159,7 +167,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
               paddingBottom: 10,
               backgroundColor: Colors.gray800
             }}>
-              <AppBar navigation={navigation} />
+              <AppBar navigation={navigation} title={strings.calendar_page} showLogo={false}/>
 
               <View style={{
                 paddingLeft: 15,
@@ -167,7 +175,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
                 alignItems: 'center',
                 justifyContent: 'flex-start'
               }}>
-                {Colors.mode == 1 ? <CalendarIcon height={28} width={28} /> : <CalendarWhiteIcon height={28} width={28} /> }
+                {Colors.mode == 1 ? <CalendarIcon height={28} width={28} /> : <CalendarWhiteIcon height={28} width={28} />}
                 <Text style={{
                   marginLeft: 10,
                   fontWeight: 'bold',
@@ -200,9 +208,9 @@ function CalendarPage({ navigation, route }): JSX.Element {
                 width: '100%',
                 // marginTop: 30,
                 // paddingHorizontal: 20,
-            }}>
+              }}>
                 <NativeAdComp forceNativeAd={true} />
-            </View> : null }
+              </View> : null}
               {!matchesReqFinished ? <ActivityIndicator color={'#FF2882'} size={'large'}></ActivityIndicator> : null}
               {matches.map((m, i) => {
                 let renderLeague = false;
@@ -239,13 +247,13 @@ function CalendarPage({ navigation, route }): JSX.Element {
                           marginBottom: 1,
                           color: Colors.titleColor
                         }}>{m.league_name}</Text>
-                       {m.league_country.length ? <Text style={{
+                        {m.league_country.length ? <Text style={{
                           fontSize: 16,
                           marginLeft: 4,
                           fontWeight: 'bold',
                           marginBottom: 1,
                           color: '#AEAEB2',
-                        }}>({m.league_country})</Text> : null }
+                        }}>({m.league_country})</Text> : null}
                       </View>
                       <Text style={{
                         fontSize: 11,
@@ -260,37 +268,23 @@ function CalendarPage({ navigation, route }): JSX.Element {
               })}
             </View>
             {matchesReqFinished && dataManager.getSettings().enableAds ? <View style={{
-                width: '100%',
-                // marginTop: 30,
-                paddingHorizontal: 20,
+              width: '100%',
+              // marginTop: 30,
+              paddingHorizontal: 20,
             }}>
-                <NativeAdComp />
-            </View> : null }
+              <NativeAdComp />
+            </View> : null}
           </ScrollView>
           <BottomNavBar page={EPAGE_CALENDAR} navigation={navigation} />
         </View>
-        { showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch}/> : null }
+        {showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch} /> : null}
+        <View style={{
+          height: insets.bottom,
+          backgroundColor: Colors.gray800,
+        }} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    width: "94%",
-    height: 50,
-    backgroundColor: 'white',
-    borderLeftWidth: 3,
-    marginTop: 20,
-    borderLeftColor: '#ff004a',
-    justifyContent: 'center',
-    paddingLeft: 20
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'Open Sans'
-  }
-});
 
 export default CalendarPage;

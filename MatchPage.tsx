@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Button,
   Image,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -12,11 +11,15 @@ import {
   TouchableOpacity,
   useColorScheme,
   View,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FAIcon from 'react-native-vector-icons/FontAwesome5';
 import FAIcon2 from 'react-native-vector-icons/Fontisto';
 import BBIcon from './assets/bbicon.svg'
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
@@ -46,6 +49,7 @@ import NativeAdComp from './NativeAdComp';
 import MatchPreviewDialog from './MatchPreviewDialog';
 import MatchBeatBetPanel from './MatchBeatBetPanel';
 import MatchBetPanel from './MatchBetPanel';
+import FairPlayDialog from './FairPlayDialogs';
 
 const EMODE_DEFAULT = 0
 const EMODE_EDIT = 1
@@ -72,12 +76,26 @@ function MatchAppBar({ match, navigation }) {
       }}>
         <Icon name={'arrow-back'} color='white' size={30}></Icon>
       </TouchableOpacity>
-      <Text style={{
-        fontSize: 18,
-        lineHeight: 22,
-        fontFamily: 'Poppins-Bold',
-        color: 'white'
-      }}>{match?.leagueName}</Text>
+      <View style={{
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <Text style={{
+          fontSize: 20,
+          // lineHeight: 22,
+          fontFamily: 'Poppins-Bold',
+          color: 'white'
+        }}>{match?.leagueName}</Text>
+        <Text style={{
+          fontSize: 12,
+          lineHeight: 12,
+          opacity: .6,
+          marginTop: -6,
+          marginBottom: 8,
+          fontWeight: 'bold',
+          color: 'white'
+        }}>{'www.eltorneo.app'}</Text>
+      </View>
       <View style={{
         width: 50,
         height: 50,
@@ -160,8 +178,8 @@ function ViewChip({ title, selected, onClick, isBet = false }) {
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: selected ? '#FF2882' : ( isBet ? '#37003C' : Colors.borderColor),//.borderColor,
-    backgroundColor: selected ? '#FF2882' : ( isBet ? '#37003C' : Colors.gray800),
+    borderColor: selected ? '#FF2882' : (isBet ? '#37003C' : Colors.borderColor),
+    backgroundColor: selected ? '#FF2882' : (isBet ? '#37003C' : Colors.gray800),
     paddingLeft: isBet ? 10 : 20,
     paddingRight: 20,
     marginRight: 10,
@@ -169,7 +187,7 @@ function ViewChip({ title, selected, onClick, isBet = false }) {
   }}>
     {isBet ? <BBIcon width={20} height={20} style={{
       marginRight: 5
-    }}/> : null }
+    }} /> : null}
     <Text style={{
       fontWeight: 'bold',
       color: selected || isBet ? 'white' : '#8E8E93'
@@ -215,6 +233,7 @@ function MatchPage({ navigation, route }): JSX.Element {
   const [mode, setMode] = useState(EMODE_DEFAULT)
   const [header, setHeader] = useState(null)
   const [showMatchPreview, setShowMatchPreview] = useState(false)
+  const [showFailPlayDialog, setShowFailPlayDialog] = useState(false)
   const [previewMatch, setPreviewMatch] = useState(null)
   const scrollViewRef = useRef(null);
 
@@ -446,11 +465,10 @@ function MatchPage({ navigation, route }): JSX.Element {
   }
 
   function getPredicts(m) {
-
     if (!m) return
 
     setPredictsReqFinished(false)
-    fetch(`${SERVER_BASE_URL}/api/v1/match/predicts?match_id=${m.id}`, {
+    fetch(`${SERVER_BASE_URL}/api/v1/match/predicts?match_id=${m.id}&season=${match.season}`, {
       method: 'GET',
     })
       .then(response => response.json())
@@ -467,7 +485,7 @@ function MatchPage({ navigation, route }): JSX.Element {
 
   function getTop3(match) {
     if (!match) return
-    fetch(`${SERVER_BASE_URL}/api/v1/match/predicts/top3?match_id=${match.id}`, {
+    fetch(`${SERVER_BASE_URL}/api/v1/match/predicts/top3?match_id=${match.id}&season=${match.season}`, {
       method: 'GET',
     })
       .then(response => response.json())
@@ -484,7 +502,7 @@ function MatchPage({ navigation, route }): JSX.Element {
       return
     }
 
-    fetch(`${SERVER_BASE_URL}/api/v1/user/predict?match_id=${id}`, {
+    fetch(`${SERVER_BASE_URL}/api/v1/user/predict?match_id=${id}&season=${match.season}`, {
       method: 'GET',
       headers: {
         'Authentication': authManager.getToken()
@@ -555,6 +573,11 @@ function MatchPage({ navigation, route }): JSX.Element {
 
     fetch(`${SERVER_BASE_URL}/api/v1/predicts`, requestOptions)
       .then(response => {
+        if (response.status == 403) {
+          setShowFailPlayDialog(true)
+          setProcessing(false)
+          return
+        }
         return response.json()
       })
       .then(data => {
@@ -615,6 +638,12 @@ function MatchPage({ navigation, route }): JSX.Element {
 
     fetch(`${SERVER_BASE_URL}/api/v1/predicts`, requestOptions)
       .then(response => {
+        if (response.status == 403) {
+          setShowFailPlayDialog(true)
+          setProcessing(false)
+          return
+        }
+
         setPredict({
           id: predict.id,
           user_id: predict.user_id,
@@ -809,14 +838,14 @@ function MatchPage({ navigation, route }): JSX.Element {
 
   function getBorderColor(p) {
     if (p.status == 0) return "black"//'#8E8E93'
-    if (p.status == 1) return '#00C566'
+    if (p.status == 1 || p.status == 5) return '#00C566'
     if (p.status == 2) return '#ff7539'
     if (p.status == 3 || p.status == 4) return '#FF4747'
   }
 
   function getBgColor(p) {
     if (p.status == 0) return '#F7F7F7'
-    if (p.status == 1) return '#00C56619'
+    if (p.status == 1 || p.status == 5) return '#00C56619'
     if (p.status == 2) return '#FACC1519'
     if (p.status == 3 || p.status == 4) return '#FF474719'
   }
@@ -959,573 +988,589 @@ function MatchPage({ navigation, route }): JSX.Element {
 
     return scrollToEnd()
   }
+  const insets = useSafeAreaInsets();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
-
+    <GestureHandlerRootView style={{
+      flex: 1, backgroundColor: Colors.bgColor,
+    }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
-        <StatusBar
-          barStyle={'light-content'}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'android' ? -insets.bottom : 0}
+        >
+          <View style={{
+            height: insets.top,
+            backgroundColor: '#37003C'
+          }} />
+          <StatusBar
+            barStyle={'light-content'}
+            backgroundColor={backgroundStyle.backgroundColor}
+          />
 
-          backgroundColor={backgroundStyle.backgroundColor}
-        />
+          <View style={{ flex: 1 }}>
+            <ScrollView
+              contentInsetAdjustmentBehavior="automatic"
+              contentContainerStyle={{
+                // minHeight: '100%',
+                alignItems: 'center'
 
-        <View style={{ flex: 1 }}>
-          <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            contentContainerStyle={{
-              // minHeight: '100%',
-              alignItems: 'center'
-
-            }}
-            style={{
-              flex: 1,
-            }}>
-            <Image resizeMode="cover" src={`${SERVER_BASE_URL}/data/leagues/${match?.leagueName}${match?.league_country}_banner.png${dataManager.getImageCacheTime()}`} style={{
-              position: 'absolute',
-              width: '100%',
-
-              height: 210,
-              // margin: 20,
-              backgroundColor: '#37003C',
-              borderRadius: 20,
-              borderTopRightRadius: 0,
-              borderTopLeftRadius: 0,
-            }}></Image>
-            <MatchAppBar navigation={navigation} match={match} />
-
-
-            <View style={{
-              width: '88%',
-              borderRadius: 20,
-
-              backgroundColor: Colors.gray800,
-              paddingTop: 10,
-              paddingBottom: 10
-            }}>
-
-              {match?.teaser ? <TouchableOpacity onPress={() => onShowMatchTrailerPress(match)} style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: '#FACC15',// 'white',
-                position: 'absolute',
-                top: 8,
-                left: match.preview ? 8 : '',
-                right: !match.preview ? 8 : '',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
+              }}
+              style={{
+                flex: 1,
               }}>
-                <FAIcon2 name='film' color={'black'} size={20} />
-              </TouchableOpacity> : null}
-
-              {match.preview ? <TouchableOpacity onPress={() => onShowMatchPress(match)} style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                backgroundColor: '#FF2882',// 'white',
+              <Image resizeMode="cover" src={`${SERVER_BASE_URL}/data/leagues/${match?.leagueName}${match?.league_country}_banner.png${dataManager.getImageCacheTime()}`} style={{
                 position: 'absolute',
-                top: 8,
-                right: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
-              }}>
-                <FAIcon name='video' color={'white'} size={16} />
-              </TouchableOpacity> : null}
-
-              <MatchDatePanel match={match} isShowTopMatchTime={isShowTopMatchTime()} predictReqFinished={predictReqFinished} />
-              <View style={{
                 width: '100%',
-                paddingBottom: 10,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center'
+
+                height: 210,
+                // margin: 20,
+                backgroundColor: '#37003C',
+                borderRadius: 20,
+                borderTopRightRadius: 0,
+                borderTopLeftRadius: 0,
+              }}></Image>
+              <MatchAppBar navigation={navigation} match={match} />
+
+
+              <View style={{
+                width: '88%',
+                borderRadius: 20,
+
+                backgroundColor: Colors.gray800,
+                paddingTop: 10,
+                paddingBottom: 10
               }}>
 
-                <TeamItem team={match.team1} league={match.league} isHome={true} />
-                <TeamItem team={match.team2} league={match.league} isHome={false} />
-
-                <View style={{
+                {match?.teaser ? <TouchableOpacity onPress={() => onShowMatchTrailerPress(match)} style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: '#FACC15',// 'white',
                   position: 'absolute',
-                  flexDirection: 'column',
-                  // backgroundColor: 'blue',
-                  // height: '100%',
-                  // width: '50%',
+                  top: 8,
+                  left: match.preview ? 8 : '',
+                  right: !match.preview ? 8 : '',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bottom: getScoreBottonMargin()
+                  flexDirection: 'row',
+                }}>
+                  <FAIcon2 name='film' color={'black'} size={20} />
+                </TouchableOpacity> : null}
+
+                {match.preview ? <TouchableOpacity onPress={() => onShowMatchPress(match)} style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: '#FF2882',// 'white',
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'row',
+                }}>
+                  <FAIcon name='video' color={'white'} size={16} />
+                </TouchableOpacity> : null}
+
+                <MatchDatePanel match={match} isShowTopMatchTime={isShowTopMatchTime()} predictReqFinished={predictReqFinished} />
+                <View style={{
+                  width: '100%',
+                  paddingBottom: 10,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
 
+                  <TeamItem navigation={navigation} team={match.team1} league={match.league} leagueName={match.leagueName} isHome={true} />
+                  <TeamItem navigation={navigation} team={match.team2} league={match.league} leagueName={match.leagueName} isHome={false} />
+
                   <View style={{
-                    flexDirection: 'row',
+                    position: 'absolute',
+                    flexDirection: 'column',
                     // backgroundColor: 'blue',
+                    // height: '100%',
                     // width: '50%',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    bottom: getScoreBottonMargin()
                   }}>
 
-                    {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
-                      width: 45,
-                      marginRight: 4,
-                      height: 50,
-                      fontSize: 20,
-                      textAlign: 'center',
-                      color: Colors.titleColor,
-                      backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
-                      borderRadius: 10,
-                      fontFamily: 'OpenSans-Bold'
-                    }}></TextInput> : null}
-                    {isShowScoreText() ? <Text style={{
-                      width: 40,
-                      // marginRight: 4,
-                      height: 30,
-                      fontSize: 30,
-                      lineHeight: 30,
-                      color: Colors.titleColor,
-                      textAlign: 'right',
-                      paddingRight: 5,
-                      // backgroundColor: 'red',
-                      // borderRadius: 10,
-                      fontFamily: 'OpenSans-Bold'
-                    }}>{match?.team1_score}</Text> : null}
-
-                    {isMatchLive() ?
-                      <View style={{
-                        marginTop: 20
-                      }}>
-                        <View style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          // marginTop: 20,
-                          marginBottom: 5
-                        }}>
-                          <Text style={{
-                            color: Colors.titleColor,
-                            fontSize: 24,
-                            fontWeight: 'bold',
-                            marginRight: 10
-                          }}>{match.team1_score_live}</Text>
-                          <Text style={{
-                            color: Colors.titleColor,
-                            fontSize: 20,
-                            fontWeight: 'bold'
-                          }}>:</Text>
-                          <Text style={{
-                            color: Colors.titleColor,
-                            fontSize: 24,
-                            fontWeight: 'bold',
-                            marginLeft: 10
-                          }}>{match.team2_score_live}</Text>
-                        </View>
-                        <View style={{
-                          // marginTop: 4,
-                          backgroundColor: '#00C56619',
-                          borderWidth: 1,
-                          borderColor: '#00C566',
-                          paddingLeft: 8,
-                          paddingRight: 8,
-                          marginBottom: 8,
-                          height: 30,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: 15
-                        }}>
-                          <Text style={{
-                            width: 40,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontFamily: 'NotoSansArmenian-Bold',
-                            fontSize: 14,
-                            color: '#00C566',
-                            textAlign: 'center'
-                          }}>{getStatusText()}</Text>
-                        </View>
-                      </View> : null}
-
-                    {(!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
-                      fontSize: 30,
-                      height: 30,
-                      lineHeight: 30,
-                      marginBottom: isShowScoreInput() ? -4 : 3,
-                      // backgroundColor: 'red',
-                      // alignItems: 'center',
-                      // justifyContent: 'center',
-                      textAlignVertical: isShowScoreInput() ? 'center' : 'top',
-                      paddingBottom: 6,
-                      color: Colors.titleColor
-                    }}>:</Text> : null}
-                    {!isMatchLive() && !isMatchEnded() && !isShowScoreInput() ? <View style={{
-                      marginTop: 4,
-                      backgroundColor: '#00C56619',
-                      borderWidth: 1,
-                      borderColor: '#00C566',
-                      paddingLeft: 8,
-                      paddingRight: 8,
-                      height: 30,
+                    <View style={{
+                      flexDirection: 'row',
+                      // backgroundColor: 'blue',
+                      // width: '50%',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      borderRadius: 15
                     }}>
-                      <Text style={{
-                        fontFamily: 'NotoSansArmenian-Bold',
-                        fontSize: 14,
-                        color: '#00C566'
-                      }}>{moment(match?.date).format('HH:mm')}</Text>
-                    </View> : null}
 
-                    {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' value={team2Score} onChangeText={onTeam2Change} style={{
-                      width: 45,
-                      height: 50,
-                      marginLeft: 4,
-                      fontSize: 20,
-                      backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
-                      borderRadius: 10,
-                      color: Colors.titleColor,
-                      textAlign: 'center',
-                      // borderBottomColor: 'red',
-                      // borderBottomWidth: 2,
-                      fontFamily: 'OpenSans-Bold'
-                    }}></TextInput> : null}
-                    {isShowScoreText() ? <Text style={{
-                      width: 40,
-                      // marginRight: 4,
-                      lineHeight: 30,
-                      height: 30,
-                      fontSize: 30,
-                      color: Colors.titleColor,
-                      textAlign: 'left',
-                      paddingLeft: 5,
-                      // backgroundColor: '#00000011',
-                      // borderRadius: 10,
-                      fontFamily: 'OpenSans-Bold'
-                    }}>{match?.team2_score}</Text> : null}
-                  </View>
+                      {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
+                        width: 45,
+                        marginRight: 4,
+                        height: 50,
+                        fontSize: 20,
+                        textAlign: 'center',
+                        color: Colors.titleColor,
+                        backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
+                        borderRadius: 10,
+                        fontFamily: 'OpenSans-Bold'
+                      }}></TextInput> : null}
+                      {isShowScoreText() ? <Text style={{
+                        width: 40,
+                        // marginRight: 4,
+                        height: 30,
+                        fontSize: 30,
+                        lineHeight: 30,
+                        color: Colors.titleColor,
+                        textAlign: 'right',
+                        paddingRight: 5,
+                        // backgroundColor: 'red',
+                        // borderRadius: 10,
+                        fontFamily: 'OpenSans-Bold'
+                      }}>{match?.team1_score}</Text> : null}
 
-                  {match.status == 'AET' || match.status == 'PEN' ? <View style={{
-                    // width: '100%',
-                    height: 24,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'row',
-                    paddingLeft: 15,
-                    paddingRight: 2,
-                    borderRadius: 11,
-                    borderWidth: 1,
+                      {isMatchLive() ?
+                        <View style={{
+                          marginTop: 20
+                        }}>
+                          <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            // marginTop: 20,
+                            marginBottom: 5
+                          }}>
+                            <Text style={{
+                              color: Colors.titleColor,
+                              fontSize: 24,
+                              fontWeight: 'bold',
+                              marginRight: 10
+                            }}>{match.team1_score_live}</Text>
+                            <Text style={{
+                              color: Colors.titleColor,
+                              fontSize: 20,
+                              fontWeight: 'bold'
+                            }}>:</Text>
+                            <Text style={{
+                              color: Colors.titleColor,
+                              fontSize: 24,
+                              fontWeight: 'bold',
+                              marginLeft: 10
+                            }}>{match.team2_score_live}</Text>
+                          </View>
+                          <View style={{
+                            // marginTop: 4,
+                            backgroundColor: '#00C56619',
+                            borderWidth: 1,
+                            borderColor: '#00C566',
+                            paddingLeft: 8,
+                            paddingRight: 8,
+                            marginBottom: 8,
+                            height: 30,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 15
+                          }}>
+                            <Text style={{
+                              width: 40,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontFamily: 'NotoSansArmenian-Bold',
+                              fontSize: 14,
+                              color: '#00C566',
+                              textAlign: 'center'
+                            }}>{getStatusText()}</Text>
+                          </View>
+                        </View> : null}
 
-                    borderColor: Colors.titleColor,
-                  }}>
-                    <View>
-                      <Text style={{
-                        fontSize: 14,
-                        fontWeight: 'bold',
+                      {(!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
+                        fontSize: 30,
+                        height: 30,
+                        lineHeight: 30,
+                        marginBottom: isShowScoreInput() ? -4 : 3,
+                        // backgroundColor: 'red',
+                        // alignItems: 'center',
+                        // justifyContent: 'center',
+                        textAlignVertical: isShowScoreInput() ? 'center' : 'top',
+                        paddingBottom: 6,
                         color: Colors.titleColor
-                        // color: Colors.gray800,
-                      }}>{match.team1_score_90} : {match.team2_score_90}</Text>
-                    </View>
-                    <View style={{
-                      width: 18,
-                      height: 18,
-                      marginLeft: 6,
-                      backgroundColor: Colors.titleColor,
-                      // backgroundColor: Colors.gray800,
-                      borderRadius: 9,
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Text style={{
-                        color: Colors.gray800,
-                        // color: Colors.titleColor,
-                        fontWeight: 900,
-                        fontSize: 11
-                      }}>90</Text>
-                    </View>
-                  </View> : null}
-
-                  {match.status == 'PEN' ? <View style={{
-                    marginTop: 6,
-                    height: 24,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'row',
-                    paddingLeft: 15,
-                    paddingRight: 2,
-                    borderRadius: 11,
-                    borderWidth: 1,
-                    borderColor: Colors.titleColor,
-                    // backgroundColor: Colors.titleColor
-                  }}>
-                    <View>
-                      <Text style={{
-                        fontSize: 14,
-                        fontWeight: 'bold',
-                        color: Colors.titleColor
-                        // color: Colors.gray800
-                      }}>{match.team1_score_pen} : {match.team2_score_pen}</Text>
-                    </View>
-                    <View style={{
-                      // marginTop:
-                      paddingLeft: 4,
-                      paddingRight: 4,
-                      height: 18,
-                      marginLeft: 6,
-                      backgroundColor: Colors.titleColor,
-                      // backgroundColor: Colors.gray800,
-                      borderRadius: 10,
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Text style={{
-                        // color: Colors.titleColor,
-                        color: Colors.gray800,
-                        fontWeight: 900,
-                        fontSize: 11
-                      }}>PEN</Text>
-                    </View>
-                  </View> : null}
-
-                </View>
-              </View>
-
-              {(!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
-                width: '100%',
-                // minHeight: 40,
-                // marginTop: 10,
-                alignItems: 'center',
-                justifyContent: 'center',
-                // backgroundColor: 'red'
-              }}>
-
-                {match.is_special ? <SpecialAwardPanel match={match} /> : null}
-
-                {mode == EMODE_DEFAULT && isShowScoreInput() ? <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
-                  opacity: !isPredictDisabled() ? 1 : .8
-                }}>
-                  <View style={{
-                    height: 30,
-                    width: 'auto',
-                    paddingLeft: authManager.getMeSync() ? 20 : 10,
-                    paddingRight: authManager.getMeSync() && match.playOff ? 4 : 20,
-                    borderRadius: 20,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#fb2781',
-                    flexDirection: 'row'
-                  }}>
-                    {!authManager.getMeSync() ?
-                      <View style={{
-                        width: 20,
-                        height: 20,
-                        marginRight: 6,
-                        backgroundColor: 'white',
-                        borderRadius: 12,
+                      }}>:</Text> : null}
+                      {!isMatchLive() && !isMatchEnded() && !isShowScoreInput() ? <View style={{
+                        marginTop: 4,
+                        backgroundColor: '#00C56619',
+                        borderWidth: 1,
+                        borderColor: '#00C566',
+                        paddingLeft: 8,
+                        paddingRight: 8,
+                        height: 30,
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        borderRadius: 15
                       }}>
-                        <GoogleIcon width={16} height={18} />
+                        <Text style={{
+                          fontFamily: 'NotoSansArmenian-Bold',
+                          fontSize: 14,
+                          color: '#00C566'
+                        }}>{moment(match?.date).format('HH:mm')}</Text>
+                      </View> : null}
+
+                      {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' value={team2Score} onChangeText={onTeam2Change} style={{
+                        width: 45,
+                        height: 50,
+                        marginLeft: 4,
+                        fontSize: 20,
+                        backgroundColor: Colors.mode == 1 ? '#00000011' : '#ffffff11',
+                        borderRadius: 10,
+                        color: Colors.titleColor,
+                        textAlign: 'center',
+                        // borderBottomColor: 'red',
+                        // borderBottomWidth: 2,
+                        fontFamily: 'OpenSans-Bold'
+                      }}></TextInput> : null}
+                      {isShowScoreText() ? <Text style={{
+                        width: 40,
+                        // marginRight: 4,
+                        lineHeight: 30,
+                        height: 30,
+                        fontSize: 30,
+                        color: Colors.titleColor,
+                        textAlign: 'left',
+                        paddingLeft: 5,
+                        // backgroundColor: '#00000011',
+                        // borderRadius: 10,
+                        fontFamily: 'OpenSans-Bold'
+                      }}>{match?.team2_score}</Text> : null}
+                    </View>
+
+                    {match.status == 'AET' || match.status == 'PEN' ? <View style={{
+                      // width: '100%',
+                      height: 24,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      paddingLeft: 15,
+                      paddingRight: 2,
+                      borderRadius: 11,
+                      borderWidth: 1,
+
+                      borderColor: Colors.titleColor,
+                    }}>
+                      <View>
+                        <Text style={{
+                          fontSize: 14,
+                          fontWeight: 'bold',
+                          color: Colors.titleColor
+                          // color: Colors.gray800,
+                        }}>{match.team1_score_90} : {match.team2_score_90}</Text>
                       </View>
-                      : null}
-                    <Text style={{
-                      color: 'white',
-                      marginTop: 2,
-                      // fontWeight: 'bold',
-                      fontFamily: 'Poppins-Bold'
-                    }}>{authManager.getMeSync() ? strings.predict : strings.sign_in_to_predict}</Text>
-                    {authManager.getMeSync() && match.playOff ?
                       <View style={{
-                        width: 22,
-                        height: 22,
-                        backgroundColor: 'white',
-                        borderRadius: 11,
+                        width: 18,
+                        height: 18,
                         marginLeft: 6,
+                        backgroundColor: Colors.titleColor,
+                        // backgroundColor: Colors.gray800,
+                        borderRadius: 9,
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}>
                         <Text style={{
-                          color: 'black',
+                          color: Colors.gray800,
+                          // color: Colors.titleColor,
                           fontWeight: 900,
-                          fontSize: 12
+                          fontSize: 11
                         }}>90</Text>
                       </View>
-                      : null}
-                    {showAd && loaded && authManager.getMeSync() ? <Icon name='play-circle-filled' size={20} color='white' style={{
-                      marginLeft: 4
-                    }} /> : null}
-                    {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
-                      marginLeft: 10
-                    }} size={'small'} /> : null}
-                  </View>
-                </TouchableOpacity> : null}
-
-                {predict ? <View style={{
-                  flexDirection: 'row',
-                  // backgroundColor: 'red'
-                }}>
-                  {mode == EMODE_DEFAULT ? <View style={{
-                    height: 30,
-                    paddingLeft: 20,
-                    paddingRight: match.playOff ? 4 : 20,
-                    // borderWidth: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 15,
-                    overflow: 'hidden',
-                    flexDirection: 'row',
-                    backgroundColor: getBgColor(predict),
-                    borderColor: getBorderColor(predict)
-                  }}>
-                    <Text style={{
-                      marginBottom: 2,
-                      color: getBorderColor(predict),
-                      fontFamily: 'NotoSansArmenian-Bold'
-                    }}>{dataManager.getPredictTitle(predict)}{dataManager.getPredictValue(predict)}</Text>
-
-                    {match.playOff ? <View style={{
-                      width: 22,
-                      height: 22,
-                      backgroundColor: Colors.gray800,
-                      borderRadius: 11,
-                      marginLeft: 8,
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <Text style={{
-                        color: Colors.titleColor,
-                        fontWeight: 900,
-                        fontSize: 12
-                      }}>90</Text>
                     </View> : null}
 
-                  </View> : <TouchableOpacity onPress={onSavePredict} disabled={isSaveDisabled()} activeOpacity={.8} style={{
-                    opacity: !isSaveDisabled() ? 1 : .8
+                    {match.status == 'PEN' ? <View style={{
+                      marginTop: 6,
+                      height: 24,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      paddingLeft: 15,
+                      paddingRight: 2,
+                      borderRadius: 11,
+                      borderWidth: 1,
+                      borderColor: Colors.titleColor,
+                      // backgroundColor: Colors.titleColor
+                    }}>
+                      <View>
+                        <Text style={{
+                          fontSize: 14,
+                          fontWeight: 'bold',
+                          color: Colors.titleColor
+                          // color: Colors.gray800
+                        }}>{match.team1_score_pen} : {match.team2_score_pen}</Text>
+                      </View>
+                      <View style={{
+                        // marginTop:
+                        paddingLeft: 4,
+                        paddingRight: 4,
+                        height: 18,
+                        marginLeft: 6,
+                        backgroundColor: Colors.titleColor,
+                        // backgroundColor: Colors.gray800,
+                        borderRadius: 10,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Text style={{
+                          // color: Colors.titleColor,
+                          color: Colors.gray800,
+                          fontWeight: 900,
+                          fontSize: 11
+                        }}>PEN</Text>
+                      </View>
+                    </View> : null}
+
+                  </View>
+                </View>
+
+                {(!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
+                  width: '100%',
+                  // minHeight: 40,
+                  // marginTop: 10,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  // backgroundColor: 'red'
+                }}>
+
+                  {match.is_special ? <SpecialAwardPanel match={match} /> : null}
+
+                  {mode == EMODE_DEFAULT && isShowScoreInput() ? <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
+                    opacity: !isPredictDisabled() ? 1 : .8
                   }}>
                     <View style={{
                       height: 30,
                       width: 'auto',
-                      paddingLeft: 20,
-                      paddingRight: 20,
+                      paddingLeft: authManager.getMeSync() ? 20 : 10,
+                      paddingRight: authManager.getMeSync() && match.playOff ? 4 : 20,
                       borderRadius: 20,
                       alignItems: 'center',
                       justifyContent: 'center',
                       backgroundColor: '#fb2781',
                       flexDirection: 'row'
                     }}>
+                      {!authManager.getMeSync() ?
+                        <View style={{
+                          width: 20,
+                          height: 20,
+                          marginRight: 6,
+                          backgroundColor: 'white',
+                          borderRadius: 12,
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <GoogleIcon width={16} height={18} />
+                        </View>
+                        : null}
                       <Text style={{
                         color: 'white',
-                        fontFamily: 'NotoSansArmenian-Bold'
-                      }}>{strings.save}</Text>
-                      {showAd && loaded ? <Icon name='play-circle-filled' size={20} color='white' style={{
+                        marginTop: 2,
+                        // fontWeight: 'bold',
+                        fontFamily: 'Poppins-Bold'
+                      }}>{authManager.getMeSync() ? strings.predict : strings.sign_in_to_predict}</Text>
+                      {authManager.getMeSync() && match.playOff ?
+                        <View style={{
+                          width: 22,
+                          height: 22,
+                          backgroundColor: 'white',
+                          borderRadius: 11,
+                          marginLeft: 6,
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <Text style={{
+                            color: 'black',
+                            fontWeight: 900,
+                            fontSize: 12
+                          }}>90</Text>
+                        </View>
+                        : null}
+                      {showAd && loaded && authManager.getMeSync() ? <Icon name='play-circle-filled' size={20} color='white' style={{
                         marginLeft: 4
                       }} /> : null}
                       {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
-                        marginLeft: 4
+                        marginLeft: 10
                       }} size={'small'} /> : null}
                     </View>
-                  </TouchableOpacity>}
-                  {!isMatchEnded() && !isMatchLive() && predict && mode == EMODE_DEFAULT ? <TouchableOpacity onPress={onSetEditMode} activeOpacity={.8} style={{
-                    width: 30,
-                    height: 30,
-                    marginLeft: 10,
-                    borderRadius: 15,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#FF2882'
-                  }}>
-                    <Icon size={20} name={'edit'} color='white'></Icon>
                   </TouchableOpacity> : null}
+
+                  {predict ? <View style={{
+                    flexDirection: 'row',
+                    // backgroundColor: 'red'
+                  }}>
+                    {mode == EMODE_DEFAULT ? <View style={{
+                      height: 30,
+                      paddingLeft: 20,
+                      paddingRight: match.playOff ? 4 : 20,
+                      // borderWidth: 1,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 15,
+                      overflow: 'hidden',
+                      flexDirection: 'row',
+                      backgroundColor: getBgColor(predict),
+                      borderColor: getBorderColor(predict)
+                    }}>
+                      <Text style={{
+                        marginBottom: 2,
+                        color: getBorderColor(predict),
+                        fontFamily: 'NotoSansArmenian-Bold'
+                      }}>{dataManager.getPredictTitle(predict)}{dataManager.getPredictValue(predict)}</Text>
+
+                      {match.playOff ? <View style={{
+                        width: 22,
+                        height: 22,
+                        backgroundColor: Colors.gray800,
+                        borderRadius: 11,
+                        marginLeft: 8,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Text style={{
+                          color: Colors.titleColor,
+                          fontWeight: 900,
+                          fontSize: 12
+                        }}>90</Text>
+                      </View> : null}
+
+                    </View> : <TouchableOpacity onPress={onSavePredict} disabled={isSaveDisabled()} activeOpacity={.8} style={{
+                      opacity: !isSaveDisabled() ? 1 : .8
+                    }}>
+                      <View style={{
+                        height: 30,
+                        width: 'auto',
+                        paddingLeft: 20,
+                        paddingRight: 20,
+                        borderRadius: 20,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#fb2781',
+                        flexDirection: 'row'
+                      }}>
+                        <Text style={{
+                          color: 'white',
+                          fontFamily: 'NotoSansArmenian-Bold'
+                        }}>{strings.save}</Text>
+                        {showAd && loaded ? <Icon name='play-circle-filled' size={20} color='white' style={{
+                          marginLeft: 4
+                        }} /> : null}
+                        {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
+                          marginLeft: 4
+                        }} size={'small'} /> : null}
+                      </View>
+                    </TouchableOpacity>}
+                    {!isMatchEnded() && !isMatchLive() && predict && mode == EMODE_DEFAULT ? <TouchableOpacity onPress={onSetEditMode} activeOpacity={.8} style={{
+                      width: 30,
+                      height: 30,
+                      marginLeft: 10,
+                      borderRadius: 15,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#FF2882'
+                    }}>
+                      <Icon size={20} name={'edit'} color='white'></Icon>
+                    </TouchableOpacity> : null}
+                  </View> : null}
                 </View> : null}
+
+              </View>
+
+              {match.is_special && match.special_match_title == 'quest' ? <View style={{
+                width: '100%',
+                paddingHorizontal: 20,
+                marginTop: 20,
+              }}>
+                <View style={{
+                  width: '100%',
+                  borderRadius: 12,
+                  padding: 10,
+                  // borderWidth: 1,
+                  // borderColor: '#FF4747',
+                  // marginBottom: 5,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#FF474719'
+                }}>
+                  <Text style={{
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    color: '#FF4747'
+                  }}>{strings.attention_quest}</Text>
+                  <Text style={{
+                    color: Colors.titleColor
+                  }}>{strings.quest_match_msg}</Text>
+                </View>
               </View> : null}
 
-            </View>
+              {predictsReqFinished ? <ScrollView
+                ref={scrollViewRef}
+                horizontal={true}
+                contentInsetAdjustmentBehavior="automatic"
+                contentContainerStyle={{
+                  height: 50,
+                  marginTop: 20,
+                  paddingLeft: 20,
+                  paddingRight: 10,
+                  // backgroundColor: 'green',
+                  alignItems: 'center',
+                }}
+                showsHorizontalScrollIndicator={false}>
 
-            {match.is_special && match.special_match_title == 'quest' ? <View style={{
-              width: '100%',
-              paddingHorizontal: 20,
-              marginTop: 20,
-            }}>
+                <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={() => { setView(EVIEW_PREDICTIONS), scrollToStart() }} />
+                {header?.odds ? <ViewChip isBet title={strings.bet} selected={view == EVIEW_BET} onClick={() => { setView(EVIEW_BET), scrollToStart() }} /> : null}
+                <ViewChip title={'H2H'} selected={view == EVIEW_H2H} onClick={() => { setView(EVIEW_H2H), scrollToStart() }} />
+                {(match.league < 8 && match.league != 1) || match.league == 16 ? <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE), scrollOnTableClick() }} /> : null}
+
+                {header?.statistics ? <ViewChip title={strings.statistics} selected={view == EVIEW_STATISTICS} onClick={() => { setView(EVIEW_STATISTICS), scrollToEnd() }} /> : null}
+                {header?.events ? <ViewChip title={strings.events} selected={view == EVIEW_EVENTS} onClick={() => { setView(EVIEW_EVENTS), scrollToEnd() }} /> : null}
+                {header?.lineups ? <ViewChip title={strings.lineups} selected={view == EVIEW_LINEUPS} onClick={() => { setView(EVIEW_LINEUPS), scrollToEnd() }} /> : null}
+
+              </ScrollView> : null}
+
               <View style={{
                 width: '100%',
-                borderRadius: 12,
-                padding: 10,
-                // borderWidth: 1,
-                // borderColor: '#FF4747',
-                // marginBottom: 5,
-                paddingHorizontal: 10,
-                backgroundColor: '#FF474719'
+                paddingHorizontal: 20,
+                // backgroundColor: 'red'
+                // marginTop: 30
               }}>
-                <Text style={{
-                  fontSize: 16,
-                  fontWeight: 'bold',
-                  color: '#FF4747'
-                }}>{strings.attention_quest}</Text>
-                <Text style={{
-                  color: Colors.titleColor
-                }}>{strings.quest_match_msg}</Text>
+
+                {view == EVIEW_PREDICTIONS ? <View style={{
+                  marginTop: 20,
+                }}>
+                  {predictsReqFinished && predicts && predicts.beatBet ? <MatchBeatBetPanel predict={predict} match={match} beatBet={predicts.beatBet} /> : null}
+                  {predictsReqFinished && predicts && predicts.numPredicts ? <MatchPredictsSummaryPanel2 match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}></MatchPredictsSummaryPanel2> : null}
+                  {predictsReqFinished && top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts} /> : null}
+                  {predictsReqFinished && !predicts?.numPredicts ? <Text style={{
+                    color: '#8E8E93',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    alignSelf: 'center'
+                  }}>{strings.no_pred_for_match}</Text> : null}
+                  {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
+                </View> : null}
+                {view == EVIEW_BET ? <MatchBetPanel navigation={navigation} match={match} odds={odds} /> : null}
+                {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} onShowMatchPreview={onShowMatchPress} onShowMatchTrailer={onShowMatchTrailerPress} /> : null}
+                {view == EVIEW_STATISTICS && statistics ? <MatchStatisticsPanel statistics={statistics} /> : view == EVIEW_STATISTICS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
+                {view == EVIEW_EVENTS && events ? <MatchEventsPanel events={events} /> : view == EVIEW_EVENTS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
+                {view == EVIEW_LINEUPS && lineups ? <MatchLineupsPanel match={match} lineups={lineups} /> : view == EVIEW_LINEUPS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
+                {view == EVIEW_TABLE && table ? <MatchTablePanel navigation={navigation} match={match} table={table} /> : view == EVIEW_TABLE ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
+
               </View>
-            </View> : null}
-
-            {predictsReqFinished ? <ScrollView
-              ref={scrollViewRef}
-              horizontal={true}
-              contentInsetAdjustmentBehavior="automatic"
-              contentContainerStyle={{
-                height: 50,
-                marginTop: 20,
-                paddingLeft: 20,
-                paddingRight: 10,
-                // backgroundColor: 'green',
-                alignItems: 'center',
-              }}
-              showsHorizontalScrollIndicator={false}>
-
-              <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={() => { setView(EVIEW_PREDICTIONS), scrollToStart() }} />
-              {header?.odds ? <ViewChip isBet title={strings.bet} selected={view == EVIEW_BET} onClick={() => { setView(EVIEW_BET), scrollToStart() }} /> : null}
-              <ViewChip title={'H2H'} selected={view == EVIEW_H2H} onClick={() => { setView(EVIEW_H2H), scrollToStart() }} />
-              {(match.league < 8 && match.league != 1) || match.league == 16 ? <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE), scrollOnTableClick() }} /> : null}
-
-              {header?.statistics ? <ViewChip title={strings.statistics} selected={view == EVIEW_STATISTICS} onClick={() => { setView(EVIEW_STATISTICS), scrollToEnd() }} /> : null}
-              {header?.events ? <ViewChip title={strings.events} selected={view == EVIEW_EVENTS} onClick={() => { setView(EVIEW_EVENTS), scrollToEnd() }} /> : null}
-              {header?.lineups ? <ViewChip title={strings.lineups} selected={view == EVIEW_LINEUPS} onClick={() => { setView(EVIEW_LINEUPS), scrollToEnd() }} /> : null}
-
-            </ScrollView> : null}
-
-            <View style={{
-              width: '100%',
-              paddingHorizontal: 20,
-              // backgroundColor: 'red'
-              // marginTop: 30
-            }}>
-
-              {view == EVIEW_PREDICTIONS ? <View style={{
-                marginTop: 20,
-              }}>
-                {predictsReqFinished && predicts && predicts.beatBet ? <MatchBeatBetPanel predict={predict} match={match} beatBet={predicts.beatBet} /> : null}
-                {predictsReqFinished && predicts && predicts.numPredicts ? <MatchPredictsSummaryPanel2 match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={predicts}></MatchPredictsSummaryPanel2> : null}
-                {predictsReqFinished && top20Predicts && top20Predicts.predicts.length ? <MatchTop20PredictsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20Predicts} /> : null}
-                {predictsReqFinished && !predicts?.numPredicts ? <Text style={{
-                  color: '#8E8E93',
-                  fontSize: 14,
-                  fontWeight: 'bold',
-                  alignSelf: 'center'
-                }}>{strings.no_pred_for_match}</Text> : null}
-                {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
-              </View> : null}
-              {view == EVIEW_BET ? <MatchBetPanel navigation={navigation} match={match} odds={odds} /> : null}
-              {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} onShowMatchPreview={onShowMatchPress} onShowMatchTrailer={onShowMatchTrailerPress} /> : null}
-              {view == EVIEW_STATISTICS && statistics ? <MatchStatisticsPanel statistics={statistics} /> : view == EVIEW_STATISTICS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
-              {view == EVIEW_EVENTS && events ? <MatchEventsPanel events={events} /> : view == EVIEW_EVENTS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
-              {view == EVIEW_LINEUPS && lineups ? <MatchLineupsPanel match={match} lineups={lineups} /> : view == EVIEW_LINEUPS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
-              {view == EVIEW_TABLE && table ? <MatchTablePanel match={match} table={table} /> : view == EVIEW_TABLE ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
-
-            </View>
 
 
-          </ScrollView>
-          <BottomNavBar navigation={navigation} />
-        </View>
-        {showMatchPreview ? <MatchPreviewDialog match={previewMatch} onClose={onCloseMatchPreview} /> : null}
+            </ScrollView>
+            <BottomNavBar navigation={navigation} />
+          </View>
+          {showMatchPreview ? <MatchPreviewDialog match={previewMatch} onClose={onCloseMatchPreview} /> : null}
+          {showFailPlayDialog ? <FairPlayDialog onClose={() => { setShowFailPlayDialog(false) }} /> : null}
+          <View style={{
+            height: insets.bottom,
+            backgroundColor: Colors.gray800,
+          }} />
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

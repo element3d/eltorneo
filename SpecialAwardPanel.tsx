@@ -53,6 +53,24 @@ export default function SpecialAwardPanel({match}) {
             <View style={{
                 width: 30,
                 height: 30,
+                marginRight: 10,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 15,
+                borderColor: '#00C566',
+                borderWidth: 1,
+                backgroundColor: '#34C75955'
+            }}>
+                <Text style={{
+                    color: '#00C566',
+                    lineHeight: 20,
+                    fontFamily: 'Poppins-Bold',
+                    // fontWeight: 'bold'
+                }}>+{getSpecialPoints()[1]}</Text>
+            </View>
+            <View style={{
+                width: 30,
+                height: 30,
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: 15,

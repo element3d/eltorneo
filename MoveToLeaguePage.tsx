@@ -4,13 +4,13 @@ import {
     Image,
     Linking,
     RefreshControl,
-    SafeAreaView,
     ScrollView,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
+    SafeAreaView,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_CALENDAR } from './BottomNavBar';
@@ -18,6 +18,7 @@ import SERVER_BASE_URL from './AppConfig';
 import CalendarIcon from './assets/calendar_black.svg';
 import CalendarWhiteIcon from './assets/calendar_white.svg';
 import GoogleIcon from './assets/google.svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AppBar from './AppBar';
 import strings from './Strings';
@@ -64,14 +65,20 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
             navigation.navigate('Calendar')
         })
     }
+    const insets = useSafeAreaInsets();
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+        <GestureHandlerRootView style={{
+            flex: 1, backgroundColor: Colors.bgColor,
+        }}>
 
             <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+                <View style={{
+                    height: insets.top,
+                    backgroundColor: Colors.gray800,
+                }} />
                 <StatusBar
                     barStyle={Colors.statusBar}
-
                     backgroundColor={Colors.gray800}
                 />
 
@@ -313,6 +320,10 @@ function MoveToLeaguePage({ navigation, route }): JSX.Element {
                     </ScrollView>
                     <BottomNavBar navigation={navigation} />
                 </View>
+                <View style={{
+                    height: insets.bottom,
+                    backgroundColor: Colors.gray800,
+                }} />
             </SafeAreaView>
         </GestureHandlerRootView>
     );

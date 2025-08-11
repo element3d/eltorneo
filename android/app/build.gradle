@@ -73,16 +73,16 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 android {
     ndkVersion rootProject.ext.ndkVersion
 
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdkVersion 35
 
     namespace "com.eltorneo"
     defaultConfig {
         applicationId "com.eltorneo"
         
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 81
-        versionName "1.0.81"
+        targetSdkVersion 35
+        versionCode 132
+        versionName "1.3.2"
     }
     signingConfigs {
         debug {

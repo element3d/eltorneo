@@ -32,6 +32,10 @@ import RegisterPage from './RegisterPage';
 import BeatBetPage from './BeatBet';
 import SelectLeaguePage from './SelectLeaguePage';
 import TrailersPage from './TrailersPage';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import TeamPage from './TeamPage';
+import LinkAccountPage from './LinkAccountPage';
+
 // import { createDrawerNavigator } from '@react-navigation/drawer';
 
 // import { RewardedAd, TestIds, AdEventType, RewardedAdEventType } from 'react-native-google-mobile-ads';
@@ -67,15 +71,15 @@ function App(): JSX.Element {
   }, []);
 
 
-  useEffect(()=>{
+  useEffect(() => {
     requestNotificationPermission();
 
     AsyncStorage.getItem("lang")
-    .then((l)=>{
-      if (!l) return
-      strings.setLanguage(l)
-    })
-    
+      .then((l) => {
+        if (!l) return
+        strings.setLanguage(l)
+      })
+
     // strings.setLanguage('en')
   }, [])
 
@@ -97,34 +101,40 @@ function App(): JSX.Element {
     }
   }
 
- 
+
   return (
-    <NavigationContainer>
-    
-      <Stack.Navigator initialRouteName={ "Home" } screenOptions={{
+    <SafeAreaProvider>
+
+      <NavigationContainer>
+
+        <Stack.Navigator initialRouteName={"Home"} screenOptions={{
           headerShown: false, // This hides the header,
           animation: 'none',
           // animationDuration: 100
         }}>
-        <Stack.Screen name="Home" component={CarsPage} />
-        <Stack.Screen name="Calendar" component={CalendarPage} />
-        <Stack.Screen name="Tables" component={TablesPage} />
-        <Stack.Screen name="Match" component={MatchPage} />
-        <Stack.Screen name="Login" component={LoginPage} />
-        <Stack.Screen name="Register" component={RegisterPage} />
-        <Stack.Screen name="Profile" component={ProfilePage} />
-        <Stack.Screen name="ProfileEdit" component={ProfileEditPage} />
-        <Stack.Screen name="MatchesLive" component={MatchesLivePage} />
-        <Stack.Screen name="Langs" component={LangPage} />
-        <Stack.Screen name="AwardsInfo" component={AwardsInfoPage} />
-        <Stack.Screen name="MoveToLeague" component={MoveToLeaguePage} />
-        <Stack.Screen name="BeatBet" component={BeatBetPage} />
-        <Stack.Screen name="SelectLeague" component={SelectLeaguePage} />
-        <Stack.Screen name="Trailers" component={TrailersPage} />
+          <Stack.Screen name="Home" component={CarsPage} />
+          <Stack.Screen name="Calendar" component={CalendarPage} />
+          <Stack.Screen name="Tables" component={TablesPage} />
+          <Stack.Screen name="Match" component={MatchPage} />
+          <Stack.Screen name="Login" component={LoginPage} />
+          <Stack.Screen name="Register" component={RegisterPage} />
+          <Stack.Screen name="Profile" component={ProfilePage} />
+          <Stack.Screen name="ProfileEdit" component={ProfileEditPage} />
+          <Stack.Screen name="MatchesLive" component={MatchesLivePage} />
+          <Stack.Screen name="Langs" component={LangPage} />
+          <Stack.Screen name="AwardsInfo" component={AwardsInfoPage} />
+          <Stack.Screen name="MoveToLeague" component={MoveToLeaguePage} />
+          <Stack.Screen name="BeatBet" component={BeatBetPage} />
+          <Stack.Screen name="SelectLeague" component={SelectLeaguePage} />
+          <Stack.Screen name="Trailers" component={TrailersPage} />
+          <Stack.Screen name="Team" component={TeamPage} />
+          <Stack.Screen name="LinkAccount" component={LinkAccountPage} />
 
-      </Stack.Navigator>
+        </Stack.Navigator>
 
-    </NavigationContainer>
+      </NavigationContainer>
+    </SafeAreaProvider>
+
   );
 }
 

@@ -81,8 +81,16 @@ class DataManager {
         this.match = m
     }
 
+    setTeam(team) {
+        this.team = team
+    }
+
     getMatch() {
         return this.match
+    }
+
+    getTeam() {
+        return this.team
     }
 
     checkBlockForAd() {
@@ -195,6 +203,10 @@ class DataManager {
             if (p.team1_score == p.team2_score) return strings.draw_predicted
             return strings.winner_predicted
         }
+        if (p.status == 5) {
+            if (p.team1_score == p.team2_score) return strings.draw_predicted
+            return strings.diff_predicted
+        }
         if (p.status == 2) return strings.score_predicted
         if (p.status == 3) return strings.prediction_was_failed
     }
@@ -285,7 +297,7 @@ class DataManager {
                 this.trailers = data
             })
             .catch((e) => {
-             
+
             })
     }
 

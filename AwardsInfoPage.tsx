@@ -4,14 +4,16 @@ import {
     Image,
     Linking,
     RefreshControl,
-    SafeAreaView,
     ScrollView,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
+    SafeAreaView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_CALENDAR } from './BottomNavBar';
 import SERVER_BASE_URL from './AppConfig';
@@ -41,25 +43,31 @@ function AwardsInfoPage({ navigation, route }): JSX.Element {
     const onNavPlayStore = () => {
         const appPackageName = 'com.eltorneo'; // Replace with your app's package name
         const playStoreUrl = `https://play.google.com/store/apps/details?id=${appPackageName}`;
-    
+
         Linking.canOpenURL(playStoreUrl)
-          .then((supported) => {
-            if (supported) {
-              Linking.openURL(playStoreUrl);
-            } else {
-              console.log("Don't know how to open URI: " + playStoreUrl);
-            }
-          })
-          .catch((err) => console.error('An error occurred', err));
-      };
+            .then((supported) => {
+                if (supported) {
+                    Linking.openURL(playStoreUrl);
+                } else {
+                    console.log("Don't know how to open URI: " + playStoreUrl);
+                }
+            })
+            .catch((err) => console.error('An error occurred', err));
+    };
+
+    const insets = useSafeAreaInsets();
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
-
+        <GestureHandlerRootView style={{
+            flex: 1, backgroundColor: Colors.bgColor,
+        }}>
             <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+                <View style={{
+                    height: insets.top,
+                    backgroundColor: Colors.gray800,
+                }} />
                 <StatusBar
                     barStyle={Colors.statusBar}
-
                     backgroundColor={Colors.gray800}
                 />
 
@@ -133,7 +141,7 @@ function AwardsInfoPage({ navigation, route }): JSX.Element {
                                 // marginTop: 5,
                                 fontSize: 14,
                                 color: '#8E8E93',
-                            }}>{strings.quest_match_msg}</Text>   
+                            }}>{strings.quest_match_msg}</Text>
 
                             {/* <Text style={{
                                 marginTop: 20,
@@ -171,7 +179,7 @@ function AwardsInfoPage({ navigation, route }): JSX.Element {
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
-                                <GooglePlayIcon width={18} height={18}/>
+                                <GooglePlayIcon width={18} height={18} />
                             </View>
                             <Text style={{
                                 fontSize: 16,
@@ -185,6 +193,10 @@ function AwardsInfoPage({ navigation, route }): JSX.Element {
                     </ScrollView>
                     <BottomNavBar navigation={navigation} />
                 </View>
+                <View style={{
+                    height: insets.bottom,
+                    backgroundColor: Colors.gray800,
+                }} />
             </SafeAreaView>
         </GestureHandlerRootView>
     );

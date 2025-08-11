@@ -6,9 +6,8 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    useColorScheme,
-    View,
     SafeAreaView,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -21,29 +20,33 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from './Colors';
 
 
-function LangPage({ navigation, route }): JSX.Element {
+function ThemesPage({ navigation, route }): JSX.Element {
 
     const backgroundStyle = {
         backgroundColor: 'white',
     };
 
-    function onLang(l) {
-        strings.setLanguage(l)
-        AsyncStorage.setItem("lang", l)
-        navigation.navigate({ name: 'Home', key: `home_lang_${l}` })
+    function onSetTheme(t) {
+        if (t == 'Light') {
+            Colors.setNewMode(1)
+        } else if (t == 'Dark') {
+            Colors.setNewMode(2)
+        } else {
+            Colors.setNewMode(3)
+        }
     }
     const insets = useSafeAreaInsets();
 
     return (
         <GestureHandlerRootView style={{
             flex: 1, backgroundColor: Colors.gray800,
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left,
+            paddingRight: insets.right
         }}>
 
             <SafeAreaView style={{ flex: 1, backgroundColor: Colors.gray800 }}>
-                <View style={{
-                    height: insets.top,
-                    backgroundColor: Colors.gray800,
-                }} />
                 <StatusBar
                     barStyle={Colors.statusBar}
                     backgroundColor={Colors.gray800}
@@ -62,9 +65,9 @@ function LangPage({ navigation, route }): JSX.Element {
                             paddingBottom: 20,
                             backgroundColor: Colors.gray800
                         }}>
-                            <AppBar navigation={navigation} title={strings.language_page} showLogo={false} />
-                            {Object.keys(dataManager.getLangs()).map((l) => {
-                                return <TouchableOpacity key={l} activeOpacity={.6} onPress={() => onLang(l)} style={{
+                            <AppBar navigation={navigation} />
+                            {dataManager.getThemes().map((l) => {
+                                return <TouchableOpacity key={l} activeOpacity={.6} onPress={() => onSetTheme(l)} style={{
                                     width: '100%',
                                     paddingLeft: 20,
                                     height: 50
@@ -73,7 +76,7 @@ function LangPage({ navigation, route }): JSX.Element {
                                         fontSize: 14,
                                         fontWeight: 'bold',
                                         color: strings.getLanguage() == l ? '#FF2882' : '#8E8E93'
-                                    }}>{dataManager.getLangs()[l]}</Text>
+                                    }}>{l}</Text>
                                 </TouchableOpacity>
                             })}
 
@@ -82,13 +85,9 @@ function LangPage({ navigation, route }): JSX.Element {
                     </ScrollView>
                     <BottomNavBar page={EPAGE_CALENDAR} navigation={navigation} />
                 </View>
-                <View style={{
-                    height: insets.bottom,
-                    backgroundColor: Colors.gray800,
-                }} />
             </SafeAreaView>
         </GestureHandlerRootView>
     );
 }
 
-export default LangPage;
+export default ThemesPage;

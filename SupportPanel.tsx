@@ -2,7 +2,7 @@ import { Linking, Text, TouchableOpacity, View } from "react-native";
 import Colors from "./Colors";
 import YoutubeIcon from './assets/youtube.svg';
 import TikTokIcon from './assets/tiktok.svg';
-import FacebookIcon from './assets/facebook.svg';
+import FacebookIcon from './assets/telegram.svg';
 import PlayStoreIcon from './assets/google-play.svg';
 import strings from "./Strings";
 
@@ -24,7 +24,8 @@ export default function SupportPanel() {
     };
 
     const onNavFacebook = () => {
-        const facebookUrl = 'https://www.facebook.com/profile.php?id=61565578976994';
+        const facebookUrl = 'https://t.me/elTorneoBot';//'https://www.facebook.com/profile.php?id=61565578976994';
+  const url = 'https://t.me/elTorneoBot';
 
         Linking.openURL(facebookUrl).catch(err =>
             console.error('An error occurred while opening URL:', err)

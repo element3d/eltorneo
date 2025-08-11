@@ -1,11 +1,11 @@
-import { Image, Text, View } from "react-native"
+import { Image, Text, TouchableOpacity, View } from "react-native"
 import strings from "./Strings"
 import SERVER_BASE_URL from "./AppConfig"
 import dataManager from "./DataManager"
 import Colors from "./Colors"
 import NativeAdComp from "./NativeAdComp"
 
-export default function MatchTablePanel({ match, table }) {
+export default function MatchTablePanel({ navigation, match, table }) {
     let currentGroup = 0
     let currentPos = 1
 
@@ -23,7 +23,7 @@ export default function MatchTablePanel({ match, table }) {
 
             return `${word}${index + 1}`
         } else if (lid == 16) {
-            switch(index) {
+            switch (index) {
                 case 0:
                     return "A";
                 case 1:
@@ -43,6 +43,23 @@ export default function MatchTablePanel({ match, table }) {
             }
         }
 
+    }
+
+    function onNavTeam(team) {
+        team.leagueName = match.leagueName
+        team.leagueCountry = ''
+        team.leagueId = match.league
+        team.name = team.team.name
+        team.venue = team.team.venue
+        team.id = team.team.id
+        dataManager.setTeam(team)
+        navigation.navigate({
+            name: 'Team',
+            params: {
+                id: team.id,
+            },
+            key: `${team.id}_${team.name}`
+        })
     }
 
     return (
@@ -123,17 +140,17 @@ export default function MatchTablePanel({ match, table }) {
             </View>
 
             {table?.map((team, index) => {
-              
+
                 if (team.group_index != match.team1.group_index) return
                 let renderGroupName = false
 
-                if ((getLeague().num_leagues > 1 || getLeague().id == 16 ) && (index == 0 || team.group_index != currentGroup)) {
+                if ((getLeague().num_leagues > 1 || getLeague().id == 16) && (index == 0 || team.group_index != currentGroup)) {
                     currentGroup = team.group_index
                     renderGroupName = true
                     currentPos = 1
                 }
 
-                return <View key={team.team.name} style={{
+                return <TouchableOpacity onPress={() => { onNavTeam(team) }} activeOpacity={.6} key={team.team.name} style={{
                     // backgroundColor: 'red',
                     // paddingLeft: 15,
                     // paddingRight: 15,
@@ -169,7 +186,7 @@ export default function MatchTablePanel({ match, table }) {
                             flexDirection: 'row',
                             alignItems: 'center'
                         }}>
-                            <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${team.team.name}.png`} style={{
+                            <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${team.team.name.replace(/ö/g, 'o')}.png`} style={{
                                 width: 30,
                                 height: 30,
                                 // marginLeft: 5>
@@ -207,7 +224,7 @@ export default function MatchTablePanel({ match, table }) {
                             {team.points}
                         </Text>
                     </View>
-                </View>
+                </TouchableOpacity>
             })}
 
             <View style={{
@@ -272,12 +289,12 @@ export default function MatchTablePanel({ match, table }) {
                     }}>{strings.pts}</Text>
                 </View>
             </View> */}
-            { dataManager.getSettings().enableAds ? <View style={{
+            {dataManager.getSettings().enableAds ? <View style={{
                 width: '100%',
                 marginTop: 20
             }}>
                 <NativeAdComp />
-            </View> : null }
+            </View> : null}
         </View>
     )
 }

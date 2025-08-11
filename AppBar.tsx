@@ -7,20 +7,20 @@ import MoonDarkIcon from './assets/menu-dark.svg';
 import strings from './Strings';
 import Colors, { ColorsClassDark } from './Colors';
 
-function AppBar({navigation, title, showDrawer, setMode,  showLang, showMode=false, showBack = true, showLogo = true}): JSX.Element {
+function AppBar({ navigation, title, showDrawer, setMode, showLang, showMode = false, showBack = true, showLogo = true }): JSX.Element {
 
   function onBack() {
     navigation.goBack()
   }
 
   function onLang() {
-    navigation.navigate({name: "Langs", key: strings.getLanguage()})
+    navigation.navigate({ name: "Langs", key: strings.getLanguage() })
   }
 
   function onSetMode() {
     showDrawer()
     return
-    
+
     Colors.swap()
     setMode(Colors.mode)
   }
@@ -46,12 +46,12 @@ function AppBar({navigation, title, showDrawer, setMode,  showLang, showMode=fal
         // backgroundColor: 'white'
       }}>
         <Icon name={'arrow-back'} color={Colors.titleColor} size={26}></Icon>
-      </TouchableOpacity> : 
-      // <View style={{
-      //   width: 45,
-      //   height: 45
-      // }}></View>
-      null
+      </TouchableOpacity> :
+        // <View style={{
+        //   width: 45,
+        //   height: 45
+        // }}></View>
+        null
       }
 
       {showMode ? <TouchableOpacity activeOpacity={.6} onPress={onSetMode} style={{
@@ -66,11 +66,11 @@ function AppBar({navigation, title, showDrawer, setMode,  showLang, showMode=fal
       }}>
         {Colors.mode == 1 ? <MoonIcon /> : <MoonDarkIcon />}
       </TouchableOpacity> :
-      //  <View style={{
-      //   width: 45,
-      //   height: 45
-      // }}></View>
-      null
+        //  <View style={{
+        //   width: 45,
+        //   height: 45
+        // }}></View>
+        null
       }
 
       {showLogo ? <View style={{
@@ -80,21 +80,34 @@ function AppBar({navigation, title, showDrawer, setMode,  showLang, showMode=fal
       }}>
         <Text style={{
           // marginRight: 5,
-          fontSize: 18,
+          fontSize: 20,
           lineHeight: 28,
           // fontWeight: 'bold',
           color: Colors.titleColor,
           fontFamily: 'Poppins-Bold'
         }}>el Torneo</Text>
-      
-      </View> : null }
-      {title ? <Text style={{
+
+      </View> : null}
+      {title ? <View style={{
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}><Text style={{
         // fontWeight: 'bold',
         fontFamily: 'Poppins-Bold',
-        fontSize: 18,
-        lineHeight: 22,
-        color:  Colors.titleColor
-      }}>{title}</Text> : null }
+        fontSize: 20,
+        // lineHeight: 22,
+        color: Colors.titleColor
+      }}>{title}</Text>
+        <Text style={{
+          fontSize: 12,
+          lineHeight: 12,
+          opacity: .6,
+          marginTop: -6,
+          marginBottom: 8,
+          fontWeight: 'bold',
+          color: Colors.titleColor
+        }}>{'www.eltorneo.app'}</Text>
+      </View> : null}
       {showLang ? <TouchableOpacity activeOpacity={.6} onPress={onLang} style={{
         width: 45,
         height: 45,
@@ -111,10 +124,10 @@ function AppBar({navigation, title, showDrawer, setMode,  showLang, showMode=fal
           color: Colors.titleColor
         }}>{strings.getLanguage().toUpperCase()}</Text>
       </TouchableOpacity> : <View style={{
-         width: 45,
-         height: 45,
+        width: 45,
+        height: 45,
       }}>
-      </View> }
+      </View>}
     </View>
   );
 }

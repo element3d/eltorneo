@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -9,10 +8,14 @@ import {
   TouchableOpacity,
   Image,
   ImageBackground,
-  TextInput
+  TextInput,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 import GoogleIcon from './assets/google.svg';
@@ -58,7 +61,7 @@ function LoginPage({ navigation }): JSX.Element {
     }, [])
   );
   useEffect(() => {
-    changeNavigationBarColor(Colors.bottomNavBarColor, false, true);  // Change to your desired color
+    // changeNavigationBarColor(Colors.bottomNavBarColor, false, true);  // Change to your desired color
   }, []);
 
 
@@ -151,7 +154,7 @@ function LoginPage({ navigation }): JSX.Element {
                     tab: ETAB_PREDICTS
                   });
                 }
-              } 
+              }
             })
 
         })
@@ -165,8 +168,21 @@ function LoginPage({ navigation }): JSX.Element {
     navigation.navigate('Register')
   }
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+    <SafeAreaView style={{
+      flex: 1, backgroundColor: Colors.bgColor,
+    }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{flex: 1}}
+        keyboardVerticalOffset={Platform.OS === 'android' ? -insets.bottom : 0}
+      >
+      <View style={{
+        height: insets.top,
+        backgroundColor: Colors.gray800,
+      }} />
       <StatusBar
         barStyle={Colors.statusBar}
         backgroundColor={Colors.bgColor}
@@ -203,28 +219,10 @@ function LoginPage({ navigation }): JSX.Element {
             // marginBottom: 10
           }}>
             <Text style={{
-              marginRight: 5,
               fontSize: 34,
               color: Colors.titleColor,
               fontFamily: 'Poppins-Bold'
-            }}>el</Text>
-            <Text style={{
-              fontSize: 34,
-              color: Colors.titleColor,
-              fontFamily: 'Poppins-Bold'
-            }}>To</Text>
-            {/* <BallIcon height={18} width={20} color='#ff2882' style={{
-              marginTop: 8,
-              marginRight: 2,
-              marginLeft: 1,
-              color: '#ff2882'
-            }} /> */}
-            <Text style={{
-              fontSize: 34,
-              color: Colors.titleColor,
-              // fontWeight: 'bold'
-              fontFamily: 'Poppins-Bold'
-            }}>rneo</Text>
+            }}>el Torneo</Text>
           </View>
 
           <Text style={{
@@ -240,44 +238,22 @@ function LoginPage({ navigation }): JSX.Element {
             {strings.login_desc}
           </Text>
 
-          {/* <TouchableOpacity activeOpacity={.9} onPress={onNavAwardsInfo} style={{
-            borderRadius: 20,
-            width: 320,
-            height: 250,
-            overflow: 'hidden'
-          }}>
-            <ImageBackground source={require('./assets/playstore.png')} style={{
-              width: 320,
-              height: 250,
-              borderRadius: 20,
-              // marginBottom: 20
-            }}>
-              <AwardsPanel onReadMore={onNavAwardsInfo} showLeague={false} overlay={true}/>
-            </ImageBackground>
-          </TouchableOpacity> */}
-
-
-
-          {/* <AwardsPanel /> */}
-
           <TouchableOpacity onPress={handleSignIn} activeOpacity={.8} style={{
             width: 320,
             height: 52,
-            marginTop: 20,
+            marginTop: 10,
             borderRadius: 30,
             justifyContent: 'center',
             alignItems: 'center',
             flexDirection: 'row',
             borderWidth: 2,
             borderColor: Colors.borderColor
-            // backgroundColor: '#FF2882',
           }}>
             <Text style={{
               fontSize: 20,
               color: Colors.titleColor,
               fontFamily: 'Poppins-Bold',
               lineHeight: 28,
-              // fontWeight: 'bold'
             }}>
               {strings.join_now}
             </Text>
@@ -286,10 +262,7 @@ function LoginPage({ navigation }): JSX.Element {
               height: 40,
               position: 'absolute',
               right: 5,
-              // backgroundColor: 'white',
               borderRadius: 30,
-              // marginTop: 20,
-              // borderWidth: 3,
               borderColor: 'black',
               alignItems: 'center',
               justifyContent: 'center'
@@ -300,7 +273,7 @@ function LoginPage({ navigation }): JSX.Element {
 
           <View style={{
             width: 280,
-            marginTop: 40,
+            marginTop: 30,
             flexDirection: 'row',
             // backgroundColor: 'red',
             alignItems: 'center',
@@ -411,7 +384,7 @@ function LoginPage({ navigation }): JSX.Element {
             </Text>
           </TouchableOpacity>
 
-          <View style={{
+          { ! authManager.getMeSync() ? <View style={{
             marginTop: 20,
             flexDirection: 'row'
           }}>
@@ -429,31 +402,19 @@ function LoginPage({ navigation }): JSX.Element {
                 color: Colors.primary
               }}>{strings.register}</Text>
             </TouchableOpacity>
-          </View>
+          </View> : null }
 
         </View>
       </ScrollView>
       <BottomNavBar navigation={navigation} />
+      <View style={{
+        height: insets.bottom,
+        backgroundColor: Colors.gray800,
+      }} />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    width: "94%",
-    height: 50,
-    backgroundColor: 'black',
-    borderLeftWidth: 3,
-    marginTop: 20,
-    borderLeftColor: '#ff004a',
-    justifyContent: 'center',
-    paddingLeft: 20
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'Open Sans'
-  }
-});
 
 export default LoginPage;

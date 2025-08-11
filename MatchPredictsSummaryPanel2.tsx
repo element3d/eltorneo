@@ -5,8 +5,10 @@ import Colors from "./Colors";
 import SERVER_BASE_URL from "./AppConfig";
 import DropShadow from "react-native-drop-shadow";
 import dataManager from "./DataManager";
+import { useState } from "react";
+import KitImage from "./KitImage";
 
-export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, blockForAd, adLoaded }) {
+export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, blockForAd, adLoaded }) {
     function getPredictPercent(numPredicts) {
         const percent = numPredicts / predicts.numPredicts * 100
         if (percent <= 0) return ""
@@ -17,18 +19,6 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
         const percent = numPredicts / predicts.numPredicts * 100
         if (percent <= 0) return ""
         return `${Number.parseInt(percent)}%`
-    }
-
-    function getImageName() {
-        if (hasKit(match)) {
-            return `_kit.png${dataManager.getImageCacheTime()}`
-        }
-        return '.png'
-        
-    }
-
-    function hasKit(match) {
-        return match.league == 3 || match.league == 2 || match.league == 4 || match.league == 5 || match.league == 6 || match.league == 1
     }
 
     return (
@@ -68,11 +58,8 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                             shadowOpacity: .2,
                             shadowRadius: 10,
                         }}> */}
-                        <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team1.name}${getImageName()}`} style={{
-                            width: 40,
-                            height: 60,
-                            objectFit: hasKit(match) ? 'cover' : 'contain'
-                        }}></Image>
+                       
+                        <KitImage width={40} height={60} match={match} team={match.team1}/>
                         {/* </DropShadow> */}
                         {/* <Text style={{
                     fontSize: 16,
@@ -111,7 +98,7 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                             flexDirection: 'row'
                         }}>
                             <View style={{
-                                width: !blockForAd ? `${getPredictPercent2(predicts?.numP1)}`: '33.3%',
+                                width: !blockForAd ? `${getPredictPercent2(predicts?.numP1)}` : '33.3%',
                                 height: 10,
                                 borderTopLeftRadius: 5,
                                 borderBottomLeftRadius: 5,
@@ -157,7 +144,7 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                                 fontWeight: 'bold'
                             }}>
                                 {predicts?.numP1}{getPredictPercent(predicts?.numP1)}
-                            </Text>: <Icon color={Colors.titleColor} size={16} name='lock'/>}
+                            </Text> : <Icon color={Colors.titleColor} size={16} name='lock' />}
                             {!blockForAd ? <Text style={{
                                 width: 60,
                                 fontSize: 12,
@@ -166,7 +153,7 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                                 fontWeight: 'bold'
                             }}>
                                 {predicts?.numDraw}{getPredictPercent(predicts?.numDraw)}
-                            </Text> : <Icon color={Colors.titleColor} size={16} name='lock'/>}
+                            </Text> : <Icon color={Colors.titleColor} size={16} name='lock' />}
                             {!blockForAd ? <Text style={{
                                 textAlign: 'right',
                                 width: 60,
@@ -175,7 +162,7 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                                 fontWeight: 'bold'
                             }}>
                                 {predicts?.numP2}{getPredictPercent(predicts?.numP2)}
-                            </Text> : <Icon color={Colors.titleColor} size={16} name='lock'/>}
+                            </Text> : <Icon color={Colors.titleColor} size={16} name='lock' />}
                         </View>
                     </View>
 
@@ -222,11 +209,8 @@ export default function MatchPredictsSummaryPanel2({match, predicts, onUnlock, b
                             shadowOpacity: .2,
                             shadowRadius: 10,
                         }}> */}
-                        <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${match.team2.name}${getImageName()}`} style={{
-                            width: 40,
-                            height: 60,
-                            objectFit: hasKit(match) ? 'cover' : 'contain'
-                        }}></Image>
+                        <KitImage width={40} height={60} match={match} team={match.team2} />
+                      
                         {/* </DropShadow> */}
                         {/* {!blockForAd ? <Text style={{
                     fontSize: 20,

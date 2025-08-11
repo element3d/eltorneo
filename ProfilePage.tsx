@@ -4,16 +4,16 @@ import {
   Button,
   FlatList,
   Image,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  useColorScheme,
+  SafeAreaView,
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_PROFILE } from './BottomNavBar';
@@ -108,7 +108,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
   useEffect(() => {
     if (tab == ETAB_PREDICTS)
       getPredicts()
-    else 
+    else
       getBets()
   }, [page]);
 
@@ -183,6 +183,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
+      
         if (data.predicts.length <= 0) {
           setPredictsJson(data)
 
@@ -219,8 +220,8 @@ function ProfilePage({ navigation, route }): JSX.Element {
       user={user}
       isMe={isMe}
       betsJson={betsJson}
-      predictsJson={predictsJson} 
-      tab={tab}/>
+      predictsJson={predictsJson}
+      tab={tab} />
 
   ), [navigation, user, isMe, predictsJson, betsJson, tab]);
 
@@ -247,14 +248,20 @@ function ProfilePage({ navigation, route }): JSX.Element {
       })
     })
   }
+  const insets = useSafeAreaInsets();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+    <GestureHandlerRootView style={{
+      flex: 1, backgroundColor: Colors.bgColor,
+    }}>
 
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
+        <View style={{
+          height: insets.top,
+          backgroundColor: Colors.gray800,
+        }} />
         <StatusBar
           barStyle={Colors.statusBar}
-
           backgroundColor={Colors.gray800}
         />
 
@@ -274,8 +281,8 @@ function ProfilePage({ navigation, route }): JSX.Element {
                 user={user}
                 isMe={isMe}
                 betsJson={betsJson}
-                predictsJson={predictsJson} 
-                tab={tab}/>}
+                predictsJson={predictsJson}
+                tab={tab} />}
               {!blockForAd ? <View style={{
                 flex: 1,
                 height: 200,
@@ -287,7 +294,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
                   fontSize: 14,
                   fontWeight: 'bold',
                   alignSelf: 'center'
-                }}>{ tab == ETAB_BETS ? strings.no_bets : strings.no_predicts}</Text>}
+                }}>{tab == ETAB_BETS ? strings.no_bets : strings.no_predicts}</Text>}
               </View> : <View style={{
                 height: 80,
                 alignItems: 'center',
@@ -317,12 +324,16 @@ function ProfilePage({ navigation, route }): JSX.Element {
                 </TouchableOpacity>
               </View>}
             </View> :
-            <UserMatchesList navigation={navigation} tab={tab} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={tab==ETAB_PREDICTS ? predicts : bets} totalPredicts={ tab == ETAB_PREDICTS ? predictsJson.allPredicts : betsJson.allBets} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
+            <UserMatchesList navigation={navigation} tab={tab} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={tab == ETAB_PREDICTS ? predicts : bets} totalPredicts={tab == ETAB_PREDICTS ? predictsJson.allPredicts : betsJson.allBets} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
           }
 
           <BottomNavBar page={isMe ? EPAGE_PROFILE : null} navigation={navigation} />
         </View>
         {showMatchPreview ? <MatchPreviewDialog onClose={onCloseMatchPreview} match={previewMatch} /> : null}
+        <View style={{
+          height: insets.bottom,
+          backgroundColor: Colors.gray800,
+        }} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
