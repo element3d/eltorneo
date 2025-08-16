@@ -20,6 +20,7 @@ import FAIcon from 'react-native-vector-icons/FontAwesome5';
 import FAIcon2 from 'react-native-vector-icons/Fontisto';
 import BBIcon from './assets/bbicon.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import InAppReview from 'react-native-in-app-review';
 
 
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
@@ -706,6 +707,20 @@ function MatchPage({ navigation, route }): JSX.Element {
     ToastAndroid.show(msg, ToastAndroid.LONG);
   }
 
+  const askForRating = () => {
+    if (InAppReview.isAvailable()) {
+      InAppReview.RequestInAppReview()
+        .then((hasFlowFinishedSuccessfully) => {
+          console.log('In-app review flow finished?', hasFlowFinishedSuccessfully);
+        })
+        .catch((error) => {
+          console.log('In-app review error:', error);
+        });
+    } else {
+      console.log('In-app review not available');
+    }
+  };
+
   function onPredict() {
     if (!authManager.getMeSync()) {
       if (!isNaN(Number.parseInt(team1Score)) && !isNaN(Number.parseInt(team2Score))) {
@@ -769,8 +784,11 @@ function MatchPage({ navigation, route }): JSX.Element {
           ++numActions;
           AsyncStorage.setItem('numActions', numActions.toString());
         });
+      if (dataManager.getSettings().showInAppReview) {
+        askForRating();
+        dataManager.getSettings().showInAppReview = false;
+      }
     }
-
   }
 
   function onSavePredict() {

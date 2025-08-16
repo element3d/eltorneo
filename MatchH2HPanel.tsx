@@ -97,14 +97,14 @@ export default function MatchH2HPanel({ navigation, match, onShowMatchPreview, o
       height: 46,
       padding: 4,
       marginTop: 20,
-      backgroundColor: Colors.selectColor,
+      backgroundColor: Colors.selectBGColor,
       borderRadius: 30,
       flexDirection: 'row'
     }}>
       <TouchableOpacity activeOpacity={.6} onPress={() => { setTeam(match.team1.id) }} style={{
         flex: 1,
         height: 38,
-        backgroundColor: team == match.team1.id ? Colors.gray800 : 'transparent',
+        backgroundColor: team == match.team1.id ? Colors.selectColor : 'transparent',
         borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center'
@@ -118,7 +118,7 @@ export default function MatchH2HPanel({ navigation, match, onShowMatchPreview, o
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: team == match.team2.id ? Colors.gray800 : 'transparent',
+        backgroundColor: team == match.team2.id ? Colors.selectColor : 'transparent',
         borderRadius: 30
       }}>
         <Text style={{

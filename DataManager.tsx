@@ -13,8 +13,11 @@ class DataManager {
 
         this.settings = {
             blockForAd: false,
-            enableAds: false
+            enableAds: false,
+            showInAppReview: false
         }
+
+        this.trailers = []
     }
 
     init() {
@@ -212,6 +215,7 @@ class DataManager {
     }
 
     findUserPosition(userId) {
+        if (!this.table) return -1;
         // Loop through the array of users
         for (let i = 0; i < this.table.length; i++) {
             // Check if the current user's id matches the provided userId

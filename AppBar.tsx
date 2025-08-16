@@ -74,18 +74,27 @@ function AppBar({ navigation, title, showDrawer, setMode, showLang, showMode = f
       }
 
       {showLogo ? <View style={{
-        flexDirection: 'row',
+        // flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
         <Text style={{
           // marginRight: 5,
           fontSize: 20,
-          lineHeight: 28,
+          // lineHeight: 28,
           // fontWeight: 'bold',
           color: Colors.titleColor,
           fontFamily: 'Poppins-Bold'
         }}>el Torneo</Text>
+        <Text style={{
+          fontSize: 12,
+          lineHeight: 12,
+          opacity: .6,
+          marginTop: -6,
+          marginBottom: 8,
+          fontWeight: 'bold',
+          color: Colors.titleColor
+        }}>{'www.eltorneo.app'}</Text>
 
       </View> : null}
       {title ? <View style={{

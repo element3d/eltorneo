@@ -6,6 +6,8 @@ import dataManager from "./DataManager";
 import SpecialAwardPanel from "./SpecialAwardPanel";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FAIcon from 'react-native-vector-icons/Fontisto';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
+import authManager from "./AuthManager";
 
 export default function EventCard({ onPress, onTrailerPress, onClose, match }) {
     function getDate(matchDate) {
@@ -19,6 +21,24 @@ export default function EventCard({ onPress, onTrailerPress, onClose, match }) {
         } else {
             return `${moment(matchDate).format('DD')} ${strings[moment(matchDate).format('MMM').toLowerCase()]}`;
         }
+    }
+
+    function onPressInternal() {
+        if (!authManager.getMeSync() || authManager.getMeSync().isGuest) {
+            logEvent(getAnalytics(), 'button_click', {
+                'button_name': 'SpecialMatchCardClick'
+            })
+        }
+        onPress()
+    }
+
+    function onCloseInternal() {
+        if (!authManager.getMeSync() || authManager.getMeSync().isGuest) {
+            logEvent(getAnalytics(), 'button_click', {
+                'button_name': 'SpecialMatchCardCloseClick'
+            });
+        }
+        onClose()
     }
 
     return (
@@ -36,7 +56,7 @@ export default function EventCard({ onPress, onTrailerPress, onClose, match }) {
                 width: '100%',
                 // height: 220,
                 borderRadius: 16,
-                backgroundColor: 'black',
+                backgroundColor: '#37003C',
                 overflow: 'hidden'
             }}>
                 <Image src={`${SERVER_BASE_URL}/data/special/${match.title}.png`} style={{
@@ -156,7 +176,7 @@ export default function EventCard({ onPress, onTrailerPress, onClose, match }) {
                     </View>
                     {!match.match.teaser?.length ? <View>
                         <SpecialAwardPanel match={match.match} />
-                        <TouchableOpacity onPress={onPress} activeOpacity={.8} style={{
+                        <TouchableOpacity onPress={onPressInternal} activeOpacity={.8} style={{
                             height: 24,
                             marginTop: 3,
                             marginBottom: 20,
@@ -176,7 +196,7 @@ export default function EventCard({ onPress, onTrailerPress, onClose, match }) {
                         flexDirection: 'row',
                         marginTop: 6
                     }}>
-                    <TouchableOpacity onPress={onPress} activeOpacity={.8} style={{
+                        <TouchableOpacity onPress={onPress} activeOpacity={.8} style={{
                             height: 24,
                             marginTop: 5,
                             marginBottom: 20,
@@ -215,7 +235,7 @@ export default function EventCard({ onPress, onTrailerPress, onClose, match }) {
                         </TouchableOpacity>
                     </View>}
                 </View>
-                <TouchableOpacity onPress={onClose} style={{
+                <TouchableOpacity onPress={onCloseInternal} style={{
                     position: 'absolute',
                     top: 10,
                     right: 10

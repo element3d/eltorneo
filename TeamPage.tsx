@@ -563,14 +563,14 @@ function TeamPage({ navigation, route }): JSX.Element {
                                 height: 46,
                                 padding: 4,
                                 marginBottom: 20,
-                                backgroundColor: Colors.selectColor,
+                                backgroundColor: Colors.selectBGColor,
                                 borderRadius: 23,
                                 flexDirection: 'row'
                             }}>
                                 <TouchableOpacity activeOpacity={.6} onPress={() => { setTab(ETAB_MATCHES) }} style={{
                                     flex: 1,
                                     height: 38,
-                                    backgroundColor: tab == ETAB_MATCHES ? Colors.gray800 : 'transparent',
+                                    backgroundColor: tab == ETAB_MATCHES ? Colors.selectColor : 'transparent',
                                     borderRadius: 30,
                                     alignItems: 'center',
                                     justifyContent: 'center'
@@ -585,7 +585,7 @@ function TeamPage({ navigation, route }): JSX.Element {
                                     height: 38,
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    backgroundColor: tab == ETAB_SQUAD ? Colors.gray800 : 'transparent',
+                                    backgroundColor: tab == ETAB_SQUAD ? Colors.selectColor : 'transparent',
                                     borderRadius: 30
                                 }}>
                                     <Text style={{

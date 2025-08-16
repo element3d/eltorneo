@@ -35,6 +35,9 @@ import TrailersPage from './TrailersPage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import TeamPage from './TeamPage';
 import LinkAccountPage from './LinkAccountPage';
+import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
+import authManager from './AuthManager';
+
 
 // import { createDrawerNavigator } from '@react-navigation/drawer';
 
@@ -51,6 +54,15 @@ const Stack = createNativeStackNavigator();
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [loaded, setLoaded] = useState(false);
+
+  // useEffect(() => {
+  //   const analytics = getAnalytics();
+  //   logEvent(analytics, 'screen_view', {
+  //     app_name: 'MyCoolApp',
+  //     screen_name: 'SettingsScreen',
+  //     user_role: 'admin', // custom param
+  //   });
+  // }, []);
 
   // strings.setLanguage('en')
 
@@ -101,11 +113,33 @@ function App(): JSX.Element {
     }
   }
 
+  const routeNameRef = React.useRef();
+  const navigationRef = React.useRef();
 
   return (
     <SafeAreaProvider>
 
-      <NavigationContainer>
+      <NavigationContainer
+        ref={navigationRef}
+        onReady={() => {
+          routeNameRef.current = navigationRef.current.getCurrentRoute().name;
+        }}
+        onStateChange={async () => {
+          const previousRouteName = routeNameRef.current;
+          const currentRouteName = navigationRef.current.getCurrentRoute().name;
+          const me = authManager.getMeSync()
+          if (!me || me.isGuest) {
+            if (previousRouteName !== currentRouteName) {
+              await logEvent(getAnalytics(), 'screen_view', {
+                firebase_screen: currentRouteName,
+                firebase_screen_class: currentRouteName,
+                screen_name: currentRouteName,
+                screen_class: currentRouteName
+              })
+            }
+          }
+          routeNameRef.current = currentRouteName;
+        }}>
 
         <Stack.Navigator initialRouteName={"Home"} screenOptions={{
           headerShown: false, // This hides the header,

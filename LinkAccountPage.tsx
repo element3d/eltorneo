@@ -15,7 +15,10 @@ import {
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getAnalytics, logEvent, setAnalyticsCollectionEnabled } from '@react-native-firebase/analytics';
+import { getApp } from '@react-native-firebase/app';
 
+const analyticsInstance = getAnalytics(getApp());
 
 import GoogleIcon from './assets/google.svg';
 
@@ -86,6 +89,10 @@ function LinkAccountPage({ navigation }): JSX.Element {
 
 
     function onSignIn() {
+        logEvent(analyticsInstance, 'button_click', {
+            'button_name': 'SigninLinkAccountPageClick',
+        })
+
         if (username.length < 6) {
             setError(strings.err_username_len)
             return
@@ -162,6 +169,10 @@ function LinkAccountPage({ navigation }): JSX.Element {
     }
 
     const handleSignIn = async () => {
+        logEvent(analyticsInstance, 'button_click', {
+            'button_name': 'GoogleSigninLinkAccountPageClick',
+        })
+
         setGoogleError(null)
 
         gsingin.link(navigation, (me) => {

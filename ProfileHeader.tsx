@@ -67,14 +67,14 @@ const ProfileHeader = React.memo(({ navigation, user, isMe, predictsJson, betsJs
                 height: 46,
                 padding: 4,
                 marginBottom: 20,
-                backgroundColor: Colors.selectColor,
+                backgroundColor: Colors.selectBGColor,
                 borderRadius: 23,
                 flexDirection: 'row'
             }}>
                 <TouchableOpacity activeOpacity={.6} onPress={() => { onNavPredicts() }} style={{
                     flex: 1,
                     height: 38,
-                    backgroundColor: tab == ETAB_PREDICTS ? Colors.gray800 : 'transparent',
+                    backgroundColor: tab == ETAB_PREDICTS ? Colors.selectColor : 'transparent',
                     borderRadius: 30,
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -89,7 +89,7 @@ const ProfileHeader = React.memo(({ navigation, user, isMe, predictsJson, betsJs
                     height: 38,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: tab == ETAB_BETS ? Colors.gray800 : 'transparent',
+                    backgroundColor: tab == ETAB_BETS ? Colors.selectColor : 'transparent',
                     borderRadius: 30
                 }}>
                     <Text style={{

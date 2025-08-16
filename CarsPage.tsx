@@ -54,6 +54,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Drawer from './Drawer';
 import TrailerItem from './TrailerItem';
 import TrailerVideoDialog from './TrailerVideoDialog';
+import { Appearance } from 'react-native';
 
 AdManager.setRequestConfiguration({
   testDeviceIds: ["DC5FB0E024817B77B466572E6959C152"]
@@ -133,8 +134,6 @@ function CarsPage({ navigation, route }): JSX.Element {
 
   }, []);
 
-
-
   function onRefreshPage() {
     authManager.refresh()
 
@@ -185,14 +184,21 @@ function CarsPage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
-        AsyncStorage.multiGet(['mode', 'installDate'])
+        AsyncStorage.multiGet(['mode', 'installDate', 'inAppReviewDate'])
           .then((obj) => {
             const mode = obj[0][1]
-            // let installDate = obj[1][1]
-            // if (!installDate) {
-            //   installDate = new Date().getTime().toString()
-            //   AsyncStorage.setItem('installDate', new Date().getTime().toString())
-            // }
+            let installDate = obj[1][1]
+            let inAppReviewDate = obj[2][1];
+            if (!inAppReviewDate) {
+              inAppReviewDate = new Date().getTime().toString();
+              AsyncStorage.setItem('inAppReviewDate', new Date().getTime().toString())
+            }
+            const now = new Date().getTime();
+            const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+            if (now - Number(inAppReviewDate) > THIRTY_DAYS) {
+              dataManager.getSettings().showInAppReview = true
+              AsyncStorage.setItem('inAppReviewDate', new Date().getTime().toString());
+            }
             // if (new Date().getTime() - new Date(Number.parseInt(installDate)).getTime() < 7 * 24 * 60 * 60 * 1000) {
             //   if (dataManager.getSettings()) {
             //     dataManager.getSettings().newUser = true
@@ -203,6 +209,11 @@ function CarsPage({ navigation, route }): JSX.Element {
             // }
 
             if (!mode) {
+              const colorScheme = Appearance.getColorScheme();
+              if (colorScheme == 'dark') {
+                Colors.setNewMode(2)
+                changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
+              }
               SplashScreen.hide();
               return
             }
@@ -214,6 +225,7 @@ function CarsPage({ navigation, route }): JSX.Element {
               Colors.setNewMode(1)
               setMode(1)
             }
+            changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
             SplashScreen.hide();
           })
           .catch(() => {
@@ -769,7 +781,7 @@ function CarsPage({ navigation, route }): JSX.Element {
     team.venue = team.team.venue
     team.id = team.team.id
     dataManager.setTeam(team)
-     navigation.navigate({
+    navigation.navigate({
       name: 'Team',
       params: {
         id: team.id,
@@ -1059,11 +1071,13 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   function renderCard() {
+    if (!matches.length) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
+    return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
+
     // if (!trailer) return <TopScorerItem />
-    if (trailer && randomItem != 1 && randomItem != 3 && randomItem != 5) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
+    // if (trailer && randomItem != 1 && randomItem != 3 && randomItem != 5) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
     // return <TopScorerItem />
     // return <TrailerItem onViewPress={onShowTrailer} trailer={trailer}/>
-    if (!matches.length) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
     if (!dataManager.getTopScorers()) {
       return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
     } else if (!dataManager.getTopScorers()[selectedLeague.id.toString()]) {
@@ -1319,14 +1333,14 @@ function CarsPage({ navigation, route }): JSX.Element {
                   height: 46,
                   padding: 4,
                   marginBottom: 20,
-                  backgroundColor: Colors.selectColor,
+                  backgroundColor: Colors.selectBGColor,
                   borderRadius: 23,
                   flexDirection: 'row'
                 }}>
                   <TouchableOpacity activeOpacity={.6} onPress={() => { setTab(ETAB_MATCHES) }} style={{
                     flex: 1,
                     height: 38,
-                    backgroundColor: tab == ETAB_MATCHES ? Colors.gray800 : 'transparent',
+                    backgroundColor: tab == ETAB_MATCHES ? Colors.selectColor : 'transparent',
                     borderRadius: 30,
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -1341,7 +1355,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                     height: 38,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: tab == ETAB_TABLE ? Colors.gray800 : 'transparent',
+                    backgroundColor: tab == ETAB_TABLE ? Colors.selectColor : 'transparent',
                     borderRadius: 30
                   }}>
                     <Text style={{

@@ -1,9 +1,18 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import strings from "./Strings";
 import Colors from "./Colors";
+import { getApp } from '@react-native-firebase/app';
+import { getAnalytics, logEvent, setAnalyticsCollectionEnabled } from '@react-native-firebase/analytics';
 
-export default function LinkAccountPanel({navigation}) {
+const analyticsInstance = getAnalytics(getApp());
+setAnalyticsCollectionEnabled(analyticsInstance, true);
+
+export default function LinkAccountPanel({ navigation }) {
     function onLinkAccount() {
+        logEvent(analyticsInstance, 'button_click', {
+            'button_name': 'LinkAccountButtonClick',
+        })
+
         navigation.navigate('LinkAccount');
     }
 

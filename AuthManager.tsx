@@ -42,7 +42,6 @@ class AuthManager {
 
         return fetch(`${SERVER_BASE_URL}/api/v1/signup/guest`, requestOptions)
             .then(response => {
-                console.log(response.status)
                 if (response.status == 200) {
                     return response.text();
                 }

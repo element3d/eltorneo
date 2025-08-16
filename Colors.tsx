@@ -8,7 +8,7 @@ class ColorsClass {
     //     this.borderColor = "#38384C"
     //     this.chipText = "#8E8E93"
     // }
-    
+
 
     getBgColor() {
         return this.bgColor
@@ -25,8 +25,9 @@ class ColorsClass {
         this.chipText = "#8E8E93"
         this.statusBar = "dark-content"
         this.bottomNavBarColor = "#ffffff"
-        this.selectColor = "#F0F0F0"
-        this.statLine = "#EAEDF1",
+        this.selectColor = "#ffffff"
+        this.selectBGColor = "#F0F0F0"
+        this.statLine = "#EAEDF1"
         this.lineupName = '#3A3A3C'
     }
 
@@ -41,7 +42,8 @@ class ColorsClass {
             this.chipText = "#8E8E93"
             this.statusBar = "light-content"
             this.bottomNavBarColor = "#181818"
-            this.selectColor = "#141414"
+            this.selectColor = "#ffffff11"
+            this.selectBGColor = "#181818"
             this.statLine = "#181818"
             this.lineupName = '#D1D1D6'
         } else {
@@ -54,8 +56,9 @@ class ColorsClass {
             this.chipText = "#8E8E93"
             this.statusBar = "dark-content"
             this.bottomNavBarColor = "#ffffff"
-            this.selectColor = "#F0F0F0"
-            this.statLine = "#EAEDF1",
+            this.selectColor = "#ffffff"
+            this.selectBGColor = "#F0F0F0"
+            this.statLine = "#EAEDF1"
             this.lineupName = '#3A3A3C'
         }
 
@@ -73,7 +76,8 @@ class ColorsClass {
             this.chipText = "#8E8E93"
             this.statusBar = "light-content"
             this.bottomNavBarColor = "#181818"
-            this.selectColor = "#141414"
+            this.selectColor = "#ffffff11"
+            this.selectBGColor = "#181818"
             this.statLine = "#181818"
             this.lineupName = '#D1D1D6'
         } else {
@@ -86,8 +90,9 @@ class ColorsClass {
             this.chipText = "#8E8E93"
             this.statusBar = "dark-content"
             this.bottomNavBarColor = "#ffffff"
-            this.selectColor = "#F0F0F0"
-            this.statLine = "#EAEDF1",
+            this.selectColor = "#ffffff"
+            this.selectBGColor = "#F0F0F0"
+            this.statLine = "#EAEDF1"
             this.lineupName = '#3A3A3C'
         }
 
