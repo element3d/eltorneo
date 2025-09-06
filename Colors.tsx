@@ -29,6 +29,10 @@ class ColorsClass {
         this.selectBGColor = "#F0F0F0"
         this.statLine = "#EAEDF1"
         this.lineupName = '#3A3A3C'
+        this.success = '#00C566'
+        this.fail = '#FF4747'
+        this.predictBGColor = "#F7F7F7"
+        this.purple = '#37003c'
     }
 
     setNewMode(m) {
@@ -46,6 +50,7 @@ class ColorsClass {
             this.selectBGColor = "#181818"
             this.statLine = "#181818"
             this.lineupName = '#D1D1D6'
+            this.predictBGColor = "#ffffff11"
         } else {
             this.mode = 1
             this.primary = '#FF2882'
@@ -60,6 +65,7 @@ class ColorsClass {
             this.selectBGColor = "#F0F0F0"
             this.statLine = "#EAEDF1"
             this.lineupName = '#3A3A3C'
+            this.predictBGColor = "#F7F7F7"
         }
 
         AsyncStorage.setItem('mode', this.mode.toString())
@@ -80,6 +86,7 @@ class ColorsClass {
             this.selectBGColor = "#181818"
             this.statLine = "#181818"
             this.lineupName = '#D1D1D6'
+            this.predictBGColor = "#ffffff11"   
         } else {
             this.mode = 1
             this.primary = '#FF2882'
@@ -94,6 +101,7 @@ class ColorsClass {
             this.selectBGColor = "#F0F0F0"
             this.statLine = "#EAEDF1"
             this.lineupName = '#3A3A3C'
+            this.predictBGColor = "#F7F7F7"
         }
 
         AsyncStorage.setItem('mode', this.mode.toString())

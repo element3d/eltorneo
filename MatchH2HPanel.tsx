@@ -39,7 +39,7 @@ export default function MatchH2HPanel({ navigation, match, onShowMatchPreview, o
     setMatchesReqFinished(false)
     setLoading(true)
 
-    const url = `${SERVER_BASE_URL}/api/v1/team/matches?team_id=${team}`
+    const url = `${SERVER_BASE_URL}/api/v1/team/matches?team_id=${team}&game=${dataManager.getSettings().game}`
     fetch(url, {
       method: 'GET',
       headers: {
@@ -89,6 +89,7 @@ export default function MatchH2HPanel({ navigation, match, onShowMatchPreview, o
 
   return <View style={{
     width: '100%',
+    paddingBottom: 20
     // height: 200,
     // backgroundColor: 'red'
   }}>

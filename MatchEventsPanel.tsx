@@ -103,7 +103,8 @@ function Item({ event, index, isLast, score }) {
         }
         if (event.type == "Var" && (event.detail == 'Goal cancelled'
             || event.detail == 'Goal Disallowed - offside'
-            || event.detail == 'Goal Disallowed - handball'))
+            || event.detail == 'Goal Disallowed - handball'
+            || event.detail == 'Goal Disallowed - Foul'))
             return <VarIcon width={40} height={40} />
 
         if (event.detail == "Yellow Card") return Colors.mode == 1 ? <YellowCardIcon width={40} height={40} /> : <YellowCardDarkIcon width={40} height={40} />

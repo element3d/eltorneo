@@ -2,22 +2,17 @@ import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-na
 import strings from "./Strings";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Colors from "./Colors";
-import dataManager from "./DataManager";
 import KitImage from "./KitImage";
-import { EGAME_ELTORNEO } from "./GamepadMenu";
 
-export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, blockForAd, adLoaded }) {
+export default function MatchBetsSummaryPanel2({ match, predicts, onUnlock, blockForAd, adLoaded }) {
     function getPredictPercent(numPredicts) {
-        const totalNumPredicts = predicts.numP1 + predicts.numP2 + predicts.numDraw;
-        const percent = numPredicts / totalNumPredicts * 100
+        const percent = numPredicts / predicts.numPredicts * 100
         if (percent <= 0) return ""
         return ` (${Number.parseInt(percent)}%)`
     }
 
     function getPredictPercent2(numPredicts) {
-        const totalNumPredicts = predicts.numP1 + predicts.numP2 + predicts.numDraw;
-
-        const percent = numPredicts / totalNumPredicts * 100
+        const percent = numPredicts / predicts.numPredicts * 100
         if (percent <= 0) return ""
         return `${Number.parseInt(percent)}%`
     }
@@ -29,7 +24,7 @@ export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, 
                 fontSize: 14,
                 fontWeight: 'bold',
                 marginBottom: 4
-            }}>{strings.summary} ({predicts?.numPredicts} { dataManager.getSettings().game == EGAME_ELTORNEO ? strings.predictions : strings.bets2})</Text>
+            }}>{strings.summary} ({predicts?.numPredicts} {strings.predictions})</Text>
             <View style={{
                 width: '100%',
                 backgroundColor: Colors.gray800,
@@ -50,32 +45,7 @@ export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, 
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        {/* <DropShadow style={{
-                            shadowColor: "black",
-                            shadowOffset: {
-                                width: 0,
-                                height: 0,
-                            },
-                            shadowOpacity: .2,
-                            shadowRadius: 10,
-                        }}> */}
-                       
-                        <KitImage width={40} height={60} match={match} team={match.team1}/>
-                        {/* </DropShadow> */}
-                        {/* <Text style={{
-                    fontSize: 16,
-                    color: '#8E8E93',
-                    fontWeight: 'bold'
-                  }}>1</Text> */}
-                        {/* {!blockForAd ? <Text style={{
-                    fontSize: 20,
-                    color: Colors.titleColor,
-                    fontWeight: 'bold'
-                  }}>
-                    {predicts?.numP1}{getPredictPercent(predicts?.numP1)}
-                    </Text> : <Icon color={Colors.titleColor} size={30} name='lock' style={{
-                      marginTop: 4
-                    }}/> } */}
+                        <KitImage width={40} height={60} match={match} team={match.team1} />
                     </View>
 
                     <View style={{
@@ -93,7 +63,6 @@ export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, 
                         <View style={{
                             width: '100%',
                             marginTop: 4,
-                            // backgroundColor: 'red',
                             height: 10,
                             alignItems: 'center',
                             flexDirection: 'row'
@@ -167,27 +136,6 @@ export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, 
                         </View>
                     </View>
 
-                    {/* <View style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <Text style={{
-                    fontSize: 16,
-                    color: '#8E8E93',
-                    fontWeight: 'bold'
-                  }}>{strings.draw}</Text>
-                  {!blockForAd ? <Text style={{
-                    fontSize: 20,
-                    color: Colors.titleColor,
-                    fontWeight: 'bold'
-                  }}>
-                    {predicts?.numDraw}{getPredictPercent(predicts?.numDraw)}
-                    </Text> : <Icon color="black" size={30} name='lock' style={{
-                      marginTop: 4
-                    }}/> }
-                </View> */}
-
                     <View style={{
                         //   flex: 1,
                         marginLeft: 10,
@@ -195,33 +143,7 @@ export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, 
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        {/* <Text style={{
-                    fontSize: 16,
-                    color: '#8E8E93',
-                    fontWeight: 'bold'
-                  }}>2</Text>
-                   */}
-                        {/* <DropShadow style={{
-                            shadowColor: "black",
-                            shadowOffset: {
-                                width: 0,
-                                height: 0,
-                            },
-                            shadowOpacity: .2,
-                            shadowRadius: 10,
-                        }}> */}
                         <KitImage width={40} height={60} match={match} team={match.team2} />
-                      
-                        {/* </DropShadow> */}
-                        {/* {!blockForAd ? <Text style={{
-                    fontSize: 20,
-                    color: Colors.titleColor,
-                    fontWeight: 'bold'
-                  }}>
-                    {predicts?.numP2}{getPredictPercent(predicts?.numP2)}
-                    </Text> : <Icon color="black" size={30} name='lock' style={{
-                      marginTop: 4
-                    }}/> } */}
                     </View>
                 </View>
 
@@ -229,7 +151,6 @@ export default function MatchPredictsSummaryPanel2({ match, predicts, onUnlock, 
                     height: 40,
                     alignItems: 'center',
                     justifyContent: 'flex-start',
-                    // backgroundColor: 'red'
                 }}>
                     <TouchableOpacity onPress={onUnlock} disabled={!adLoaded} activeOpacity={.8} style={{
                         paddingLeft: 20,

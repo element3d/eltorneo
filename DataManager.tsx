@@ -2,6 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SERVER_BASE_URL from "./AppConfig";
 import strings from "./Strings";
+import Colors from "./Colors";
 
 class DataManager {
     constructor() {
@@ -14,7 +15,8 @@ class DataManager {
         this.settings = {
             blockForAd: false,
             enableAds: false,
-            showInAppReview: false
+            showInAppReview: false,
+            game: 'eltorneo'
         }
 
         this.trailers = []
@@ -160,6 +162,77 @@ class DataManager {
             return 'Round of 16'
         }
 
+    }
+
+    getFireballPredictBorderColor(p, isSpecial = false) {
+        if (p.status == 0) return isSpecial ? 'black' : Colors.titleColor;
+        if (p.status == -1 || p.status == 4) return '#FF4747';
+        if (p.status == 1 || p.status == 2) return '#00C566';
+        if (p.status == 3) return isSpecial ? 'gold' : '#ff7539'
+    }
+
+    getPredictBorderColor(p, isSpecial = false) {
+        if (p.status == 0) return isSpecial ? 'black' : Colors.titleColor;//'#8E8E93'
+        if (p.status == 1 || p.status == 5) return '#00C566'
+        if (p.status == 2) return isSpecial ? 'gold' : '#ff7539'
+        if (p.status == 3 || p.status == 4) return '#FF4747'
+    }
+
+    getPredictBgColor(p, isSpecial = false) {
+        if (p.status == 0) return isSpecial ? 'white' : Colors.predictBGColor;//return '#F7F7F7'
+        if (p.status == 1 || p.status == 5) return '#00C56619'
+        if (p.status == 2) return '#FACC1519'
+        if (p.status == 3 || p.status == 4) return '#FF474719'
+    }
+
+    getFireballPointsBgColor(p, isSpecial = false) {
+        if (p.status == -1 || p.status == 4) return '#FF474719';
+        // return isSpecial ? 'white' : Colors.predictBGColor;//return '#F7F7F7'
+        // return '#FF474719'
+
+        if (p.status == 1 || p.status == 2) return '#00C56619'
+        if (p.status == 3) return '#FACC1519'
+        // if (p.status == 3 || p.status == 4) return '#FF474719'
+    }
+
+    getFireballPoints(p, isSpecial) {
+        if (p.status == -1 || p.status == 4) return isSpecial ? '0' : '-1';
+        if (p.status == 1) return isSpecial ? '+4' : '+2';
+        if (p.status == 2) return isSpecial ? '+5' : '+3';
+        if (p.status == 3) return isSpecial ? '+8' : '+5';
+        return '';
+    }
+
+    getFireballPredictBgColor(p, isSpecial = false) {
+        // if (p.status != -1 && p.status != -4)
+        return isSpecial ? 'white' : Colors.predictBGColor;//return '#F7F7F7'
+        return '#FF474719'
+
+        // if (p.status == 1 || p.status == 5) return '#00C56619'
+        // if (p.status == 2) return '#FACC1519'
+        // if (p.status == 3 || p.status == 4) return '#FF474719'
+    }
+
+    getBetString(bet) {
+        if (bet == "w1") return "W1"
+        if (bet == "w2") return "W2"
+        if (bet == "x") return "X"
+        if (bet == "x1") return "1X"
+        if (bet == "x12") return "12"
+        if (bet == "x2") return "2X"
+        return ""
+    }
+
+    getBetStatusValue(b) {
+        if (b.status == 0) return `${b.amount.toFixed(1)}$`
+        if (b.status == 2) return `-${b.amount.toFixed(1)}$`
+        if (b.status == 1) return `+${(b.odd * b.amount).toFixed(2)}$`
+    }
+
+    getBetStatusColor(p, isSpecial = false) {
+        if (p.status == 0) return isSpecial ? 'black' : Colors.titleColor//'#8E8E93'
+        if (p.status == 1) return '#00C566'
+        if (p.status == 2) return '#FF4747'
     }
 
     getSettings() {

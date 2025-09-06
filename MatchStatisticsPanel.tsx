@@ -84,7 +84,7 @@ export default function MatchStatisticsPanel({ statistics }) {
     return <View style={{
         width: '90%',
         alignSelf: 'center',
-        marginBottom: 20
+        marginBottom: 40
     }}>
         <Item title={strings.shots_on_target} stat={statistics.shotsOnTarget} ></Item>
         <Item title={strings.shots_off_target} stat={statistics.shotsOffTarget}></Item>

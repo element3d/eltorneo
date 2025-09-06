@@ -197,11 +197,6 @@ export default function MatchLineupsPanel({ match, lineups }) {
                     justifyContent: 'center'
                 }}>
                     <KitImage width={match.league != 7 ? 40 : 40} height={match.league != 7 ? 50 : 40} match={match} team={match.team1} />
-                    {/* <Image src={getKitImage(match.team1.name)} style={{
-                        width: match.league != 7 ? 40 : 40,
-                        height: match.league != 7 ? 50 : 40,
-                        objectFit: match.league != 7 ? 'cover' : 'contain'
-                    }} /> */}
                     <View style={{
                         marginLeft: 5
                     }}>
@@ -239,13 +234,6 @@ export default function MatchLineupsPanel({ match, lineups }) {
                         }}>{lineups.team2.formation}</Text>
                     </View>
                     <KitImage width={match.league != 7 ? 40 : 40} height={match.league != 7 ? 50 : 40} match={match} team={match.team2} />
-
-                    {/* <Image src={getKitImage(match.team2.name)} style={{
-                        width: match.league != 7 ? 40 : 40,
-                        height: match.league != 7 ? 50 : 40,
-                        objectFit: match.league != 7 ? 'cover' : 'contain'
-                    }} /> */}
-
                 </View>
             </View>
             <ImageBackground

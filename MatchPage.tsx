@@ -51,6 +51,22 @@ import MatchPreviewDialog from './MatchPreviewDialog';
 import MatchBeatBetPanel from './MatchBeatBetPanel';
 import MatchBetPanel from './MatchBetPanel';
 import FairPlayDialog from './FairPlayDialogs';
+import MatchLineupsPanel2 from './MatchLineupsPanel2';
+import GamepadMenu, { EGAME_BEATBET, EGAME_ELTORNEO, EGAME_FIREBALL } from './GamepadMenu';
+import MatchDateView from './MatchDateView';
+import MatchTop20BetsPanel from './MatchTop20BetsPanel';
+import Gamepad from './Gamepad';
+import { getApp } from '@react-native-firebase/app';
+import { getAnalytics, logEvent, setAnalyticsCollectionEnabled } from '@react-native-firebase/analytics';
+import MatchPlayersPanel from './MatchPlayersPanel';
+import MatchFireballSummaryPanel from './MatchFireballSummaryPanel';
+import MatchTop20FireballPanel from './MatchTop20FireballPanel';
+import GoalsIcon from './assets/goals.svg';
+import FireballIcon from './assets/Fireball.svg';
+
+
+const analyticsInstance = getAnalytics(getApp());
+setAnalyticsCollectionEnabled(analyticsInstance, true);
 
 const EMODE_DEFAULT = 0
 const EMODE_EDIT = 1
@@ -201,6 +217,8 @@ function ViewChip({ title, selected, onClick, isBet = false }) {
 
 function MatchPage({ navigation, route }): JSX.Element {
   const { id } = route.params;
+  let game = dataManager.getSettings().game;
+  const [gameState, setGameState] = useState(game)
 
   const dmMatch = dataManager.getMatch()
 
@@ -214,8 +232,17 @@ function MatchPage({ navigation, route }): JSX.Element {
 
   const [match, setMatch] = useState(dmMatch)
   const [predict, setPredict] = useState(dmMatch.predict)
+  const [fireballPredict, setFireballPredict] = useState(dmMatch.fireballPredict?.player_api_id > 0 ? dmMatch.fireballPredict : null)
+  const [bet, setBet] = useState(dmMatch.bet)
+
   const [predicts, setPredicts] = useState(null)
+  const [betsSummary, setBetsSummary] = useState(null)
+  const [fireballSummary, setFireballSummary] = useState(null)
+
   const [top20Predicts, setTop20Predicts] = useState(null)
+  const [top20Bets, setTop20Bets] = useState(null)
+  const [top20FireballPredicts, setTop20FireballPredicts] = useState(null)
+
   const [team1Score, setTeam1Score] = useState(dmTeam1Score)
   const [team2Score, setTeam2Score] = useState(dmTeam2Score)
   const [predictReqFinished, setPredictReqFinished] = useState(false)
@@ -231,11 +258,14 @@ function MatchPage({ navigation, route }): JSX.Element {
   const [lineups, setLineups] = useState(null)
   const [odds, setOdds] = useState(null)
   const [table, setTable] = useState(null)
+  const [matchPlayers, setMatchPlayers] = useState(null)
   const [mode, setMode] = useState(EMODE_DEFAULT)
   const [header, setHeader] = useState(null)
   const [showMatchPreview, setShowMatchPreview] = useState(false)
   const [showFailPlayDialog, setShowFailPlayDialog] = useState(false)
   const [previewMatch, setPreviewMatch] = useState(null)
+  const [showGamepadMenu, setShowGamepadMenu] = useState(false)
+
   const scrollViewRef = useRef(null);
 
   const EVIEW_PREDICTIONS = 1
@@ -245,8 +275,12 @@ function MatchPage({ navigation, route }): JSX.Element {
   const EVIEW_H2H = 5
   const EVIEW_TABLE = 6
   const EVIEW_BET = 7
+  const EVIEW_TOP_BETS = 8
+  const EVIEW_FIREBALL = 9
+  const EVIEW_FIREBALL_PREDICTS = 10
 
-  const [view, setView] = useState(EVIEW_PREDICTIONS)
+
+  const [view, setView] = useState(game == EGAME_ELTORNEO ? EVIEW_PREDICTIONS : EVIEW_TOP_BETS)
 
   const backgroundStyle = {
     backgroundColor: '#37003C',
@@ -254,6 +288,7 @@ function MatchPage({ navigation, route }): JSX.Element {
 
   useFocusEffect(
     useCallback(() => {
+
       setBlockForAd(dataManager.getSettings()?.blockForAd && adsManager.isLoaded())
       setLoaded(adsManager.isLoaded())
 
@@ -326,6 +361,7 @@ function MatchPage({ navigation, route }): JSX.Element {
     } else if (view == EVIEW_TABLE) {
       getTable()
     } else if (view == EVIEW_BET) {
+      if (odds) return
       fetch(`${SERVER_BASE_URL}/api/v1/match/odds?match_id=${match.id}`, {
         method: 'GET',
         headers: {
@@ -340,8 +376,9 @@ function MatchPage({ navigation, route }): JSX.Element {
         .catch(error => {
           // setEvents(null)
         });
+    } else if (view == EVIEW_FIREBALL) {
+     
     }
-
   }, [view])
 
   useEffect(() => {
@@ -439,15 +476,28 @@ function MatchPage({ navigation, route }): JSX.Element {
     // getPredict()
   }, []);
 
+  useEffect(() => {
+    if (gameState == EGAME_ELTORNEO) {
+      getPredicts(match)
+      setView(EVIEW_PREDICTIONS)
+      getPredict()
+    } else if (gameState == EGAME_BEATBET) {
+      getBetsSummary(match)
+      setView(EVIEW_TOP_BETS)
+      getBet()
+    } else if (gameState == EGAME_FIREBALL) {
+      getFireballSummary(match)
+      setView(EVIEW_FIREBALL_PREDICTS)
+      getFireballPredict()
+    }
+  }, [gameState])
+
   useFocusEffect(
     useCallback(() => {
-      getPredict()
+      game = dataManager.getSettings().game;
+      setGameState(game)
     }, [])
   )
-
-  useEffect(() => {
-    // getPredicts(match)
-  }, [match])
 
   function getTable() {
     const leagueIndex = 0
@@ -462,6 +512,42 @@ function MatchPage({ navigation, route }): JSX.Element {
       })
       .catch(error => {
         console.error('Error fetching leagues:', error)
+      });
+  }
+
+  function getFireballSummary(m) {
+    if (!m) return
+
+    setPredictsReqFinished(false)
+    fetch(`${SERVER_BASE_URL}/api/v1/match/fireball/summary?match_id=${m.id}&season=${match.season}`, {
+      method: 'GET',
+    })
+      .then(response => response.json())
+      .then(data => {
+        setFireballSummary(data)
+        getTop20FireballPredicts(m);
+      })
+      .catch(error => {
+        setPredictsReqFinished(true)
+        console.error('Error fetching fireball predicts:', error)
+      });
+  }
+
+  function getBetsSummary(m) {
+    if (!m) return
+
+    setPredictsReqFinished(false)
+    fetch(`${SERVER_BASE_URL}/api/v1/match/bets/summary?match_id=${m.id}&season=${match.season}`, {
+      method: 'GET',
+    })
+      .then(response => response.json())
+      .then(data => {
+        setBetsSummary(data)
+        getTop20Bets(m);
+      })
+      .catch(error => {
+        setPredictsReqFinished(true)
+        console.error('Error fetching predicts:', error)
       });
   }
 
@@ -497,6 +583,61 @@ function MatchPage({ navigation, route }): JSX.Element {
       .catch(error => console.error('Error fetching top3:', error));
   }
 
+  function getTop20Bets(match) {
+    if (!match) return
+    fetch(`${SERVER_BASE_URL}/api/v1/match/bets/top20?match_id=${match.id}&season=${match.season}`, {
+      method: 'GET',
+    })
+      .then(response => response.json())
+      .then(data => {
+        setTop20Bets(data)
+        getHeader(match.id)
+      })
+      .catch(error => console.error('Error fetching top3:', error));
+  }
+
+  function getTop20FireballPredicts(match) {
+    if (!match) return
+    fetch(`${SERVER_BASE_URL}/api/v1/match/fireball/top20?match_id=${match.id}&season=${match.season}`, {
+      method: 'GET',
+    })
+      .then(response => response.json())
+      .then(data => {
+        setTop20FireballPredicts(data)
+        getHeader(match.id)
+      })
+      .catch(error => console.error('Error fetching top3:', error));
+  }
+
+  function getFireballPredict() {
+    if (!authManager.getToken()) {
+      setPredictReqFinished(true)
+      return
+    }
+
+    fetch(`${SERVER_BASE_URL}/api/v1/user/fireball_predict?match_id=${id}&season=${match.season}`, {
+      method: 'GET',
+      headers: {
+        'Authentication': authManager.getToken()
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (!data || !Object.keys(data).length) {
+          setFireballPredict(null)
+          setPredictReqFinished(true)
+          return
+        }
+
+        setFireballPredict(data)
+        setPredictReqFinished(true)
+      })
+      .catch(error => {
+        setPredictReqFinished(true)
+        console.error('Error fetching predict:', error)
+      });
+  }
+
   function getPredict() {
     if (!authManager.getToken()) {
       setPredictReqFinished(true)
@@ -527,9 +668,36 @@ function MatchPage({ navigation, route }): JSX.Element {
       });
   }
 
-  function getMatch() {
-    getPredicts(match)
+  function getBet() {
+    if (!authManager.getToken()) {
+      setPredictReqFinished(true)
+      return
+    }
 
+    fetch(`${SERVER_BASE_URL}/api/v1/user/bet?match_id=${id}&season=${match.season}`, {
+      method: 'GET',
+      headers: {
+        'Authentication': authManager.getToken()
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (!data || !Object.keys(data).length) {
+          setBet(null)
+          setPredictReqFinished(true)
+          return
+        }
+
+        setBet(data)
+        setPredictReqFinished(true)
+      })
+      .catch(error => {
+        setPredictReqFinished(true)
+        console.error('Error fetching predict:', error)
+      });
+  }
+
+  function getMatch() {
     fetch(`${SERVER_BASE_URL}/api/v1/match?match_id=${id}`, {
       method: 'GET',
       // headers: { 'Content-Type': 'application/json' },
@@ -784,7 +952,11 @@ function MatchPage({ navigation, route }): JSX.Element {
           ++numActions;
           AsyncStorage.setItem('numActions', numActions.toString());
         });
+
       if (dataManager.getSettings().showInAppReview) {
+        logEvent(analyticsInstance, 'button_click', {
+          'button_name': 'AskForReviewClick',
+        })
         askForRating();
         dataManager.getSettings().showInAppReview = false;
       }
@@ -854,20 +1026,6 @@ function MatchPage({ navigation, route }): JSX.Element {
     return team1Score.length > 0 && team2Score.length > 0 && Number.parseInt(team1Score) >= 0 && Number.parseInt(team2Score) >= 0
   }
 
-  function getBorderColor(p) {
-    if (p.status == 0) return "black"//'#8E8E93'
-    if (p.status == 1 || p.status == 5) return '#00C566'
-    if (p.status == 2) return '#ff7539'
-    if (p.status == 3 || p.status == 4) return '#FF4747'
-  }
-
-  function getBgColor(p) {
-    if (p.status == 0) return '#F7F7F7'
-    if (p.status == 1 || p.status == 5) return '#00C56619'
-    if (p.status == 2) return '#FACC1519'
-    if (p.status == 3 || p.status == 4) return '#FF474719'
-  }
-
   function isShowScoreInput() {
     // if (!authManager.getMeSync()) return false
     if (!match) return false
@@ -908,9 +1066,12 @@ function MatchPage({ navigation, route }): JSX.Element {
   }
 
   function isShowTopMatchTime() {
+    if (gameState == EGAME_FIREBALL) return false;
+
     if (isMatchLive()) return false;
     if (isMatchEnded()) return false;
     if (predict) return false
+    if (bet) return false
     return true
   }
 
@@ -1006,6 +1167,596 @@ function MatchPage({ navigation, route }): JSX.Element {
 
     return scrollToEnd()
   }
+
+  function onChangeGame(g) {
+    setGameState(dataManager.getSettings().game);
+  }
+
+  function onShowGamepadMenu() {
+    setShowGamepadMenu(true)
+  }
+
+  function renderBetPanel() {
+    return <View>
+      {match.is_special ? <View style={{
+        height: 28,
+        marginBottom: bet ? 6 : 0,
+        justifyContent: 'center',
+        flexDirection: 'row',
+        paddingTop: 4,
+      }}>
+        <View style={{
+          // backgroundColor: 'white',
+          flexDirection: 'row',
+          height: 22,
+          // paddingLeft: 16,
+          // paddingRight: 26,
+          borderRadius: 11,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Text style={{
+            color: Colors.titleColor,
+            fontWeight: 'bold',
+            fontSize: 16,
+            // marginBottom: 2,
+            marginRight: 4
+          }}>Superbet</Text>
+          <BBIcon width={26} height={28} style={{
+            // position: 'absolute',
+            // zIndex: 1,
+            // right: 2
+          }} />
+        </View>
+      </View> : null}
+      {bet ? <View style={{
+        width: '100%',
+        height: 30,
+        // paddingBottom: 10,
+        // backgroundColor: 'red',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <View style={{
+          // borderWidth: 1,
+          backgroundColor: Colors.mode == 1 ? "#F7F7F7" : Colors.selectColor,
+          // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
+          alignItems: 'center',
+          // borderWidth: match.is_special ? 1 : 0,
+          justifyContent: 'center',
+          borderRadius: 15,
+          paddingLeft: 15,
+          paddingRight: match.playOff ? 2 : 15,
+          flexDirection: 'row',
+          height: 30,
+          // marginTop: 2
+        }}>
+          <Text style={{
+            fontSize: 14,
+            // marginBottom: 2,
+            color: Colors.titleColor,
+            fontWeight: 'bold'
+            // fontFamily: 'NotoSansArmenian-Bold'
+          }}>{strings.bet} {dataManager.getBetString(bet.bet)}</Text>
+          <Text style={{
+            fontSize: 14,
+            // marginBottom: 2,
+            color: '#AEAEB2',
+            fontWeight: 'bold'
+            // fontFamily: 'NotoSansArmenian-Bold'
+          }}>({bet.odd.toFixed(2)})</Text>
+          <Text style={{
+            fontSize: 14,
+            marginLeft: 10,
+            // marginBottom: 2,
+            color: dataManager.getBetStatusColor(bet),
+            fontWeight: 'bold'
+            // fontFamily: 'NotoSansArmenian-Bold'
+          }}>{dataManager.getBetStatusValue(bet)}</Text>
+
+          {/* {match.playOff ? <View style={{
+            width: 18,
+            height: 18,
+            // backgroundColor: dataManager.get90BGColor(),
+            borderRadius: 9,
+            marginLeft: 6,
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Text style={{
+              fontSize: 12,
+              fontWeight: 900,
+              // color: dataManager.get90TitleColor()
+            }}>90</Text>
+          </View> : null} */}
+        </View>
+      </View> : null}
+    </View>
+  }
+
+  function renderPredictPanel() {
+    return (!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+
+      {match.is_special ? <SpecialAwardPanel match={match} /> : null}
+
+      {mode == EMODE_DEFAULT && isShowScoreInput() ? <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
+        opacity: !isPredictDisabled() ? 1 : .8
+      }}>
+        <View style={{
+          height: 30,
+          width: 'auto',
+          paddingLeft: authManager.getMeSync() ? 20 : 10,
+          paddingRight: authManager.getMeSync() && match.playOff ? 4 : 20,
+          borderRadius: 20,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#fb2781',
+          flexDirection: 'row'
+        }}>
+          {!authManager.getMeSync() ?
+            <View style={{
+              width: 20,
+              height: 20,
+              marginRight: 6,
+              backgroundColor: 'white',
+              borderRadius: 12,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <GoogleIcon width={16} height={18} />
+            </View>
+            : null}
+          <Text style={{
+            color: 'white',
+            marginTop: 2,
+            // fontWeight: 'bold',
+            fontFamily: 'Poppins-Bold'
+          }}>{authManager.getMeSync() ? strings.predict : strings.sign_in_to_predict}</Text>
+          {authManager.getMeSync() && match.playOff ?
+            <View style={{
+              width: 22,
+              height: 22,
+              backgroundColor: 'white',
+              borderRadius: 11,
+              marginLeft: 6,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Text style={{
+                color: 'black',
+                fontWeight: 900,
+                fontSize: 12
+              }}>90</Text>
+            </View>
+            : null}
+          {showAd && loaded && authManager.getMeSync() ? <Icon name='play-circle-filled' size={20} color='white' style={{
+            marginLeft: 4
+          }} /> : null}
+          {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
+            marginLeft: 10
+          }} size={'small'} /> : null}
+        </View>
+      </TouchableOpacity> : null}
+
+      {predict ? <View style={{
+        flexDirection: 'row',
+        // backgroundColor: 'red'
+      }}>
+        {mode == EMODE_DEFAULT ? <View style={{
+          height: 30,
+          paddingLeft: 20,
+          paddingRight: match.playOff ? 4 : 20,
+          // borderWidth: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 15,
+          overflow: 'hidden',
+          flexDirection: 'row',
+          backgroundColor: dataManager.getPredictBgColor(predict),
+          borderColor: dataManager.getPredictBorderColor(predict)
+        }}>
+          <Text style={{
+            marginBottom: 2,
+            color: dataManager.getPredictBorderColor(predict),
+            fontFamily: 'NotoSansArmenian-Bold'
+          }}>{dataManager.getPredictTitle(predict)}{dataManager.getPredictValue(predict)}</Text>
+
+          {match.playOff ? <View style={{
+            width: 22,
+            height: 22,
+            backgroundColor: Colors.gray800,
+            borderRadius: 11,
+            marginLeft: 8,
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Text style={{
+              color: Colors.titleColor,
+              fontWeight: 900,
+              fontSize: 12
+            }}>90</Text>
+          </View> : null}
+
+        </View> : <TouchableOpacity onPress={onSavePredict} disabled={isSaveDisabled()} activeOpacity={.8} style={{
+          opacity: !isSaveDisabled() ? 1 : .8
+        }}>
+          <View style={{
+            height: 30,
+            width: 'auto',
+            paddingLeft: 20,
+            paddingRight: 20,
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#fb2781',
+            flexDirection: 'row'
+          }}>
+            <Text style={{
+              color: 'white',
+              fontFamily: 'NotoSansArmenian-Bold'
+            }}>{strings.save}</Text>
+            {showAd && loaded ? <Icon name='play-circle-filled' size={20} color='white' style={{
+              marginLeft: 4
+            }} /> : null}
+            {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
+              marginLeft: 4
+            }} size={'small'} /> : null}
+          </View>
+        </TouchableOpacity>}
+        {!isMatchEnded() && !isMatchLive() && predict && mode == EMODE_DEFAULT ? <TouchableOpacity onPress={onSetEditMode} activeOpacity={.8} style={{
+          width: 30,
+          height: 30,
+          marginLeft: 10,
+          borderRadius: 15,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#FF2882'
+        }}>
+          <Icon size={20} name={'edit'} color='white'></Icon>
+        </TouchableOpacity> : null}
+      </View> : null}
+
+    </View> : null
+  }
+
+  function getFireballStatusText() {
+    if (fireballPredict == 0) return;
+    const iconSize = 18
+    if (fireballPredict.status == -1) {
+      return `${strings.not_played} ${match.is_special ? '(0)' : '(-1)'}`
+    } else if (fireballPredict.status == 4) {
+      return `${strings.not_scored} ${match.is_special ? '(0)' : '(-1)'}`
+    } else if (fireballPredict.status == 1) {
+      return <View style={{
+        // marginBottom: 4
+        flexDirection: 'row',
+        alignItems: 'center'
+      }}>
+        <GoalsIcon width={iconSize} height={iconSize} />
+        <View style={{
+          width: iconSize + 1,
+          height: iconSize + 1,
+          marginLeft: 4,
+          borderRadius: iconSize / 2 + 1,
+          borderWidth: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderColor: Colors.success,
+          backgroundColor: '#00C56619'
+        }}>
+          <Text style={{
+            fontWeight: '900',
+            fontSize: 12,
+            color: Colors.success
+          }}>{match.is_special ? '+4' : '+2'}</Text>
+        </View>
+      </View>
+    } else if (fireballPredict.status == 2) {
+      return <View style={{
+        // marginBottom: 4
+        flexDirection: 'row',
+        alignItems: 'center'
+      }}>
+        <GoalsIcon width={iconSize} height={iconSize} />
+        <GoalsIcon style={{
+          marginLeft: 4
+        }} width={iconSize} height={iconSize} />
+        <View style={{
+          width: iconSize + 1,
+          height: iconSize + 1,
+          marginLeft: 4,
+          borderRadius: iconSize / 2 + 2,
+          borderWidth: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderColor: Colors.success,
+          backgroundColor: '#00C56619'
+        }}>
+          <Text style={{
+            fontWeight: '900',
+            fontSize: 12,
+            color: Colors.success
+          }}>{match.is_special ? '+5' : '+3'}</Text>
+        </View>
+      </View>
+    } else if (fireballPredict.status == 3) {
+      const numGoals = fireballPredict.goals;
+      return <View style={{
+        flexDirection: 'row',
+        alignItems: 'center'
+      }}>
+        {Array.from({ length: numGoals }).map((_, idx) => (
+          <GoalsIcon
+            key={idx}
+            width={iconSize}
+            height={iconSize}
+            style={{ marginLeft: 4 }}
+          />
+        ))}
+        <View style={{
+          width: iconSize + 1,
+          height: iconSize + 1,
+          marginLeft: 4,
+          borderRadius: iconSize / 2 + 1,
+          // borderWidth: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          // borderColor: 'gold',
+          backgroundColor: 'gold'
+        }}>
+          <Text style={{
+            fontWeight: '900',
+            fontSize: 12,
+            color: 'black'
+          }}>{match.is_special ? '+8' : '+5'}</Text>
+        </View>
+      </View>
+    }
+  }
+
+  function renderFireballPredictPanel() {
+    if (!fireballPredict) return;
+
+    const team = fireballPredict.team_id == match.team1.id ? match.team1 : match.team2;
+
+    function onDelete() {
+      setFireballPredict(null)
+
+      const requestOptions = {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authentication': authManager.getToken()
+        }
+      };
+
+      fetch(`${SERVER_BASE_URL}/api/v1/fireball?id=${fireballPredict.id}`, requestOptions)
+        .then(response => {
+          if (response.status == 403) {
+
+            return
+          }
+          return response.json()
+        })
+        .then(data => {
+          return null
+        })
+        .catch((e) => {
+        });
+    }
+
+    return (!isMatchEnded() && !isMatchLive()) || fireballPredict ? <View style={{
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      {fireballPredict ? <View style={{
+        flexDirection: 'row',
+        // backgroundColor: 'red'
+      }}>
+        <View style={{
+          // height: 30,
+          // paddingLeft: 20,
+          // paddingRight: match.playOff ? 4 : 20,
+          // borderWidth: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 15,
+          flexDirection: 'row',
+        }}>
+          {/* <View style={{
+            width: 40,
+            height: 40,
+            left: 0,
+            position: 'absolute'
+          }}>
+            <PlayerImage team={team} player={{ apiId: fireballPredict.player_api_id }} imageSize={40} />
+          </View> */}
+          <View style={{
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            {isMatchEnded() && fireballPredict.status != 0 ? <View>
+              <Text style={{
+                color: Colors.fail,
+                fontWeight: 'bold',
+                fontSize: 12
+              }}>{getFireballStatusText()}</Text>
+            </View> : null}
+            <Text style={{
+              fontSize: 16,
+              // marginBottom: 2,
+              color: Colors.titleColor,
+              fontFamily: 'NotoSansArmenian-Bold'
+            }}>{fireballPredict.player_name}</Text>
+            <Text style={{
+              marginBottom: 2,
+              fontSize: 12,
+              color: '#8E8E93',
+              fontFamily: 'NotoSansArmenian-Bold'
+            }}>{team.name}</Text>
+          </View>
+          {!isMatchEnded() && !isMatchLive() ? <TouchableOpacity activeOpacity={.8} onPress={onDelete} style={{
+            width: 35,
+            height: 35,
+            marginLeft: 10,
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#FF4747'
+          }}>
+            <Icon name="close" size={20} color={'white'} />
+          </TouchableOpacity> : null}
+        </View>
+
+      </View> : null}
+
+    </View> : null
+  }
+
+  function renderMatchDateView() {
+    if (game == EGAME_FIREBALL) {
+      if (!isMatchLive() && !isMatchEnded()) return <MatchDateView match={match} />
+      return null;
+    }
+
+    if (game == EGAME_BEATBET) {
+      if (!isMatchLive() && !isMatchEnded() && bet) return <MatchDateView match={match} />
+
+      return null
+    }
+
+    return !isMatchLive() && !isMatchEnded() && !isShowScoreInput() ? <MatchDateView match={match} /> : null
+  }
+
+  function maybeRenderBetButton() {
+    if (game != EGAME_BEATBET) return;
+    if (isMatchEnded() || isMatchLive() || bet) return;
+
+    return <TouchableOpacity disabled={!header?.odds} activeOpacity={.8} onPress={() => { setView(EVIEW_BET) }} style={{
+      width: 50,
+      height: 50,
+      borderRadius: 70,
+      opacity: header?.odds ? 1 : .5,
+      top: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#37003C'
+    }}>
+      <BBIcon width={30} height={30} />
+    </TouchableOpacity>
+  }
+
+  function maybeRenderInputDots() {
+    if (game == EGAME_FIREBALL) {
+      if (isMatchLive() || !isMatchEnded()) return null;
+      return <Text style={{
+        fontSize: 30,
+        height: 30,
+        lineHeight: 30,
+        marginBottom: isShowScoreInput() ? -4 : 3,
+        // backgroundColor: 'red',
+        // alignItems: 'center',
+        // justifyContent: 'center',
+        textAlignVertical: isShowScoreInput() ? 'center' : 'top',
+        paddingBottom: 6,
+        color: Colors.titleColor
+      }}>:</Text>
+    }
+
+    if (game == EGAME_BEATBET) {
+      if (isMatchLive() || !isMatchEnded()) return null;
+      if (!bet && !isMatchEnded()) return null
+
+      return <Text style={{
+        fontSize: 30,
+        height: 30,
+        lineHeight: 30,
+        marginBottom: isShowScoreInput() ? -4 : 3,
+        // backgroundColor: 'red',
+        // alignItems: 'center',
+        // justifyContent: 'center',
+        textAlignVertical: isShowScoreInput() ? 'center' : 'top',
+        paddingBottom: 6,
+        color: Colors.titleColor
+      }}>:</Text>
+    }
+
+    return (!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
+      fontSize: 30,
+      height: 30,
+      lineHeight: 30,
+      marginBottom: isShowScoreInput() ? -4 : 3,
+      // backgroundColor: 'red',
+      // alignItems: 'center',
+      // justifyContent: 'center',
+      textAlignVertical: isShowScoreInput() ? 'center' : 'top',
+      paddingBottom: 6,
+      color: Colors.titleColor
+    }}>:</Text> : null
+  }
+
+  function onFireballPredict(fp) {
+    if (fireballPredict) return;
+    if (isMatchEnded() || isMatchLive()) return;
+
+    setFireballPredict(fp)
+
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authentication': authManager.getToken()
+      },
+      body: JSON.stringify({
+        matchId: fp.match_id,
+        teamId: fp.team_id,
+        playerApiId: fp.player_api_id,
+        playerName: fp.player_name,
+        playerPhoto: fp.player_photo
+      })
+    };
+
+    fetch(`${SERVER_BASE_URL}/api/v1/fireball/predict`, requestOptions)
+      .then(response => {
+        if (response.status == 403) {
+          return
+        }
+        return response.json()
+      })
+      .then(data => {
+        return null
+      })
+      .catch((e) => {
+        // setProcessing(false)
+      });
+  }
+
+  function onPlayerClick(player, team) {
+    if (game != EGAME_FIREBALL) return;
+
+    const fp = {
+      match_id: match.id,
+      team_id: team.id,
+      player_api_id: player.apiId,
+      player_name: player.name,
+      player_photo: player.photo ? player.photo : ""
+    }
+    onFireballPredict(fp)
+  }
+
+  function onFireballClick() {
+    if (header?.lineups) {
+      setView(EVIEW_LINEUPS)
+    } else {
+      setView(EVIEW_FIREBALL)
+    }
+  }
+
   const insets = useSafeAreaInsets();
 
   return (
@@ -1032,8 +1783,8 @@ function MatchPage({ navigation, route }): JSX.Element {
               contentInsetAdjustmentBehavior="automatic"
               contentContainerStyle={{
                 // minHeight: '100%',
-                alignItems: 'center'
-
+                alignItems: 'center',
+                paddingBottom: 60
               }}
               style={{
                 flex: 1,
@@ -1123,7 +1874,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                       justifyContent: 'center',
                     }}>
 
-                      {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
+                      {game == EGAME_ELTORNEO && isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' inputMode='numeric' value={team1Score} onChangeText={onTeam1Change} style={{
                         width: 45,
                         marginRight: 4,
                         height: 50,
@@ -1136,15 +1887,12 @@ function MatchPage({ navigation, route }): JSX.Element {
                       }}></TextInput> : null}
                       {isShowScoreText() ? <Text style={{
                         width: 40,
-                        // marginRight: 4,
                         height: 30,
                         fontSize: 30,
                         lineHeight: 30,
                         color: Colors.titleColor,
                         textAlign: 'right',
                         paddingRight: 5,
-                        // backgroundColor: 'red',
-                        // borderRadius: 10,
                         fontFamily: 'OpenSans-Bold'
                       }}>{match?.team1_score}</Text> : null}
 
@@ -1202,38 +1950,11 @@ function MatchPage({ navigation, route }): JSX.Element {
                           </View>
                         </View> : null}
 
-                      {(!isMatchLive() && isMatchEnded()) || isShowScoreInput() ? <Text style={{
-                        fontSize: 30,
-                        height: 30,
-                        lineHeight: 30,
-                        marginBottom: isShowScoreInput() ? -4 : 3,
-                        // backgroundColor: 'red',
-                        // alignItems: 'center',
-                        // justifyContent: 'center',
-                        textAlignVertical: isShowScoreInput() ? 'center' : 'top',
-                        paddingBottom: 6,
-                        color: Colors.titleColor
-                      }}>:</Text> : null}
-                      {!isMatchLive() && !isMatchEnded() && !isShowScoreInput() ? <View style={{
-                        marginTop: 4,
-                        backgroundColor: '#00C56619',
-                        borderWidth: 1,
-                        borderColor: '#00C566',
-                        paddingLeft: 8,
-                        paddingRight: 8,
-                        height: 30,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 15
-                      }}>
-                        <Text style={{
-                          fontFamily: 'NotoSansArmenian-Bold',
-                          fontSize: 14,
-                          color: '#00C566'
-                        }}>{moment(match?.date).format('HH:mm')}</Text>
-                      </View> : null}
+                      {maybeRenderInputDots()}
+                      {renderMatchDateView()}
+                      {maybeRenderBetButton()}
 
-                      {isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' value={team2Score} onChangeText={onTeam2Change} style={{
+                      {game == EGAME_ELTORNEO && isShowScoreInput() ? <TextInput maxLength={1} keyboardType='numeric' value={team2Score} onChangeText={onTeam2Change} style={{
                         width: 45,
                         height: 50,
                         marginLeft: 4,
@@ -1242,10 +1963,9 @@ function MatchPage({ navigation, route }): JSX.Element {
                         borderRadius: 10,
                         color: Colors.titleColor,
                         textAlign: 'center',
-                        // borderBottomColor: 'red',
-                        // borderBottomWidth: 2,
                         fontFamily: 'OpenSans-Bold'
                       }}></TextInput> : null}
+
                       {isShowScoreText() ? <Text style={{
                         width: 40,
                         // marginRight: 4,
@@ -1346,154 +2066,9 @@ function MatchPage({ navigation, route }): JSX.Element {
                   </View>
                 </View>
 
-                {(!isMatchEnded() && !isMatchLive()) || predict ? <View style={{
-                  width: '100%',
-                  // minHeight: 40,
-                  // marginTop: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  // backgroundColor: 'red'
-                }}>
-
-                  {match.is_special ? <SpecialAwardPanel match={match} /> : null}
-
-                  {mode == EMODE_DEFAULT && isShowScoreInput() ? <TouchableOpacity onPress={onPredict} disabled={isPredictDisabled()} activeOpacity={.8} style={{
-                    opacity: !isPredictDisabled() ? 1 : .8
-                  }}>
-                    <View style={{
-                      height: 30,
-                      width: 'auto',
-                      paddingLeft: authManager.getMeSync() ? 20 : 10,
-                      paddingRight: authManager.getMeSync() && match.playOff ? 4 : 20,
-                      borderRadius: 20,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#fb2781',
-                      flexDirection: 'row'
-                    }}>
-                      {!authManager.getMeSync() ?
-                        <View style={{
-                          width: 20,
-                          height: 20,
-                          marginRight: 6,
-                          backgroundColor: 'white',
-                          borderRadius: 12,
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <GoogleIcon width={16} height={18} />
-                        </View>
-                        : null}
-                      <Text style={{
-                        color: 'white',
-                        marginTop: 2,
-                        // fontWeight: 'bold',
-                        fontFamily: 'Poppins-Bold'
-                      }}>{authManager.getMeSync() ? strings.predict : strings.sign_in_to_predict}</Text>
-                      {authManager.getMeSync() && match.playOff ?
-                        <View style={{
-                          width: 22,
-                          height: 22,
-                          backgroundColor: 'white',
-                          borderRadius: 11,
-                          marginLeft: 6,
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <Text style={{
-                            color: 'black',
-                            fontWeight: 900,
-                            fontSize: 12
-                          }}>90</Text>
-                        </View>
-                        : null}
-                      {showAd && loaded && authManager.getMeSync() ? <Icon name='play-circle-filled' size={20} color='white' style={{
-                        marginLeft: 4
-                      }} /> : null}
-                      {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
-                        marginLeft: 10
-                      }} size={'small'} /> : null}
-                    </View>
-                  </TouchableOpacity> : null}
-
-                  {predict ? <View style={{
-                    flexDirection: 'row',
-                    // backgroundColor: 'red'
-                  }}>
-                    {mode == EMODE_DEFAULT ? <View style={{
-                      height: 30,
-                      paddingLeft: 20,
-                      paddingRight: match.playOff ? 4 : 20,
-                      // borderWidth: 1,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 15,
-                      overflow: 'hidden',
-                      flexDirection: 'row',
-                      backgroundColor: getBgColor(predict),
-                      borderColor: getBorderColor(predict)
-                    }}>
-                      <Text style={{
-                        marginBottom: 2,
-                        color: getBorderColor(predict),
-                        fontFamily: 'NotoSansArmenian-Bold'
-                      }}>{dataManager.getPredictTitle(predict)}{dataManager.getPredictValue(predict)}</Text>
-
-                      {match.playOff ? <View style={{
-                        width: 22,
-                        height: 22,
-                        backgroundColor: Colors.gray800,
-                        borderRadius: 11,
-                        marginLeft: 8,
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}>
-                        <Text style={{
-                          color: Colors.titleColor,
-                          fontWeight: 900,
-                          fontSize: 12
-                        }}>90</Text>
-                      </View> : null}
-
-                    </View> : <TouchableOpacity onPress={onSavePredict} disabled={isSaveDisabled()} activeOpacity={.8} style={{
-                      opacity: !isSaveDisabled() ? 1 : .8
-                    }}>
-                      <View style={{
-                        height: 30,
-                        width: 'auto',
-                        paddingLeft: 20,
-                        paddingRight: 20,
-                        borderRadius: 20,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#fb2781',
-                        flexDirection: 'row'
-                      }}>
-                        <Text style={{
-                          color: 'white',
-                          fontFamily: 'NotoSansArmenian-Bold'
-                        }}>{strings.save}</Text>
-                        {showAd && loaded ? <Icon name='play-circle-filled' size={20} color='white' style={{
-                          marginLeft: 4
-                        }} /> : null}
-                        {showAd && !loaded && adClosed ? <ActivityIndicator color={'white'} style={{
-                          marginLeft: 4
-                        }} size={'small'} /> : null}
-                      </View>
-                    </TouchableOpacity>}
-                    {!isMatchEnded() && !isMatchLive() && predict && mode == EMODE_DEFAULT ? <TouchableOpacity onPress={onSetEditMode} activeOpacity={.8} style={{
-                      width: 30,
-                      height: 30,
-                      marginLeft: 10,
-                      borderRadius: 15,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#FF2882'
-                    }}>
-                      <Icon size={20} name={'edit'} color='white'></Icon>
-                    </TouchableOpacity> : null}
-                  </View> : null}
-                </View> : null}
+                {game == EGAME_ELTORNEO ? renderPredictPanel() : null}
+                {game == EGAME_BEATBET ? renderBetPanel() : null}
+                {game == EGAME_FIREBALL ? renderFireballPredictPanel() : null}
 
               </View>
 
@@ -1537,14 +2112,22 @@ function MatchPage({ navigation, route }): JSX.Element {
                 }}
                 showsHorizontalScrollIndicator={false}>
 
-                <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={() => { setView(EVIEW_PREDICTIONS), scrollToStart() }} />
-                {header?.odds ? <ViewChip isBet title={strings.bet} selected={view == EVIEW_BET} onClick={() => { setView(EVIEW_BET), scrollToStart() }} /> : null}
-                <ViewChip title={'H2H'} selected={view == EVIEW_H2H} onClick={() => { setView(EVIEW_H2H), scrollToStart() }} />
-                {(match.league < 8 && match.league != 1) || match.league == 16 ? <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE), scrollOnTableClick() }} /> : null}
-
-                {header?.statistics ? <ViewChip title={strings.statistics} selected={view == EVIEW_STATISTICS} onClick={() => { setView(EVIEW_STATISTICS), scrollToEnd() }} /> : null}
-                {header?.events ? <ViewChip title={strings.events} selected={view == EVIEW_EVENTS} onClick={() => { setView(EVIEW_EVENTS), scrollToEnd() }} /> : null}
-                {header?.lineups ? <ViewChip title={strings.lineups} selected={view == EVIEW_LINEUPS} onClick={() => { setView(EVIEW_LINEUPS), scrollToEnd() }} /> : null}
+                {game == EGAME_BEATBET ? <ViewChip title={strings.bets} selected={view == EVIEW_TOP_BETS} onClick={() => { setView(EVIEW_TOP_BETS) }} /> : null}
+                {game == EGAME_ELTORNEO ? <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={() => { setView(EVIEW_PREDICTIONS) }} /> : null}
+                {game == EGAME_FIREBALL ? <ViewChip title={strings.predictions2} selected={view == EVIEW_FIREBALL_PREDICTS} onClick={() => { setView(EVIEW_FIREBALL_PREDICTS) }} /> : null}
+                {game == EGAME_FIREBALL && !isMatchLive() && !isMatchEnded() ?
+                  <TouchableOpacity onPress={() => { onFireballClick() }} style={{
+                    marginRight: 10
+                  }}>
+                    <FireballIcon width={40} height={40} />
+                  </TouchableOpacity>
+                  : null}
+                {game != EGAME_FIREBALL && header?.odds ? <ViewChip isBet title={strings.bet} selected={view == EVIEW_BET} onClick={() => { setView(EVIEW_BET) }} /> : null}
+                {header?.lineups ? <ViewChip title={strings.lineups} selected={view == EVIEW_LINEUPS} onClick={() => { setView(EVIEW_LINEUPS) }} /> : null}
+                {header?.events ? <ViewChip title={strings.events} selected={view == EVIEW_EVENTS} onClick={() => { setView(EVIEW_EVENTS) }} /> : null}
+                {header?.statistics ? <ViewChip title={strings.statistics} selected={view == EVIEW_STATISTICS} onClick={() => { setView(EVIEW_STATISTICS) }} /> : null}
+                <ViewChip title={'H2H'} selected={view == EVIEW_H2H} onClick={() => { setView(EVIEW_H2H) }} />
+                {(match.league < 8 && match.league != 1) || match.league == 16 || match.league == 20 ? <ViewChip title={strings.table} selected={view == EVIEW_TABLE} onClick={() => { setView(EVIEW_TABLE) }} /> : null}
 
               </ScrollView> : null}
 
@@ -1569,18 +2152,46 @@ function MatchPage({ navigation, route }): JSX.Element {
                   }}>{strings.no_pred_for_match}</Text> : null}
                   {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
                 </View> : null}
-                {view == EVIEW_BET ? <MatchBetPanel navigation={navigation} match={match} odds={odds} /> : null}
+
+                {view == EVIEW_TOP_BETS ? <View style={{
+                  marginTop: 20,
+                }}>
+                  {predictsReqFinished && betsSummary && betsSummary.numPredicts ? <MatchPredictsSummaryPanel2 match={match} onUnlock={onUnlock} adLoaded={loaded} blockForAd={blockForAd} predicts={betsSummary}></MatchPredictsSummaryPanel2> : null}
+                  {predictsReqFinished && top20Bets && top20Bets.predicts.length ? <MatchTop20BetsPanel onUnlock={onUnlock} adLoaded={loaded} match={match} blockForAd={blockForAd} isMatchEnded={isMatchEnded()} navigation={navigation} top20Bets={top20Bets} /> : null}
+                  {predictsReqFinished && !betsSummary?.numPredicts ? <Text style={{
+                    color: '#8E8E93',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    alignSelf: 'center'
+                  }}>{strings.no_bets_for_match}</Text> : null}
+                  {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
+                </View> : null}
+                {view == EVIEW_FIREBALL_PREDICTS ? <View style={{
+                  marginTop: 20,
+                }}>
+                  {predictsReqFinished && fireballSummary && fireballSummary.total_predicts ? <MatchFireballSummaryPanel match={match} predicts={fireballSummary}></MatchFireballSummaryPanel> : null}
+                  {predictsReqFinished && top20FireballPredicts && top20FireballPredicts.predicts.length ? <MatchTop20FireballPanel match={match} isMatchEnded={isMatchEnded()} navigation={navigation} top20Predicts={top20FireballPredicts} /> : null}
+                  {predictsReqFinished && !fireballSummary?.total_predicts ? <Text style={{
+                    color: '#8E8E93',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    alignSelf: 'center'
+                  }}>{strings.no_pred_for_match}</Text> : null}
+                  {!predictsReqFinished ? <ActivityIndicator size={'large'} color={'#FF2882'}></ActivityIndicator> : null}
+                </View> : null}
+                {view == EVIEW_FIREBALL ? <MatchPlayersPanel navigation={navigation} match={match} fireballPredict={fireballPredict} players={matchPlayers} onFireballPredict={onFireballPredict} /> : null}
+                {view == EVIEW_BET ? <MatchBetPanel me={me} setBet={setBet} navigation={navigation} match={match} odds={odds} remoteBet={bet} /> : null}
                 {view == EVIEW_H2H && match ? <MatchH2HPanel navigation={navigation} match={match} onShowMatchPreview={onShowMatchPress} onShowMatchTrailer={onShowMatchTrailerPress} /> : null}
                 {view == EVIEW_STATISTICS && statistics ? <MatchStatisticsPanel statistics={statistics} /> : view == EVIEW_STATISTICS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
                 {view == EVIEW_EVENTS && events ? <MatchEventsPanel events={events} /> : view == EVIEW_EVENTS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
-                {view == EVIEW_LINEUPS && lineups ? <MatchLineupsPanel match={match} lineups={lineups} /> : view == EVIEW_LINEUPS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
+                {view == EVIEW_LINEUPS && lineups ? <MatchLineupsPanel2 match={match} lineups={lineups} fireballPredict={fireballPredict} onPlayerClick={onPlayerClick} /> : view == EVIEW_LINEUPS ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
                 {view == EVIEW_TABLE && table ? <MatchTablePanel navigation={navigation} match={match} table={table} /> : view == EVIEW_TABLE ? <ActivityIndicator style={{ marginTop: 20 }} color={'#FF2882'} size={'large'} /> : null}
 
               </View>
-
-
             </ScrollView>
+            <Gamepad onShowMenu={onShowGamepadMenu} />
             <BottomNavBar navigation={navigation} />
+            {showGamepadMenu ? <GamepadMenu onClose={() => setShowGamepadMenu(false)} onChangeGame={onChangeGame} /> : null}
           </View>
           {showMatchPreview ? <MatchPreviewDialog match={previewMatch} onClose={onCloseMatchPreview} /> : null}
           {showFailPlayDialog ? <FairPlayDialog onClose={() => { setShowFailPlayDialog(false) }} /> : null}

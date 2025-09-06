@@ -55,6 +55,8 @@ import Drawer from './Drawer';
 import TrailerItem from './TrailerItem';
 import TrailerVideoDialog from './TrailerVideoDialog';
 import { Appearance } from 'react-native';
+import Gamepad from './Gamepad';
+import GamepadMenu from './GamepadMenu';
 
 AdManager.setRequestConfiguration({
   testDeviceIds: ["DC5FB0E024817B77B466572E6959C152"]
@@ -86,15 +88,19 @@ function CarsPage({ navigation, route }): JSX.Element {
   const [table, setTable] = useState([])
   const [refreshing, setRefreshing] = useState(false)
   const [mathOfDay, setMatchOfDay] = useState(null)
+  const [modIndex, setModIndex] = useState(0)
+
   const [mode, setMode] = useState(EMODE_LIGHT)
-  const [randomItem, setRandomItem] = useState(5)
+  // const [randomItem, setRandomItem] = useState(5)
   const [specialMatch, setSpecialMatch] = useState(null)
   const [showMatchPreview, setShowMatchPreview] = useState(false)
   const [showTrailer, setShowTrailer] = useState(false)
   const [trailer, setTrailer] = useState(null)
   const [previewMatch, setPreviewMatch] = useState(null)
   const [showDrawer, setShowDrawer] = useState(false)
+  // const [game, setGame] = useState('eltorneo');
   const weeksScrollRef = useRef(null)
+  const [showGamepadMenu, setShowGamepadMenu] = useState(false)
   const currentWeekRef = useRef(null)
   const [loaded, setLoaded] = useState(false);
 
@@ -107,8 +113,6 @@ function CarsPage({ navigation, route }): JSX.Element {
   };
 
   useEffect(() => {
-    // changeNavigationBarColor('#ff5733', true); // Set color and optional light/dark mode
-
     getLeagues()
     AsyncStorage.getItem('specialMatchLastDate')
       .then((storedDate) => {
@@ -152,12 +156,6 @@ function CarsPage({ navigation, route }): JSX.Element {
     }, 500)
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      // changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
-    }, [mode])
-  );
-
   useEffect(() => {
     if (!selectedLeague) return
     getTable(selectedLeague)
@@ -184,11 +182,20 @@ function CarsPage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
-        AsyncStorage.multiGet(['mode', 'installDate', 'inAppReviewDate'])
+        AsyncStorage.multiGet(['mode', 'installDate', 'inAppReviewDate', 'game'])
           .then((obj) => {
             const mode = obj[0][1]
             let installDate = obj[1][1]
             let inAppReviewDate = obj[2][1];
+            let game = obj[3][1];
+            if (game) {
+              dataManager.getSettings().game = game
+              // setGame(game)
+            } else {
+              dataManager.getSettings().game = 'eltorneo'
+              // setGame('eltorneo')
+            }
+
             if (!inAppReviewDate) {
               inAppReviewDate = new Date().getTime().toString();
               AsyncStorage.setItem('inAppReviewDate', new Date().getTime().toString())
@@ -214,67 +221,67 @@ function CarsPage({ navigation, route }): JSX.Element {
                 Colors.setNewMode(2)
                 changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
               }
-              SplashScreen.hide();
+              // SplashScreen.hide();
+              // return
+            } else {
+              if (Number.parseInt(mode) == 2) {
+                Colors.setNewMode(2)
+                setMode(2)
+              } else {
+                Colors.setNewMode(1)
+                setMode(1)
+              }
+            }
+
+            setLeagues(data)
+            dataManager.setLeagues(data)
+            const league = data[0]
+            setSelectedLeague(league)
+
+            if (league.num_weeks == 0) {
+              setWeeks([])
               return
             }
 
-            if (Number.parseInt(mode) == 2) {
-              Colors.setNewMode(2)
-              setMode(2)
+            let weeks = []
+            if (league.type == 0) {
+              weeks = Array.from({ length: Math.min(league.week + NUM_NEXT_WEEKS, league.num_weeks) }, (_, index) => { return { week: index + 1, type: 0 } });
+              if (league.id == 1) {
+                if (weeks.length > 8)
+                  weeks[8].type = 1
+                if (weeks.length > 9)
+                  weeks[9].type = 5
+                if (weeks.length > 10)
+                  weeks[10].type = 2
+                if (weeks.length > 11)
+                  weeks[11].type = 3
+                if (weeks.length > 12)
+                  weeks[12].type = 4
+
+              } else if (league.id == 7) {
+                if (weeks.length > 6)
+                  weeks[6].type = 2
+                if (weeks.length > 7)
+                  weeks[7].type = 3
+                if (weeks.length > 8)
+                  weeks[8].type = 4
+              }
+              setWeeks(weeks)
             } else {
-              Colors.setNewMode(1)
-              setMode(1)
+              weeks = league.weeks.slice(0, league.week);
+              setWeeks(weeks);
             }
+
+            setSelectedWeek(weeks[league.week - 1])
+            getMatches(league, league.week, selectedSeason, true, dataManager.getSettings().game)
+            getTable(league)
+
             changeNavigationBarColor(Colors.bottomNavBarColor, true);  // Change to your desired color
             SplashScreen.hide();
           })
           .catch(() => {
             SplashScreen.hide();
           })
-
-
-        setLeagues(data)
-        dataManager.setLeagues(data)
-        const league = data[0]
-        setSelectedLeague(league)
-
-        if (league.num_weeks == 0) {
-          setWeeks([])
-          return
-        }
-
-        let weeks = []
-        if (league.type == 0) {
-          weeks = Array.from({ length: Math.min(league.week + NUM_NEXT_WEEKS, league.num_weeks) }, (_, index) => { return { week: index + 1, type: 0 } });
-          if (league.id == 1) {
-            if (weeks.length > 8)
-              weeks[8].type = 1
-            if (weeks.length > 9)
-              weeks[9].type = 5
-            if (weeks.length > 10)
-              weeks[10].type = 2
-            if (weeks.length > 11)
-              weeks[11].type = 3
-            if (weeks.length > 12)
-              weeks[12].type = 4
-
-          } else if (league.id == 7) {
-            if (weeks.length > 6)
-              weeks[6].type = 2
-            if (weeks.length > 7)
-              weeks[7].type = 3
-            if (weeks.length > 8)
-              weeks[8].type = 4
-          }
-          setWeeks(weeks)
-        } else {
-          weeks = league.weeks.slice(0, league.week);
-          setWeeks(weeks);
-        }
-
-        setSelectedWeek(weeks[league.week - 1])
-        getMatches(league, league.week, selectedSeason)
-        getTable(league)
       })
       .catch(error => {
         SplashScreen.hide();
@@ -449,7 +456,7 @@ function CarsPage({ navigation, route }): JSX.Element {
     )
   }
 
-  function getMatches(league, week, season, showPreload = true) {
+  function getMatches(league, week, season, showPreload = true, newGame = null) {
     const currentSeason = `20${league.season}`
 
     if (week == -1) return
@@ -459,7 +466,7 @@ function CarsPage({ navigation, route }): JSX.Element {
       setLoading(true)
     }
 
-    const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${currentSeason}&lang=${strings.getLanguage()}`
+    const url = `${SERVER_BASE_URL}/api/v1/matches?league_id=${league.id}&week=${week}&season=${currentSeason}&lang=${strings.getLanguage()}&game=${newGame ? newGame : dataManager.getSettings().game}`
     fetch(url, {
       method: 'GET',
       headers: {
@@ -469,17 +476,25 @@ function CarsPage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
-        if (showPreload) {
-          setMatchOfDay(getRandomMatch(data))
-          const randomNumber = Math.floor(Math.random() * 6);
-          setRandomItem(randomNumber)
+        // if (showPreload) {
+        //   const idx = getRandomMatch(data);
+        //   const mod = data[idx]
+        //   setMatchOfDay(mod)
+        //   setModIndex(idx)
 
-          if (dataManager.getTrailers()) {
-            const rn = Math.floor(Math.random() * dataManager.getTrailers().length);
-            if (dataManager.getTrailers()) setTrailer(dataManager.getTrailers()[rn])
-          }
+        //   // const randomNumber = Math.floor(Math.random() * 6);
+        //   // setRandomItem(randomNumber)
 
-        }
+        //   if (dataManager.getTrailers()) {
+        //     const rn = Math.floor(Math.random() * dataManager.getTrailers().length);
+        //     if (dataManager.getTrailers()) setTrailer(dataManager.getTrailers()[rn])
+        //   }
+
+        // } else {
+
+        //   // setMatchOfDay(matches[modIndex])
+        //   // setMatchOfDay(mathOfDay)
+        // }
         setMatches(data)
         // weeksScrollRef.current.scrollTo({x: (selectedWeek - 1) * 80});
         setMatchesReqFinished(true)
@@ -492,6 +507,36 @@ function CarsPage({ navigation, route }): JSX.Element {
         setLoading(false)
       });
   }
+
+  useEffect(() => {
+    // if (showPreload)
+    {
+
+      let idx = !modIndex ? getRandomMatch(matches) : modIndex;
+      if (idx >= matches.length) {
+        idx = matches.length - 1;
+      }
+      idx = Math.max(idx, 0)
+      const mod = matches[idx]
+      setMatchOfDay(mod)
+      setModIndex(idx)
+
+      // const randomNumber = Math.floor(Math.random() * 6);
+      // setRandomItem(randomNumber)
+
+      if (dataManager.getTrailers()) {
+        const rn = Math.floor(Math.random() * dataManager.getTrailers().length);
+        if (dataManager.getTrailers()) setTrailer(dataManager.getTrailers()[rn])
+      }
+
+
+    }
+    // else {
+
+    //   // setMatchOfDay(matches[modIndex])
+    //   // setMatchOfDay(mathOfDay)
+    // }
+  }, [matches])
 
   //   useEffect(() => {
   //     if (selectedWeek !== null  && weeks.includes(selectedWeek)) {
@@ -1035,9 +1080,12 @@ function CarsPage({ navigation, route }): JSX.Element {
   }
 
   const onRefresh = () => {
+    if (!leagues.length) {
+      return onRefreshPage();
+    }
     setRefreshing(false);
     if (tab != ETAB_MATCHES) return
-    getMatches(selectedLeague, selectedWeek.week, selectedSeason)
+    getMatches(selectedLeague, selectedWeek.week, selectedSeason, true, dataManager.getSettings().game)
   };
 
   useEffect(() => {
@@ -1057,22 +1105,24 @@ function CarsPage({ navigation, route }): JSX.Element {
       if (!this.effect) {
         if (tab != ETAB_MATCHES) return
 
-        getMatches(selectedLeague, selectedWeek.week, selectedSeason, false)
+        getMatches(selectedLeague, selectedWeek.week, selectedSeason, false, dataManager.getSettings().game)
       }
-
-
-
     }, [selectedLeague, selectedWeek])
   )
 
   function getRandomMatch(matches) {
     const randomIndex = Math.floor(Math.random() * matches.length);  // Generate a random index
-    return matches[randomIndex];  // Return the match at that index
+    return randomIndex;
   }
 
   function renderCard() {
-    if (!matches.length) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
-    return <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} />
+    if (!matches.length) {
+      if (!trailer) return
+
+      return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
+    }
+    if (!mathOfDay) return;
+    return <LiveMatchItem match={mathOfDay} matches={matches} leagueName={selectedLeague.name} navigation={navigation} />
 
     // if (!trailer) return <TopScorerItem />
     // if (trailer && randomItem != 1 && randomItem != 3 && randomItem != 5) return <TrailerItem navigation={navigation} onViewPress={onShowTrailer} trailer={trailer} />
@@ -1092,6 +1142,26 @@ function CarsPage({ navigation, route }): JSX.Element {
 
   function onShowTrailer() {
     setShowTrailer(true)
+  }
+
+  function onChangeGame() {
+    getMatches(selectedLeague, selectedWeek.week, selectedSeason, true, dataManager.getSettings().game)
+
+    // if (dataManager.getSettings().game == 'eltorneo') {
+    //   // setGame('beatbet');
+    //   getMatches(selectedLeague, selectedWeek.week, selectedSeason, true, dataManager.getSettings().game)
+    //   // AsyncStorage.setItem('game', 'beatbet')
+    //   // dataManager.getSettings().game = 'beatbet'
+    // } else {
+    //   // setGame('eltorneo');
+    //   getMatches(selectedLeague, selectedWeek.week, selectedSeason, true, 'eltorneo')
+    //   // AsyncStorage.setItem('game', 'eltorneo')
+    //   // dataManager.getSettings().game = 'eltorneo'
+    // }
+  }
+
+  function onShowGamepadMenu() {
+    setShowGamepadMenu(true)
   }
 
   return (
@@ -1118,6 +1188,7 @@ function CarsPage({ navigation, route }): JSX.Element {
           <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             contentContainerStyle={{
+              paddingBottom: 70
               // backgroundColor: 'red',
               // minHeight: '100%'
             }}
@@ -1328,7 +1399,7 @@ function CarsPage({ navigation, route }): JSX.Element {
                 {renderCard()}
                 {/* <LiveMatchItem match={mathOfDay} leagueName={selectedLeague.name} navigation={navigation} /> */}
                 {/* {topScorers ? <TopScorerItem /> : null} */}
-                {selectedLeague.id != 1 && selectedLeague.id != 8 && selectedLeague.id != 9 ? <View style={{
+                {selectedLeague.id != 8 && selectedLeague.id != 9 ? <View style={{
                   width: '100%',
                   height: 46,
                   padding: 4,
@@ -1428,7 +1499,9 @@ function CarsPage({ navigation, route }): JSX.Element {
             </View> : null}
 
           </ScrollView>
+          {!loading && !leagues.length ? null : <Gamepad onShowMenu={onShowGamepadMenu} />}
           {!loading && !leagues.length ? null : <BottomNavBar page={EPAGE_HOME} navigation={navigation} />}
+          {showGamepadMenu ? <GamepadMenu onClose={() => setShowGamepadMenu(false)} onChangeGame={onChangeGame} /> : null}
 
           {specialMatch ? <EventCard onPress={onNavSpecialMatch} onTrailerPress={onTrailerPress} onClose={onEventClose} match={specialMatch} /> : null}
           {showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch} /> : null}

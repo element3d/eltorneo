@@ -16,19 +16,19 @@ function hasKit(match) {
 }
 
 
-export default function KitImage({ width, height, match, team }) {
+export default function KitImage({ width, height, match, team, isBlank = false }) {
     const [fallback, setFallback] = useState(false)
 
     function onImgError() {
         setFallback(true)
     }
 
-    return fallback ? <Image
+    return  isBlank || fallback ? <Image
         source={require('./assets/blank_kit.png')}
         style={{
             width: width,
             height: height,
-            objectFit: hasKit(match) ? 'cover' : 'contain'
+            objectFit: isBlank || hasKit(match) ? 'cover' : 'contain'
         }}></Image> : <Image
             src={`${SERVER_BASE_URL}/data/teams/150x150/${team.name.replace(/ö/g, 'o')}${getImageName(match)}`}
             style={{

@@ -27,7 +27,7 @@ import CupIcon from './assets/Trophy.svg';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import MDIcon from 'react-native-vector-icons/MaterialIcons';
 import GoogleIcon from './assets/google.svg';
-import FirstIcon from './assets/first.svg';
+import FirstIcon from './assets/bbicon.svg';
 import FirstIcon2 from './assets/first2.svg';
 
 import adsManager from './AdsManager';
@@ -38,8 +38,9 @@ import Colors from './Colors';
 import NativeAdComp from './NativeAdComp';
 import gsingin from './GSignin';
 import WinnerPanel from './WinnerPanel';
+import AwardsPanelBeatBet from './AwardsPanelBeatBet';
 
-const league1Img = require('./assets/throphy.png')
+const league1Img = require('./assets/bb.png')
 const league2Img = require('./assets/second.png')
 
 const ETABLE_GENERAL = 0
@@ -69,7 +70,7 @@ function TableCheap({ title, selected, onPress }) {
   )
 }
 
-function TablesPage({ navigation, route }): JSX.Element {
+function BeatBetTablesPage({ navigation, route }): JSX.Element {
   const { page, league, season } = route.params;
   const [table, setTable] = useState([])
   const [selectedTable, setSelectedTable] = useState(ETABLE_GENERAL)
@@ -145,7 +146,7 @@ function TablesPage({ navigation, route }): JSX.Element {
       },
     };
 
-    fetch(`${SERVER_BASE_URL}/api/v1/table/points?page=${page}&league=${league}&season=${season}`, requestOptions)
+    fetch(`${SERVER_BASE_URL}/api/v1/beat_bet_table?page=${page}&league=${league}&season=${season}`, requestOptions)
       .then(response => {
         if (response.status == 200)
           return response.json()
@@ -154,51 +155,6 @@ function TablesPage({ navigation, route }): JSX.Element {
         return null
       })
       .then(data => {
-        setTableLoading(false)
-        setTable(data)
-      });
-  }
-
-  function getTableByScore() {
-    const requestOptions = {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(`${SERVER_BASE_URL}/api/v1/table/score?league_id=${selectedLeague && selectedLeague.id >= 1 ? selectedLeague.id : -1}`, requestOptions)
-      .then(response => {
-        if (response.status == 200)
-          return response.json()
-
-        setTableLoading(false)
-        return null
-      })
-      .then(data => {
-        setTableLoading(false)
-        setTable(data)
-      });
-  }
-
-  function getTableByWinner() {
-    const requestOptions = {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(`${SERVER_BASE_URL}/api/v1/table/winner?league_id=${selectedLeague && selectedLeague.id >= 1 ? selectedLeague.id : -1}`, requestOptions)
-      .then(response => {
-        if (response.status == 200)
-          return response.json()
-
-        setTableLoading(false)
-        return null
-      })
-      .then(data => {
-
         setTableLoading(false)
         setTable(data)
       });
@@ -210,9 +166,7 @@ function TablesPage({ navigation, route }): JSX.Element {
     return `${u.predictions}(${Number.parseInt(u.rate)}%)`
   }
 
-  function onLeaguePress(l) {
-    setSelectedLeague(l ? l : null)
-  }
+
 
   function onNavUser(u) {
     u.points = u.predictions
@@ -241,7 +195,7 @@ function TablesPage({ navigation, route }): JSX.Element {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        {league == 1 ? <FirstIcon width={24} height={24} style={{
+        {league == 1 ? <FirstIcon width={26} height={26} style={{
           // marginLeft: 6
         }}></FirstIcon> : <FirstIcon2 width={24} height={24} style={{
           marginLeft: 6
@@ -296,6 +250,12 @@ function TablesPage({ navigation, route }): JSX.Element {
   function onPredict() {
     navigation.navigate('Calendar')
   }
+
+  function getBalanceColor(u) {
+    if (u.balance == 0) return Colors.titleColor
+    if (u.balance < 0) return Colors.fail
+    return Colors.success
+  } 
 
   function renderTable() {
     // if (!table?.length && page == 1 && !tableLoading) {
@@ -401,10 +361,10 @@ function TablesPage({ navigation, route }): JSX.Element {
           <Text style={{
             width: 60,
             // backgroundColor: 'red',
-            color: Colors.titleColor,
+            color: getBalanceColor(u),
             fontWeight: 'bold',
             textAlign: 'center',
-          }}>{getRate(u)}</Text>
+          }}>{u.balance.toFixed(1)}$</Text>
         </TouchableOpacity>
       )
     })
@@ -435,54 +395,48 @@ function TablesPage({ navigation, route }): JSX.Element {
   }
 
   function onPrev() {
-    navigation.navigate({ name: 'Tables', params: { page: page - 1, league: league, season: season }, key: `${page - 1}_${league}_${season}` })
+    navigation.navigate({ name: 'BeatBetTables', params: { page: page - 1, league: league, season: season }, key: `${page - 1}_${league}_${season}` })
   }
 
   function onNext() {
-    navigation.navigate({ name: 'Tables', params: { page: page + 1, league: league, season: season }, key: `${page + 1}_${league}_${season}` })
+    navigation.navigate({ name: 'BeatBetTables', params: { page: page + 1, league: league, season: season }, key: `${page + 1}_${league}_${season}` })
   }
 
   function onMyPosition() {
     const page = Math.ceil(me.position / 20);
-    navigation.navigate({ name: 'Tables', params: { page: page, league: me.league, season: season }, key: `${page}_${league}_${season}` })
+    navigation.navigate({ name: 'BeatBetTables', params: { page: page, league: me.league, season: season }, key: `${page}_${league}_${season}` })
   }
 
   function onLeague1() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 1, season: season }, key: `${1}_${league}_${season}` })
+    navigation.navigate({ name: 'BeatBetTables', params: { page: 1, league: 1, season: season }, key: `${1}_${league}_${season}` })
   }
 
   function onLeague2() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 2, season: season }, key: `${1}_${league}_${season}` })
+    navigation.navigate({ name: 'BeatBetTables', params: { page: 1, league: 2, season: season }, key: `${1}_${league}_${season}` })
   }
 
   function onLeague3() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 3, season: season }, key: `${1}_${league}_${season}` })
+    navigation.navigate({ name: 'BeatBetTables', params: { page: 1, league: 3, season: season }, key: `${1}_${league}_${season}` })
   }
 
   function onLeague4() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: 4, season: season }, key: `${1}_${league}_${season}` })
+    navigation.navigate({ name: 'BeatBetTables', params: { page: 1, league: 4, season: season }, key: `${1}_${league}_${season}` })
   }
 
   const onRefresh = () => {
     setRefreshing(false);
     if (blockForAd) return
-    if (selectedTable == ETABLE_GENERAL) {
-      getTableByPoints()
-    } else if (selectedTable == ETABLE_SCORE) {
-      getTableByScore()
-    } else {
-      getTableByWinner()
-    }
+    getTableByPoints()
     setTableLoading(true)
   };
 
   function onNavAwardsInfo() {
     navigation.navigate({
-      name: 'AwardsInfo',
+      name: 'BeatBetInfo',
       params: {
         league: league
       },
-      key: `awards_${league}`
+      key: `beat_bet_info_${league}`
     })
 
     // navigation.navigate('AwardsInfo')
@@ -533,7 +487,7 @@ function TablesPage({ navigation, route }): JSX.Element {
               // paddingBottom: 10,
               backgroundColor: Colors.gray800
             }}>
-              <AppBar navigation={navigation} />
+              <AppBar navigation={navigation} title={'Beat Bet'} showLogo={false}/>
 
               {/* <ScrollView
                 horizontal={true}
@@ -582,51 +536,6 @@ function TablesPage({ navigation, route }): JSX.Element {
               height: selectedTable == ETABLE_GENERAL ? 10 : 20
             }}></View>
 
-            <View style={{
-              width: '100%',
-              paddingLeft: 20,
-              // height: 40,
-              flexDirection: 'row',
-              alignItems: 'center',
-              // backgroundColor: 'red'
-            }}>
-              <TouchableOpacity activeOpacity={.6} onPress={() => { setSeason('24/25') }} style={{
-                marginRight: 10,
-                paddingHorizontal: 20,
-                height: 40,
-                backgroundColor: !season || season == '24/25' ? Colors.primary : Colors.gray800,
-                borderWidth: 1,
-                borderColor: Colors.borderColor,
-                borderRadius: 20,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Text style={{
-                  fontWeight: 'bold',
-                  color: !season || season == '24/25' ? 'white' : Colors.titleColor
-                }}>{strings.season} 2024/25</Text>
-
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => { setSeason('25/26') }} disabled={dataManager.getSettings()?.season != '25/26'} activeOpacity={.6} style={{
-                marginRight: 10,
-                opacity: dataManager.getSettings()?.season != '25/26' ? .5 : 1,
-                paddingHorizontal: 20,
-                height: 40,
-                backgroundColor: season == '25/26' ? Colors.primary : Colors.gray800,
-                borderWidth: 1,
-                borderColor: Colors.borderColor,
-                borderRadius: 20,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Text style={{
-                  fontWeight: 'bold',
-                  color: season == '25/26' ? 'white' : Colors.titleColor
-                }}>{strings.season} 2025/26</Text>
-
-              </TouchableOpacity>
-            </View>
 
             {selectedTable == ETABLE_GENERAL ?
               <View style={{
@@ -651,7 +560,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                     borderRadius: 20,
                     // marginBottom: 20
                   }}>
-                    {!settings?.season || settings?.season == season ? <AwardsPanel onReadMore={onNavAwardsInfo} league={league} season={season} />
+                    {!settings?.season || settings?.season == season ? <AwardsPanelBeatBet onReadMore={onNavAwardsInfo} league={league} season={season} />
                       : <WinnerPanel winner={table ? table[0] : null} season={season} league={league}></WinnerPanel>}
                   </ImageBackground>
                 </TouchableOpacity>
@@ -680,7 +589,7 @@ function TablesPage({ navigation, route }): JSX.Element {
                 // justifyContent: 'flex-start',
                 paddingRight: 40
               }}>
-              {me?.position > 0 && (!settings?.season || settings?.season == season) ? <TouchableOpacity activeOpacity={.6} onPress={() => { onMyPosition() }} style={{
+              {/* {me?.position > 0 && (!settings?.season || settings?.season == season) ? <TouchableOpacity activeOpacity={.6} onPress={() => { onMyPosition() }} style={{
                 marginLeft: 20,
                 marginRight: 10,
                 // paddingHorizontal: 20,
@@ -700,10 +609,10 @@ function TablesPage({ navigation, route }): JSX.Element {
                   color: Colors.titleColor
                 }}><Icon name='crosshairs' size={22}></Icon></Text>
 
-              </TouchableOpacity> : null}
+              </TouchableOpacity> : null} */}
 
               <TouchableOpacity activeOpacity={.6} onPress={() => { onLeague1() }} style={{
-                marginLeft: me?.position > 0 && (!settings?.season || settings?.season == season) ? 0 : 20,
+                marginLeft: 20,//me?.position > 0 && (!settings?.season || settings?.season == season) ? 0 : 20,
                 marginRight: 10,
                 paddingHorizontal: 20,
                 height: 40,
@@ -853,14 +762,14 @@ function TablesPage({ navigation, route }): JSX.Element {
                   color: Colors.titleColor,
                   fontWeight: 'bold',
                   textAlign: 'center',
-                }}>Tp</Text>
+                }}>Tb</Text>
                 <Text style={{
                   width: 60,
                   // backgroundColor: 'red',
                   color: Colors.titleColor,
                   fontWeight: 'bold',
                   textAlign: 'center',
-                }}>{selectedTable == ETABLE_GENERAL ? "Pts" : "Rate"}</Text>
+                }}>{selectedTable == ETABLE_GENERAL ? "Bal" : "Rate"}</Text>
               </View>
 
               {tableLoading ? <ActivityIndicator size={'large'} color={'#FF2882'} style={{ marginTop: 20 }} />
@@ -1017,4 +926,4 @@ function TablesPage({ navigation, route }): JSX.Element {
   );
 }
 
-export default TablesPage;
+export default BeatBetTablesPage;

@@ -30,9 +30,10 @@ import authManager from './AuthManager';
 import SERVER_BASE_URL from './AppConfig';
 import LinearGradient from 'react-native-linear-gradient';
 import moment from 'moment';
-import { ESTAT_TOTAL, ETAB_PREDICTS } from './ProfilePage';
+import { ESTAT_TOTAL, ETAB_BETS, ETAB_PREDICTS } from './ProfilePage';
 import Colors from './Colors';
 import dataManager from './DataManager';
+import { EGAME_BEATBET, EGAME_ELTORNEO } from './GamepadMenu';
 const Pulse = require('react-native-pulse').default;
 
 export const EBOTTOM_NAVBAR_MODE_ADD = 0
@@ -72,7 +73,7 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
   }
 
   function navTables() {
-    navigation.navigate({ name: 'Tables', params: { page: 1, league: me && me.league ? me.league : 1, season: dataManager.getSettings() ? dataManager.getSettings().season : '25/26' }, key: "tables" })
+      navigation.navigate({ name: 'Tables', params: { page: 1, routeGame: dataManager.getSettings().game, league: me && me.league ? me.league : 1, season: dataManager.getSettings() ? dataManager.getSettings().season : '25/26' }, key: "tables" })
   }
 
 
@@ -81,6 +82,7 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
   }
 
   function navGarage() {
+    const tab = dataManager.getSettings().game == 'beatbet' ? ETAB_BETS : ETAB_PREDICTS
     AsyncStorage.getItem('token', (err, token) => {
       if (token) {
         navigation.navigate({
@@ -88,8 +90,8 @@ function BottomNavBar({ navigation, page, style = {} }): JSX.Element {
             globalPage: 1,
             routeSelectedLeague: -1,
             selectedStat: ESTAT_TOTAL,
-            tab: ETAB_PREDICTS
-          }, key: `profile_${authManager.getMeSync().id}_${ETAB_PREDICTS}`
+            tab: tab
+          }, key: `profile_${authManager.getMeSync()?.id}_${dataManager.getSettings().game}`
         })
         return
       }

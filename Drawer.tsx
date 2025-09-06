@@ -1,22 +1,40 @@
-import { Animated, Easing, Text, TouchableOpacity, View } from "react-native";
+import { Animated, BackHandler, Easing, Text, TouchableOpacity, View } from "react-native";
 import Colors from "./Colors";
 import HomeIcon from './assets/profile.svg';
 import CalendarIcon from './assets/cal.svg';
-import StatsIcon from './assets/stats.svg';
+import BBIcon from './assets/bbicon.svg';
+import FireballIcon from './assets/Fireball.svg';
 import SunIcon from './assets/sun.svg';
 import MoonIcon from './assets/moon-gray.svg';
 import FAIcon from 'react-native-vector-icons/Fontisto';
+import TrophyIcon from './assets/first.svg'
 import authManager from "./AuthManager";
 import strings from "./Strings";
 import SupportPanel from "./SupportPanel";
 import { useEffect } from "react";
 import dataManager from "./DataManager";
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
+import { EGAME_BEATBET, EGAME_ELTORNEO, EGAME_FIREBALL } from "./GamepadMenu";
 
 export default function Drawer({ onClose, navigation, setMode }) {
     const drawerAnimation = new Animated.Value(-300); // Initial off-screen position
     const backgroundAlpha = new Animated.Value(0); // Directly animate background alpha
     const speed = 150;
+
+    useEffect(() => {
+        const backAction = () => {
+            onCloseInternal()
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []);
+
     useEffect(() => {
         // Open drawer with animation
         Animated.parallel([
@@ -55,10 +73,6 @@ export default function Drawer({ onClose, navigation, setMode }) {
         });
     }
 
-    function onNavBeatBet() {
-        navigation.navigate('BeatBet')
-    }
-
     function onNavLang() {
         onClose()
         navigation.navigate({ name: "Langs", key: strings.getLanguage() })
@@ -80,7 +94,19 @@ export default function Drawer({ onClose, navigation, setMode }) {
     function onNavElTorneo() {
         onClose()
         const me = authManager.getMeSync()
-        navigation.navigate({ name: 'Tables', params: { page: 1, league: me && me.league ? me.league : 1, season: dataManager.getSettings() ? dataManager.getSettings().season : '25/26' }, key: 1 })
+        navigation.navigate({ name: 'Tables', params: { page: 1, routeGame: dataManager.getSettings().game, league: me && me.league ? me.league : 1, season: dataManager.getSettings() ? dataManager.getSettings().season : '25/26' }, key: "tables" })
+    }
+
+    function onNavBeatBet() {
+        onClose()
+        const me = authManager.getMeSync()
+        navigation.navigate({ name: 'Tables', params: { page: 1, routeGame: dataManager.getSettings().game, league: me && me.league ? me.league : 1, season: dataManager.getSettings() ? dataManager.getSettings().season : '25/26' }, key: "tables" })
+    }
+
+    function onNavFireball() {
+        onClose()
+        const me = authManager.getMeSync()
+        navigation.navigate({ name: 'Tables', params: { page: 1, routeGame: dataManager.getSettings().game, league: me && me.league ? me.league : 1, season: dataManager.getSettings() ? dataManager.getSettings().season : '25/26' }, key: "tables" })
     }
 
     function onNavTrailers() {
@@ -161,23 +187,61 @@ export default function Drawer({ onClose, navigation, setMode }) {
                 }}>{strings.calendar_page}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity activeOpacity={.6} onPress={onNavElTorneo} style={{
+            { dataManager.getSettings().game == EGAME_ELTORNEO ? <TouchableOpacity activeOpacity={.6} onPress={onNavElTorneo} style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 height: 50,
                 paddingLeft: 10
                 // backgroundColor: 'red'
             }}>
-                <StatsIcon width={40} style={{
-                    marginLeft: -10
+                <TrophyIcon width={22} style={{
+                    // marginLeft: -10
                 }} />
                 <Text style={{
-                    marginLeft: 4,
+                    marginLeft: 12,
                     fontSize: 16,
                     color: Colors.titleColor,
                     fontWeight: 'bold'
                 }}>el Torneo</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> : null }
+
+            { dataManager.getSettings().game == EGAME_BEATBET ? <TouchableOpacity activeOpacity={.6} onPress={onNavBeatBet} style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                height: 50,
+                paddingLeft: 10
+                // backgroundColor: 'red'
+            }}>
+                <BBIcon width={28} style={{
+                    marginLeft: -2
+                }} />
+                <Text style={{
+                    marginLeft: 8,
+                    fontSize: 16,
+                    color: Colors.titleColor,
+                    fontWeight: 'bold'
+                }}>Beat Bet</Text>
+            </TouchableOpacity> : null }
+
+             { dataManager.getSettings().game == EGAME_FIREBALL ? <TouchableOpacity activeOpacity={.6} onPress={onNavFireball} style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                height: 50,
+                paddingLeft: 10
+                // backgroundColor: 'red'
+            }}>
+                <FireballIcon width={25} style={{
+                    marginLeft: -5,
+                    marginRight: 6,
+                }} />
+                <Text style={{
+                    marginLeft: 8,
+                    fontSize: 16,
+                    color: Colors.titleColor,
+                    fontWeight: 'bold'
+                }}>Fireball</Text>
+            </TouchableOpacity> : null }
+
 
             <TouchableOpacity activeOpacity={.6} onPress={onNavTrailers} style={{
                 flexDirection: 'row',
@@ -186,11 +250,11 @@ export default function Drawer({ onClose, navigation, setMode }) {
                 paddingLeft: 10
                 // backgroundColor: 'red'
             }}>
-                <FAIcon name={'film'} color='gold' size={22} style={{
+                <FAIcon name={'film'} color='gold' size={24} style={{
                     // marginLeft: -10
                 }} />
                 <Text style={{
-                    marginLeft: 12,
+                    marginLeft: 10,
                     fontSize: 16,
                     color: Colors.titleColor,
                     fontWeight: 'bold'

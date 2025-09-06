@@ -25,6 +25,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import LiveMatchItem from './LiveMatchItem';
 import Colors from './Colors';
 import NativeAdComp from './NativeAdComp';
+import Gamepad from './Gamepad';
+import GamepadMenu from './GamepadMenu';
 
 function MatchesLivePage({ navigation, route }): JSX.Element {
   const [matches, setMatches] = useState([])
@@ -32,6 +34,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
 
   const [matchesReqFinished, setMatchesReqFinished] = useState(false)
   const [upcomingReqFinished, setUpcomingReqFinished] = useState(false)
+  const [showGamepadMenu, setShowGamepadMenu] = useState(false)
 
   const backgroundStyle = {
     backgroundColor: 'white',
@@ -56,8 +59,12 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
     }, [])
   );
 
+  function onShowGamepadMenu() {
+    setShowGamepadMenu(true)
+  }
+
   function getMatches() {
-    const url = `${SERVER_BASE_URL}/api/v1/matches/live`
+    const url = `${SERVER_BASE_URL}/api/v1/matches/live?game=${dataManager.getSettings().game}`
     fetch(url, {
       method: 'GET',
       headers: {
@@ -86,7 +93,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
   }
 
   function getUpcoming() {
-    const url = `${SERVER_BASE_URL}/api/v1/matches/upcoming`
+    const url = `${SERVER_BASE_URL}/api/v1/matches/upcoming?game=${dataManager.getSettings().game}`
     fetch(url, {
       method: 'GET',
       headers: {
@@ -110,6 +117,16 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
 
   const insets = useSafeAreaInsets();
 
+  function onChangeGame(game) {
+    if (!authManager.getMeSync()) return
+
+    setMatchesReqFinished(false)
+    setUpcomingReqFinished(false)
+    setMatches([])
+    setUpcoming([])
+    getMatches()
+  }
+
   return (
     <GestureHandlerRootView style={{
       flex: 1, backgroundColor: Colors.bgColor,
@@ -130,6 +147,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
           <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             contentContainerStyle={{
+              paddingBottom: 60
               // minHeight: '100%'
             }}
 
@@ -173,7 +191,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 flexDirection: 'row',
                 width: '100%',
                 alignItems: 'center',
-                marginBottom: 10,
+                marginBottom: 15,
               }}>
                 <View style={{
                   width: 30,
@@ -218,7 +236,7 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
                 flexDirection: 'row',
                 width: '100%',
                 alignItems: 'center',
-                marginBottom: 10,
+                marginBottom: 15,
               }}>
                 <View style={{
                   width: 30,
@@ -266,10 +284,10 @@ function MatchesLivePage({ navigation, route }): JSX.Element {
             }}>
               <NativeAdComp />
             </View> : null}
-
-
           </ScrollView>
+          <Gamepad onShowMenu={onShowGamepadMenu} />
           <BottomNavBar navigation={navigation} />
+          {showGamepadMenu ? <GamepadMenu onClose={() => setShowGamepadMenu(false)} onChangeGame={onChangeGame} /> : null}
         </View>
         <View style={{
           height: insets.bottom,

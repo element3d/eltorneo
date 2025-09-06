@@ -31,6 +31,10 @@ class AuthManager {
             this.getMe(token)
                 ?.then((me) => {
                     this.me = me
+                    if (!me) {
+                        this.token = null
+                        AsyncStorage.removeItem('token')
+                    }
                 })
         })
     }

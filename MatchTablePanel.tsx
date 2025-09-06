@@ -66,6 +66,7 @@ export default function MatchTablePanel({ navigation, match, table }) {
         <View style={{
             width: '100%',
             marginTop: 20,
+            paddingBottom: 10,
             // backgroundColor: 'blue',
             alignItems: 'center'
         }}>

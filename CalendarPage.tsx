@@ -28,6 +28,8 @@ import dataManager from './DataManager';
 import Colors from './Colors';
 import NativeAdComp from './NativeAdComp';
 import MatchPreviewDialog from './MatchPreviewDialog';
+import Gamepad from './Gamepad';
+import GamepadMenu from './GamepadMenu';
 
 function CalendarPage({ navigation, route }): JSX.Element {
   const today = moment();
@@ -37,6 +39,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
   const [refreshing, setRefreshing] = useState(false)
   const [showMatchPreview, setShowMatchPreview] = useState(false)
   const [previewMatch, setPreviewMatch] = useState(null)
+  const [showGamepadMenu, setShowGamepadMenu] = useState(false)
 
   const insets = useSafeAreaInsets();
 
@@ -58,6 +61,9 @@ function CalendarPage({ navigation, route }): JSX.Element {
     }, [date])
   );
 
+  function onShowGamepadMenu() {
+    setShowGamepadMenu(true)
+  }
 
   function getMatches() {
     if (!date) return;
@@ -66,7 +72,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
       setMatches([])
       setMatchesReqFinished(false)
     }
-    fetch(`${SERVER_BASE_URL}/api/v1/matches/day?timestamp=${new Date(date).getTime()}&lang=${strings.getLanguage()}`, {
+    fetch(`${SERVER_BASE_URL}/api/v1/matches/day?timestamp=${new Date(date).getTime()}&lang=${strings.getLanguage()}&game=${dataManager.getSettings().game}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -136,6 +142,12 @@ function CalendarPage({ navigation, route }): JSX.Element {
     return `${SERVER_BASE_URL}/data/leagues/${m.league_name}${m.league_country}_white.png${dataManager.getImageCacheTime()}`
   }
 
+  function onChangeGame() {
+    setMatchesReqFinished(false)
+    setMatches([])
+    getMatches()
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.bgColor }}>
 
@@ -155,7 +167,8 @@ function CalendarPage({ navigation, route }): JSX.Element {
           <ScrollView
             contentInsetAdjustmentBehavior="automatic"
             contentContainerStyle={{
-              minHeight: '100%'
+              minHeight: '100%',
+              paddingBottom: 70
             }}
             style={{ flex: 1 }}
             refreshControl={
@@ -167,7 +180,7 @@ function CalendarPage({ navigation, route }): JSX.Element {
               paddingBottom: 10,
               backgroundColor: Colors.gray800
             }}>
-              <AppBar navigation={navigation} title={strings.calendar_page} showLogo={false}/>
+              <AppBar navigation={navigation} title={strings.calendar_page} showLogo={false} />
 
               <View style={{
                 paddingLeft: 15,
@@ -275,7 +288,9 @@ function CalendarPage({ navigation, route }): JSX.Element {
               <NativeAdComp />
             </View> : null}
           </ScrollView>
+          <Gamepad onShowMenu={onShowGamepadMenu} />
           <BottomNavBar page={EPAGE_CALENDAR} navigation={navigation} />
+          {showGamepadMenu ? <GamepadMenu onClose={() => setShowGamepadMenu(false)} onChangeGame={onChangeGame} /> : null}
         </View>
         {showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch} /> : null}
         <View style={{

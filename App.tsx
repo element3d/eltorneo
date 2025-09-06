@@ -37,6 +37,10 @@ import TeamPage from './TeamPage';
 import LinkAccountPage from './LinkAccountPage';
 import { getAnalytics, logEvent } from '@react-native-firebase/analytics';
 import authManager from './AuthManager';
+import GamesPage from './GamesPage';
+import BeatBetTablesPage from './BeatBetTablesPage';
+import BeatBetInfoPage from './BeatBetInfoPage';
+import FireballInfoPage from './FireballInfoPage';
 
 
 // import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -128,7 +132,7 @@ function App(): JSX.Element {
           const previousRouteName = routeNameRef.current;
           const currentRouteName = navigationRef.current.getCurrentRoute().name;
           const me = authManager.getMeSync()
-          if (!me || me.isGuest) {
+          // if (!me || me.isGuest) {
             if (previousRouteName !== currentRouteName) {
               await logEvent(getAnalytics(), 'screen_view', {
                 firebase_screen: currentRouteName,
@@ -137,7 +141,7 @@ function App(): JSX.Element {
                 screen_class: currentRouteName
               })
             }
-          }
+          // }
           routeNameRef.current = currentRouteName;
         }}>
 
@@ -163,6 +167,10 @@ function App(): JSX.Element {
           <Stack.Screen name="Trailers" component={TrailersPage} />
           <Stack.Screen name="Team" component={TeamPage} />
           <Stack.Screen name="LinkAccount" component={LinkAccountPage} />
+          <Stack.Screen name="Games" component={GamesPage} />
+          <Stack.Screen name="BeatBetTables" component={BeatBetTablesPage} />
+          <Stack.Screen name="BeatBetInfo" component={BeatBetInfoPage} />
+          <Stack.Screen name="FireballInfo" component={FireballInfoPage} />
 
         </Stack.Navigator>
 

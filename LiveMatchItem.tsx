@@ -5,9 +5,10 @@ import strings from "./Strings"
 import SERVER_BASE_URL from "./AppConfig"
 import moment from "moment"
 import Colors from "./Colors"
+import { useEffect } from "react"
 
-export default function LiveMatchItem({ match, leagueName, navigation }) {
-    
+export default function LiveMatchItem({ match, matches, leagueName, navigation }) {
+
     const m = match
     if (!m.league_name) {
         m.league_name = leagueName
@@ -17,6 +18,10 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
             m.week_type = m.weekType
         }
     }
+
+    useEffect(() => {
+
+    }, [matches])
 
     const matchDate = m.date;
     const now = Date.now();
@@ -39,6 +44,9 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
     }
 
     function onNavMatch(match) {
+        if (match.bet) {
+            if (!match.bet.amount) match.bet = null;
+        }
         match.leagueName = match.league_name
         match.weekType = match.week_type
         dataManager.setMatch(match)
@@ -66,13 +74,12 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
     }
 
     function getBanner() {
-        if (!match.special_match_title.length) {
+        if (!match.special_match_title?.length) {
             return `${SERVER_BASE_URL}/data/leagues/${m.league_name}${m.league_country || ''}_banner2.png${dataManager.getImageCacheTime()}`
         }
 
         return `${SERVER_BASE_URL}/data/special/${m.special_match_title}.png${dataManager.getImageCacheTime()}`
     }
-
 
     return (
         <TouchableOpacity onPress={() => onNavMatch(m)} activeOpacity={.9} style={{
@@ -191,6 +198,7 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                 }}>
                     <Text style={{
                         color: 'black',
+                        fontSize: 14,
                         fontWeight: 'bold'
                     }}>{strings.prediction} {m.predict.team1_score} : {m.predict.team2_score}</Text>
 
@@ -210,6 +218,85 @@ export default function LiveMatchItem({ match, leagueName, navigation }) {
                         }}>90</Text>
                     </View> : null}
 
+                </View> : null}
+
+                {m.bet && m.bet.amount > 0 ? <View style={{
+                    width: '100%',
+                    height: 30,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}>
+                    <View style={{
+                        // borderWidth: 1,
+                        backgroundColor: match.is_special ? 'white' : "#F7F7F7",
+                        // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
+                        alignItems: 'center',
+                        // borderWidth: match.is_special ? 1 : 0,
+                        justifyContent: 'center',
+                        borderRadius: 12,
+                        paddingLeft: 15,
+                        paddingRight: match.playOff ? 2 : 15,
+                        flexDirection: 'row',
+                        height: 25,
+                        // marginTop: 2
+                    }}>
+                        <Text style={{
+                            fontSize: 14,
+                            // marginBottom: 2,
+                            color: 'black',
+                            fontWeight: 'bold'
+                            // fontFamily: 'NotoSansArmenian-Bold'
+                        }}>{strings.bet} {dataManager.getBetString(match.bet.bet)}</Text>
+                        <Text style={{
+                            fontSize: 14,
+                            // marginBottom: 2,
+                            color: '#AEAEB2',
+                            fontWeight: 'bold'
+                            // fontFamily: 'NotoSansArmenian-Bold'
+                        }}>({match.bet.odd.toFixed(2)})</Text>
+                        <Text style={{
+                            fontSize: 14,
+                            marginLeft: 10,
+                            // marginBottom: 2,
+                            color:  dataManager.getBetStatusColor(match.bet, true),
+                            fontWeight: 'bold'
+                            // fontFamily: 'NotoSansArmenian-Bold'
+                        }}>{dataManager.getBetStatusValue(match.bet)}</Text>
+
+                        {match.playOff ? <View style={{
+                            width: 18,
+                            height: 18,
+                            backgroundColor: get90BGColor(),
+                            borderRadius: 9,
+                            marginLeft: 6,
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: 900,
+                                color: get90TitleColor()
+                            }}>90</Text>
+                        </View> : null}
+                    </View>
+                </View> : null}
+
+                {m.fireballPredict && m.fireballPredict?.player_api_id > 0 ? <View style={{
+                    height: 25,
+                    borderRadius: 20,
+                    paddingLeft: 20,
+                    paddingRight: 20,
+                    marginBottom: 5,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'white'
+                }}>
+                    <Text style={{
+                        color: 'black',
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    }}>{m.fireballPredict.player_name}</Text>
                 </View> : null}
             </View>
         </TouchableOpacity>

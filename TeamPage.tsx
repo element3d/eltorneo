@@ -17,9 +17,11 @@ import CalendarWhiteIcon from './assets/calendar_white.svg';
 import GamesIcon from './assets/games.svg';
 import GoalsIcon from './assets/goals.svg';
 import AssistIcon from './assets/assist.svg';
-import BadIcon from './assets/bad.svg';
+import BadIcon from './assets/semibad.svg';
 import GoodIcon from './assets/good.svg';
-import StarIcon from './assets/star.svg';
+import StarIcon from './assets/semiup.svg';
+import UpIcon from './assets/up.svg';
+import BottomIcon from './assets/bottom.svg';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomNavBar, { EPAGE_CALENDAR } from './BottomNavBar';
@@ -136,17 +138,17 @@ function TeamPage({ navigation, route }): JSX.Element {
 
     function renderPlayer(player1) {
         function getIcon(rating) {
+            if (rating >= 8) return <UpIcon width={16} height={20} />
+            if (rating < 6) return <BottomIcon width={16} height={20} />
+
             if (rating < 7.0) return <BadIcon width={20} height={20} />
             if (rating >= 7.0 && rating < 7.5) return <GoodIcon width={20} height={20} />
-            return <StarIcon width={20} height={20} />
+            return <StarIcon width={16} height={20} />
         }
 
         if (!player1) return
         const stats = player1.stats
-        let stat = null
-        for (let i = 0; i < stats.length; ++i) {
-            if (stats[i].leagueId == team.leagueId) stat = stats[i]
-        }
+        const stat = stats.find(s => s.leagueId === team.leagueId) || null
         const imageSize = 60
         return <TouchableOpacity activeOpacity={.8} style={{
             // flex: 1,
@@ -161,7 +163,7 @@ function TeamPage({ navigation, route }): JSX.Element {
             // borderRightColor: 'black',
             flexDirection: 'row'
         }}>
-            <View style={{
+            {!team.playersReady ? <View style={{
                 width: imageSize,
                 height: imageSize,
                 borderRadius: 35,
@@ -174,7 +176,16 @@ function TeamPage({ navigation, route }): JSX.Element {
                     width: imageSize,
                     height: imageSize,
                 }} src={player1.photo}></Image>
-            </View>
+            </View> : <View style={{
+                width: imageSize,
+                height: imageSize,
+                marginLeft: 5,
+            }}>
+                <Image style={{
+                    width: imageSize,
+                    height: imageSize,
+                }} src={`${SERVER_BASE_URL}/data/players/${team.id}/${player1.apiId}.png${dataManager.getImageCacheTime()}`}></Image>
+            </View>}
             <View style={{
                 // marginBottom: 20
             }}>
@@ -184,7 +195,7 @@ function TeamPage({ navigation, route }): JSX.Element {
                     // fontFamily: 'Poppins-Bold',
                     color: Colors.titleColor,
                     fontSize: 16,
-                }}>{player1.number} - {player1.name}</Text>
+                }}>{player1.number}. {player1.name}</Text>
                 <Text style={{
                     marginLeft: 10,
                     fontWeight: 'bold',
@@ -262,132 +273,71 @@ function TeamPage({ navigation, route }): JSX.Element {
     }
 
     function renderSquad() {
-        if (loading) return
-        let attackers = []
-        let midf = []
-        let deff = []
-        let keepers = []
+        if (loading) {
+            return <ActivityIndicator size={'large'} color={'#FF2882'} style={{ marginTop: 20 }} />
+        };
+
+        // Group by position
+        let attackers = [];
+        let midf = [];
+        let deff = [];
+        let keepers = [];
+
         for (let i = 0; i < squad.length; ++i) {
-            if (squad[i].position == 'Attacker') attackers.push(squad[i])
-            if (squad[i].position == 'Midfielder') midf.push(squad[i])
-            if (squad[i].position == 'Defender') deff.push(squad[i])
-            if (squad[i].position == 'Goalkeeper') keepers.push(squad[i])
+            if (squad[i].position === 'Attacker') attackers.push(squad[i]);
+            if (squad[i].position === 'Midfielder') midf.push(squad[i]);
+            if (squad[i].position === 'Defender') deff.push(squad[i]);
+            if (squad[i].position === 'Goalkeeper') keepers.push(squad[i]);
         }
 
-        let attackViews = []
-        for (let i = 0; i < attackers.length; i++) {
-            const player1 = attackers[i]
-            // const player2 = attackers[i + 1]
-
-            attackViews.push(<View key={player1.name} style={{
-                flex: 1,
-                alignItems: 'center',
-                flexDirection: 'row'
-            }}>
-                {renderPlayer(player1)}
-            </View>)
+        // Helper to sort players by games (descending)
+        function sortByGames(a, b) {
+            const statA = a.stats.find(s => s.leagueId === team.leagueId);
+            const statB = b.stats.find(s => s.leagueId === team.leagueId);
+            const gamesA = statA ? statA.games : 0;
+            const gamesB = statB ? statB.games : 0;
+            return gamesB - gamesA; // higher first
         }
 
-        let midfViews = []
-        for (let i = 0; i < midf.length; i += 1) {
-            const player1 = midf[i]
+        attackers.sort(sortByGames);
+        midf.sort(sortByGames);
+        deff.sort(sortByGames);
+        keepers.sort(sortByGames);
 
-            midfViews.push(<View key={player1.name} style={{
-                flex: 1,
-                alignItems: 'center',
-                flexDirection: 'row'
-            }}>
-                {renderPlayer(player1)}
-
-            </View>)
+        // Render
+        function renderGroup(title, players) {
+            return (
+                <>
+                    <Text style={{
+                        fontWeight: 'bold',
+                        marginBottom: 4,
+                        fontSize: 16,
+                        marginTop: 10,
+                        color: '#8E8E93'
+                    }}>{title}</Text>
+                    <View>
+                        {players.map(p => (
+                            <View key={p.name} style={{
+                                flex: 1,
+                                alignItems: 'center',
+                                flexDirection: 'row'
+                            }}>
+                                {renderPlayer(p)}
+                            </View>
+                        ))}
+                    </View>
+                </>
+            );
         }
 
-        let deffViews = []
-        for (let i = 0; i < deff.length; i += 1) {
-            const player1 = deff[i]
-
-            deffViews.push(<View key={player1.name} style={{
-                flex: 1,
-                alignItems: 'center',
-                flexDirection: 'row'
-            }}>
-                {renderPlayer(player1)}
-            </View>)
-        }
-
-        let keepersViews = []
-        for (let i = 0; i < keepers.length; i += 1) {
-            const player1 = keepers[i]
-
-            keepersViews.push(<View key={player1.name} style={{
-                flex: 1,
-                alignItems: 'center',
-                flexDirection: 'row'
-            }}>
-                {renderPlayer(player1)}
-            </View>)
-        }
-
-        return <View>
-            <Text style={{
-                fontWeight: 'bold',
-                marginBottom: 4,
-                fontSize: 16,
-                color: '#8E8E93'
-            }}>{strings.attackers}</Text>
-            <View style={{
-                // backgroundColor: Colors.gray800,
-                // borderRadius: 16,
-                // padding: 10,
-                // paddingBottom: 0
-            }}>
-                {attackViews}
+        return (
+            <View>
+                {renderGroup(strings.attackers, attackers)}
+                {renderGroup(strings.midfielders, midf)}
+                {renderGroup(strings.defenders, deff)}
+                {renderGroup(strings.goalkeepers, keepers)}
             </View>
-
-            <Text style={{
-                fontWeight: 'bold',
-                marginBottom: 4,
-                fontSize: 16,
-                marginTop: 10,
-                color: '#8E8E93'
-            }}>{strings.midfielders}</Text>
-            <View style={{
-                // marginTop: 20,
-                // backgroundColor: Colors.gray800,
-                // borderRadius: 16,
-                // padding: 10,
-                // paddingBottom: 0
-            }}>
-                {midfViews}
-            </View>
-
-            <Text style={{
-                fontWeight: 'bold',
-                marginBottom: 4,
-                fontSize: 16,
-                marginTop: 10,
-                color: '#8E8E93'
-            }}>{strings.defenders}</Text>
-            <View style={{
-
-            }}>
-                {deffViews}
-            </View>
-
-            <Text style={{
-                fontWeight: 'bold',
-                marginBottom: 4,
-                fontSize: 16,
-                marginTop: 10,
-                color: '#8E8E93'
-            }}>{strings.goalkeepers}</Text>
-            <View style={{
-
-            }}>
-                {keepersViews}
-            </View>
-
-        </View>
+        );
     }
 
     function renderMatches() {

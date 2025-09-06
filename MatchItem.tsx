@@ -12,10 +12,11 @@ import Colors from './Colors';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import moment from 'moment';
 import FAIcon from 'react-native-vector-icons/Fontisto';
-import { ETAB_BETS, ETAB_PREDICTS } from './ProfilePage';
+import { EGAME_BEATBET, EGAME_ELTORNEO, EGAME_FIREBALL } from './GamepadMenu';
+import BBIcon from './assets/bbicon.svg'
+import GoalsIcon from './assets/goals.svg';
 
-
-export default function MatchItem({ onPress, match, showLeague, onShowMatchPreview, onShowMatchTrailer, tab = ETAB_PREDICTS, showDate = false }) {
+export default function MatchItem({ onPress, match, showLeague, onShowMatchPreview, onShowMatchTrailer, showDate = false }) {
 
   function getTime(ts) {
     const date = new Date(ts);
@@ -32,31 +33,6 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
     return formattedTime;
   }
 
-  function getBorderColor(p) {
-    if (p.status == 0) return 'black'//'#8E8E93'
-    if (p.status == 1 || p.status == 5) return '#00C566'
-    if (p.status == 2) return match.is_special ? 'gold' : '#ff7539'
-    if (p.status == 3 || p.status == 4) return '#FF4747'
-  }
-
-  function getBetStatusValue(b) {
-    if (b.status == 0) return `${b.amount.toFixed(1)}$`
-    if (b.status == 2) return `-${b.amount.toFixed(1)}$`
-    if (b.status == 1) return `+${(b.odd * b.amount).toFixed(2)}$`
-  }
-
-  function getBetStatusColor(p) {
-    if (p.status == 0) return 'black'//'#8E8E93'
-    if (p.status == 1) return '#00C566'
-    if (p.status == 2) return '#FF4747'
-  }
-
-  function getBgColor(p) {
-    if (p.status == 0) return '#F7F7F7'
-    if (p.status == 1 || p.status == 5) return '#00C56619'
-    if (p.status == 2) return '#FACC1519'
-    if (p.status == 3 || p.status == 4) return '#FF474719'
-  }
 
   function getPoints(p) {
     const sp = getSpecialPoints()
@@ -76,6 +52,11 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
   function hasPredict() {
     const ts = Date.now();
     if (!match.predict || match.predict.status == -1 /*|| (ts > match.date && match.predict.status == 0)*/) return false
+    return true
+  }
+
+  function hasFireballPredict() {
+    if (!match.fireballPredict || match.fireballPredict.status == -2) return false
     return true
   }
 
@@ -121,7 +102,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
   function get90BGColor() {
     if (match.is_special) {
-      if (tab == ETAB_PREDICTS) {
+      if (dataManager.getSettings().game == EGAME_ELTORNEO) {
         if (match.predict.status == 0)
           return 'black'
       } else {
@@ -135,7 +116,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
   function get90TitleColor() {
     if (match.is_special) {
-      if (tab == ETAB_PREDICTS) {
+      if (dataManager.getSettings().game == EGAME_ELTORNEO) {
         if (match.predict.status == 0)
           return 'white'
       } else {
@@ -200,8 +181,63 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
     return ""
   }
 
+  function onPressInternal() {
+    if (match.bet) {
+      if (!match.bet.amount) match.bet = null;
+    }
+    onPress()
+  }
+
+  function getFireballPredictView() {
+    if (match.fireballPredict.status == -1) {
+      return <Text style={{
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginLeft: 4,
+        color: Colors.fail
+      }}>({strings.not_played})</Text>
+    }
+    if (match.fireballPredict.status == 4) {
+      return <Text style={{
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginLeft: 4,
+        color: Colors.fail
+      }}>({strings.not_scored})</Text>
+    }
+    if (match.fireballPredict.status == 1) {
+      return <GoalsIcon width={12} height={12} style={{
+        marginLeft: 4
+      }} />
+    }
+    if (match.fireballPredict.status == 2) {
+      return <View style={{
+        flexDirection: 'row'
+      }}><GoalsIcon width={12} height={12} style={{
+        marginLeft: 4
+      }} />
+        <GoalsIcon width={12} height={12} style={{
+          marginLeft: 4
+        }} />
+      </View>
+    }
+    if (match.fireballPredict.status == 3) {
+      const numGoals = match.fireballPredict.goals;
+      return <View style={{ flexDirection: 'row' }}>
+        {Array.from({ length: numGoals }).map((_, idx) => (
+          <GoalsIcon
+            key={idx}
+            width={12}
+            height={12}
+            style={{ marginLeft: 4 }}
+          />
+        ))}
+      </View>
+    }
+  }
+
   return (
-    <TouchableOpacity onPress={match.status == 'PST' ? null : onPress} activeOpacity={.8} style={{
+    <TouchableOpacity onPress={match.status == 'PST' ? null : onPressInternal} activeOpacity={.8} style={{
       width: '100%',
       // backgroundColor: 'red',
       // minHeight: 64,
@@ -227,7 +263,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
           top: 0,
         }}></Image> : null}
 
-        {hasPredict() ? <View style={{
+        {hasPredict() || hasBet() || hasFireballPredict() ? <View style={{
           height: showLeague || match.is_special ? 0 : 20
         }}></View> : null}
 
@@ -447,14 +483,14 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
 
         {hasBet() ? <View style={{
           width: '100%',
-          height: 24,
+          height: 30,
           alignItems: 'center',
           justifyContent: 'center',
           // backgroundColor: 'blue'
         }}>
           <View style={{
             // borderWidth: 1,
-            backgroundColor: match.is_special ? 'white' : "#F7F7F7",
+            backgroundColor: match.is_special ? 'white' : Colors.predictBGColor,
             // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
             alignItems: 'center',
             // borderWidth: match.is_special ? 1 : 0,
@@ -464,12 +500,12 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
             paddingRight: match.playOff ? 2 : 10,
             flexDirection: 'row',
             height: 20,
-            marginTop: 2
+            // marginTop: 2
           }}>
             <Text style={{
               fontSize: 12,
               // marginBottom: 2,
-              color: 'black',
+              color: match.is_special ? 'black' : Colors.titleColor,
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
             }}>{strings.bet} {getBetString(match.bet.bet)}</Text>
@@ -484,10 +520,10 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
               fontSize: 12,
               marginLeft: 10,
               // marginBottom: 2,
-              color: getBetStatusColor(match.bet),
+              color: dataManager.getBetStatusColor(match.bet, match.is_special),
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
-            }}>{getBetStatusValue(match.bet)}</Text>
+            }}>{dataManager.getBetStatusValue(match.bet)}</Text>
 
             {match.playOff ? <View style={{
               width: 18,
@@ -516,7 +552,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
         }}>
           <View style={{
             // borderWidth: 1,
-            backgroundColor: getBgColor(match.predict),
+            backgroundColor: dataManager.getPredictBgColor(match.predict, match.is_special),
             // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
             alignItems: 'center',
             // borderWidth: match.is_special ? 1 : 0,
@@ -531,7 +567,7 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
             <Text style={{
               fontSize: 12,
               // marginBottom: 2,
-              color: getBorderColor(match.predict),
+              color: dataManager.getPredictBorderColor(match.predict, match.is_special),
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
             }}>{dataManager.getPredictTitle(match.predict)}{dataManager.getPredictValue(match.predict)}</Text>
@@ -553,17 +589,129 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
             </View> : null}
           </View>
         </View> : null}
-        {showLeague || hasPredict() || (tab == ETAB_BETS && hasBet()) ? <View style={{
+
+        {hasFireballPredict() ? <View style={{
+          width: '100%',
+          height: 30,
+          alignItems: 'center',
+          justifyContent: 'center',
+          // backgroundColor: 'blue'
+        }}>
+          <View style={{
+            // borderWidth: 1,
+            backgroundColor: dataManager.getFireballPredictBgColor(match.fireballPredict, match.is_special),
+            // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
+            alignItems: 'center',
+            // borderWidth: match.is_special ? 1 : 0,
+            justifyContent: 'center',
+            borderRadius: 12,
+            paddingLeft: 10,
+            paddingRight: match.playOff ? 2 : 10,
+            flexDirection: 'row',
+            height: 20,
+            // marginTop: 2
+          }}>
+            <Text style={{
+              fontSize: 12,
+              // marginBottom: 2,
+              color: match.is_special ? 'black' : Colors.titleColor,
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
+            }}>{match.fireballPredict.player_name}</Text>
+            {match.fireballPredict.status != 0 ? getFireballPredictView() : null}
+          </View>
+        </View> : null}
+
+        {(showLeague || hasPredict()) && (dataManager.getSettings().game != EGAME_BEATBET && dataManager.getSettings().game != EGAME_FIREBALL) ? <View style={{
           height: 5
         }}></View> : null}
-        {showLeague && !match.is_special && !hasPredict() && !hasBet() ? <View style={{
-          height: 6
+        {showLeague && !match.is_special && !hasPredict() && !hasBet() && !hasFireballPredict() ? <View style={{
+          height: 16
         }}></View> : null}
-        {showLeague && match.is_special && !hasPredict() && !hasBet() ? <View style={{
-          height: 6
+        {showLeague && match.is_special && !hasPredict() && !hasBet() && !hasFireballPredict() ? <View style={{
+          height: 16
         }}></View> : null}
 
-        {match.is_special && !showLeague && !hasPredict() && !hasBet() ? <View style={{
+        {dataManager.getSettings().game == EGAME_FIREBALL && match.is_special && !showLeague && !hasFireballPredict() ? <View style={{
+          height: 28,
+          // alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'row',
+          paddingTop: 2,
+        }}>
+          <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 5,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'gold'
+          }}>
+            <Text style={{
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: 'black'
+            }}>+8</Text>
+          </View>
+          <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 5,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderColor: '#00C566',
+            borderWidth: 1,
+            backgroundColor: '#34C75955'
+          }}>
+            <Text style={{
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: '#00C566'
+            }}>+5</Text>
+          </View>
+          <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 5,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderColor: '#00C566',
+            borderWidth: 1,
+            backgroundColor: '#34C75955'
+          }}>
+            <Text style={{
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: '#00C566'
+            }}>+4</Text>
+          </View>
+          <View style={{
+            width: 20,
+            height: 20,
+            marginHorizontal: 5,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: '#FF4747',
+            backgroundColor: '#FF474755'
+          }}>
+            <Text style={{
+              fontSize: 10,
+              lineHeight: 14,
+              fontFamily: 'Poppins-Bold',
+              color: '#FF4747'
+            }}>0</Text>
+          </View>
+        </View> : null}
+
+        {dataManager.getSettings().game == EGAME_ELTORNEO && match.is_special && !showLeague && !hasPredict() ? <View style={{
           height: 28,
           // alignItems: 'center',
           justifyContent: 'center',
@@ -642,25 +790,78 @@ export default function MatchItem({ onPress, match, showLeague, onShowMatchPrevi
           </View>
         </View> : null}
 
+        {dataManager.getSettings().game == EGAME_BEATBET && match.is_special && !showLeague && !hasBet() ? <View style={{
+          height: 28,
+          justifyContent: 'center',
+          flexDirection: 'row',
+          paddingTop: 4,
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            flexDirection: 'row',
+            height: 18,
+            paddingLeft: 16,
+            paddingRight: 24,
+            borderRadius: 11,
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <Text style={{
+              color: 'black',
+              // height: 18,
+              fontSize: 13,
+
+              lineHeight: 16,
+              // backgroundColor: 'red',
+              // fontWeight: '800',
+              fontFamily: "OpenSans-Bold",
+              textAlign: 'center',
+              // marginBottom: 2,
+              marginRight: 4
+            }}>Superbet</Text>
+            <BBIcon width={26} height={28} style={{
+              position: 'absolute',
+              right: 2
+            }} />
+          </View>
+        </View> : null}
       </View>
       {showDate ? renderDate() : null}
 
       {hasPredict() && match.predict.status > 0 ? <View style={{
         position: 'absolute',
-        top: 10,
-        right: 10,
+        top: 6,
+        right: 6,
         borderRadius: 4,
         paddingLeft: 5,
         paddingRight: 5,
         // borderWidth: match.is_special ? 1 : 0,
         // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
-        backgroundColor: getBgColor(match.predict)
+        backgroundColor: dataManager.getPredictBgColor(match.predict, match.is_special)
       }}>
         <Text style={{
           fontWeight: 'bold',
           fontSize: 10,
-          color: getBorderColor(match.predict)
+          color: dataManager.getPredictBorderColor(match.predict, match.is_special)
         }}>{strings.points}: {getPoints(match.predict)}</Text>
+      </View> : null}
+
+      {hasFireballPredict() && match.fireballPredict.status != 0 ? <View style={{
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        borderRadius: 4,
+        paddingLeft: 5,
+        paddingRight: 5,
+        // borderWidth: match.is_special ? 1 : 0,
+        // borderColor: match.is_special ? 'gold' : getBorderColor(match.predict),
+        backgroundColor: dataManager.getFireballPointsBgColor(match.fireballPredict, match.is_special)
+      }}>
+        <Text style={{
+          fontWeight: 'bold',
+          fontSize: 10,
+          color: dataManager.getFireballPredictBorderColor(match.fireballPredict, match.is_special)
+        }}>{strings.points}: {dataManager.getFireballPoints(match.fireballPredict, match.is_special)}</Text>
       </View> : null}
 
       {match.teaser ? <TouchableOpacity onPress={onShowMatchTrailerPress} style={{

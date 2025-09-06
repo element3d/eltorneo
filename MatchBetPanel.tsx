@@ -8,10 +8,10 @@ import SERVER_BASE_URL from "./AppConfig";
 import strings from "./Strings";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-export default function MatchBetPanel({ navigation, match, odds }) {
+export default function MatchBetPanel({ navigation, me, match, remoteBet, odds, setBet }) {
     const [odd, setOdd] = useState('')
-    const [amount, setAmount] = useState('')
-    const [userBet, setUserBet] = useState()
+    const [amount, setAmount] = useState(match.is_special ? '20' : '')
+    const [userBet, setUserBet] = useState(remoteBet ? remoteBet : odds?.bet)
 
     useEffect(() => {
         if (odds?.bet) {
@@ -66,7 +66,15 @@ export default function MatchBetPanel({ navigation, match, odds }) {
                     id: data.bet_id,
                     bet: odd,
                     odd: odds[odd],
-                    amount: amount
+                    amount: amount,
+                    status: 0
+                })
+                if (setBet) setBet({
+                    id: data.bet_id,
+                    bet: odd,
+                    odd: odds[odd],
+                    status: 0,
+                    amount: Number.parseInt(amount)
                 })
                 return null
             })
@@ -86,6 +94,8 @@ export default function MatchBetPanel({ navigation, match, odds }) {
             const response = await fetch(`${SERVER_BASE_URL}/api/v1/bet?bet_id=${userBet.id}`, requestOptions);
             if (response.status == 200) {
                 setUserBet(null)
+                if (setBet)
+                    setBet(null)
             }
         } catch (error) {
 
@@ -217,6 +227,29 @@ export default function MatchBetPanel({ navigation, match, odds }) {
     return <View style={{
         marginTop: 20
     }}>
+        {match.is_special ? <View style={{
+            width: '100%',
+            marginBottom: 20,
+        }}>
+            <View style={{
+                width: '100%',
+                borderRadius: 12,
+                padding: 10,
+                paddingHorizontal: 10,
+                backgroundColor: '#00C56619'
+            }}>
+                <Text style={{
+                    fontSize: 16,
+                    marginBottom: 4,
+                    fontWeight: 'bold',
+                    color: Colors.success
+                }}>{'Superbet'}</Text>
+                <Text style={{
+                    color: Colors.titleColor
+                }}>{strings.superbet_msg}</Text>
+            </View>
+        </View> : null}
+
         <Text style={{
             color: '#8E8E93',
             fontSize: 14,
@@ -400,13 +433,21 @@ export default function MatchBetPanel({ navigation, match, odds }) {
                         paddingLeft: 10,
                         paddingRight: 5
                     }}>
-                        <TextInput maxLength={2} value={amount} onChangeText={onChangeAmount} keyboardType="numeric" style={{
+                        {!match.is_special ? <TextInput maxLength={2} value={amount} onChangeText={onChangeAmount} keyboardType="numeric" style={{
                             flex: 1,
                             fontSize: 16,
                             color: Colors.titleColor,
                             fontWeight: 'bold',
                             textAlign: 'center'
-                        }}></TextInput>
+                        }}></TextInput> : <Text style={{
+                            flex: 1,
+                            fontSize: 16,
+                            color: Colors.titleColor,
+                            fontWeight: 'bold',
+                            textAlign: 'center'
+                        }}>
+                            {amount}
+                        </Text>}
                         <View style={{
                             width: 30,
                             height: 30,
@@ -442,7 +483,7 @@ export default function MatchBetPanel({ navigation, match, odds }) {
                 alignItems: 'center',
                 justifyContent: 'center'
             }}>
-                {!userBet ? <Text style={{
+                {!userBet && !match.is_special ? <Text style={{
                     color: '#8E8E93',
                     fontWeight: 'bold',
                     fontSize: 10,
@@ -474,7 +515,8 @@ export default function MatchBetPanel({ navigation, match, odds }) {
                 <Text style={{
                     fontSize: 16,
                     fontWeight: 'bold',
-                    color: '#FF4747'
+                    color: '#FF4747',
+                    marginBottom: 4
                 }}>{strings.attention_quest}</Text>
                 <Text style={{
                     color: Colors.titleColor

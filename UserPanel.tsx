@@ -30,12 +30,22 @@ export default function UserPanel({ navigation, place, user, isMe }) {
     return txt
   }
 
+  function getLeagueName() {
+    let txt = ''
+    if (user.league == 1) txt += strings.legend
+    else if (user.league == 2) txt += strings.pro
+    else if (user.league == 3) txt += strings.amateur
+    else if (user.league == 4) txt += strings.beginner
+
+    return txt
+  }
+
   function getAwardLeagueText(league) {
-    let txt = strings.place_in_league
-    if (league == 1) txt += " " + strings.legend
-    else if (league == 2) txt += " " + strings.pro
-    else if (league == 3) txt += " " + strings.amateur
-    else if (league == 4) txt += " " + strings.beginner
+    let txt = strings.place_in_el_torneo
+    if (league == 1) txt += " (" + strings.legend + ")"
+    else if (league == 2) txt += " (" + strings.pro + ")"
+    else if (league == 3) txt += " (" + strings.amateur + ")"
+    else if (league == 4) txt += " (" + strings.beginner + ")"
 
     return txt
   }
@@ -57,19 +67,19 @@ export default function UserPanel({ navigation, place, user, isMe }) {
   function getAwardIcon(user, award) {
     if (award.place == 1) {
       if (award.league == 1)
-        return <FirstIcon style={{ marginLeft: 0 }} width={22} height={22}></FirstIcon>
+        return <FirstIcon style={{ marginLeft: 0 }} width={20} height={20}></FirstIcon>
       else
-        return <FirstIcon2 style={{ marginLeft: 0 }} width={20} height={20}></FirstIcon2>
+        return <FirstIcon2 style={{ marginLeft: 0, marginRight: -3 }} width={20} height={20}></FirstIcon2>
     }
-    if (award.league == 1) return <AwardGoldIcon width={28} height={28} style={{
+    if (award.league == 1) return <AwardGoldIcon width={26} height={26} style={{
       // top: 1,
       position: 'absolute'
     }}></AwardGoldIcon>
-    if (Colors.mode == 2) return <AwardWhiteIcon width={28} height={28} style={{
+    if (Colors.mode == 2) return <AwardWhiteIcon width={26} height={26} style={{
       // top: 1,
       position: 'absolute'
     }}></AwardWhiteIcon>
-    else return <AwardBlackIcon width={28} height={28} style={{
+    else return <AwardBlackIcon width={26} height={26} style={{
       // top: 1,
       position: 'absolute'
     }}></AwardBlackIcon>
@@ -79,8 +89,8 @@ export default function UserPanel({ navigation, place, user, isMe }) {
     return <View key={`award_${award.place}`} style={{
       // width: 200,
       height: 30,
-      paddingLeft: 15,
-      marginTop: 10,
+      marginLeft: -5,
+      // marginTop: 10,
       flexDirection: 'row',
       alignItems: 'center',
       // backgroundColor: 'red'
@@ -110,8 +120,8 @@ export default function UserPanel({ navigation, place, user, isMe }) {
         fontSize: 14,
         fontWeight: 'bold',
         color: '#8E8E93',
-        marginLeft: 6
-      }}>{getAwardText(award, award.league)} (2024/25)</Text>
+        marginLeft: 3
+      }}>{getAwardText(award, award.league)}</Text>
     </View>
   }
 
@@ -122,7 +132,7 @@ export default function UserPanel({ navigation, place, user, isMe }) {
       }}>
         <View style={{
           width: '100%',
-          paddingLeft: 15,
+          paddingLeft: 20,
           paddingRight: 15,
           alignItems: 'center',
           // marginBottom: 20,
@@ -163,12 +173,12 @@ export default function UserPanel({ navigation, place, user, isMe }) {
           }}>
             <Text numberOfLines={1} style={{
               // marginTop: 10,
-
+              marginBottom: 4,
               color: Colors.titleColor,
               fontSize: user.name.length > 20 ? 16 : 18,
               fontFamily: 'NotoSansArmenian-Bold'
             }}>{user.name}</Text>
-            {place > 0 ? <Text style={{
+            {/* {place > 0 ? <Text style={{
               // marginTop: 2,
               color: '#8E8E93',
               fontSize: 14,
@@ -176,7 +186,7 @@ export default function UserPanel({ navigation, place, user, isMe }) {
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
             }}>
-              {`${getLeagueText()}:  ${place}`}</Text> : null}
+              {`${getLeagueText()}:  ${place}`}</Text> : null} */}
             <Text style={{
               // marginTop: 2,
               color: '#8E8E93',
@@ -218,13 +228,51 @@ export default function UserPanel({ navigation, place, user, isMe }) {
             <Icon name='chevron-right' size={20} color={'#8E8E93'}></Icon>
           </TouchableOpacity> : null}
         </View>
-        {user.awards?.length ?
-          user.awards.map((award) => {
-            return getAward(award)
-          })
-          : null}
+        { place > 0 || user.beatBetPosition > 0 ? <View style={{
+          padding: 20,
+          paddingBottom: 10
+          // backgroundColor: 'red'
+        }}>
+          <Text style={{
+            fontSize: 18,
+            marginBottom: 2,
+            color: Colors.titleColor,
+            fontWeight: 'bold'
+          }}>{strings.season} 20{dataManager.getSettings()?.season}</Text>
+          <View>
+            {place > 0 ? <Text style={{
+              color: '#8E8E93',
+              marginTop: 3,
+              fontSize: 14,
+              lineHeight: 16,
+              fontWeight: 'bold'
+            }}>{strings.place_in_el_torneo} ({getLeagueName()}): {place}</Text> : null }
+            { user.beatBetPosition > 0 ? <Text style={{
+              color: '#8E8E93',
+              marginTop: 3,
+              fontSize: 14,
+              lineHeight: 16,
+              fontWeight: 'bold'
+            }}>{strings.place_in_beat_bet} ({strings.legend}): {user.beatBetPosition}</Text> : null }
+          </View>
+        </View> : null }
+        {user.awards?.length ? <View style={{
+          padding: 20,
+          paddingBottom: 0,
+          paddingTop: 10
+        }}>
+          <Text style={{
+            fontSize: 18,
+            color: Colors.titleColor,
+            fontWeight: 'bold'
+          }}>{strings.awards}</Text>
 
-          { isMe && user.isGuest ? <LinkAccountPanel navigation={navigation}/> : null }
+          {user.awards.map((award) => {
+            return getAward(award)
+          })}
+
+          {isMe && user.isGuest ? <LinkAccountPanel navigation={navigation} /> : null}
+        </View> : null}
       </View>
     )
   } else {
