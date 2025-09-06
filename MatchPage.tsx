@@ -2115,7 +2115,7 @@ function MatchPage({ navigation, route }): JSX.Element {
                 {game == EGAME_BEATBET ? <ViewChip title={strings.bets} selected={view == EVIEW_TOP_BETS} onClick={() => { setView(EVIEW_TOP_BETS) }} /> : null}
                 {game == EGAME_ELTORNEO ? <ViewChip title={strings.predictions2} selected={view == EVIEW_PREDICTIONS} onClick={() => { setView(EVIEW_PREDICTIONS) }} /> : null}
                 {game == EGAME_FIREBALL ? <ViewChip title={strings.predictions2} selected={view == EVIEW_FIREBALL_PREDICTS} onClick={() => { setView(EVIEW_FIREBALL_PREDICTS) }} /> : null}
-                {game == EGAME_FIREBALL && !isMatchLive() && !isMatchEnded() ?
+                {game == EGAME_FIREBALL ?
                   <TouchableOpacity onPress={() => { onFireballClick() }} style={{
                     marginRight: 10
                   }}>

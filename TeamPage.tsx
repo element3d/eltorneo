@@ -37,6 +37,9 @@ import authManager from './AuthManager';
 import MatchItem from './MatchItem';
 import moment from 'moment';
 import MatchPreviewDialog from './MatchPreviewDialog';
+import PlayerImage from './PlayerImage';
+import Gamepad from './Gamepad';
+import GamepadMenu from './GamepadMenu';
 
 const ETAB_MATCHES = 0
 const ETAB_SQUAD = 1
@@ -103,9 +106,18 @@ function TeamPage({ navigation, route }): JSX.Element {
     const [loading, setLoading] = useState(true)
     const [showMatchPreview, setShowMatchPreview] = useState(false)
     const [previewMatch, setPreviewMatch] = useState(null)
+    const [showGamepadMenu, setShowGamepadMenu] = useState(false)
 
     useEffect(() => {
-        const url = `${SERVER_BASE_URL}/api/v1/team?team_id=${team.id}`
+        getMatches()
+    }, [])
+
+    function onShowGamepadMenu() {
+        setShowGamepadMenu(true)
+    }
+
+    function getMatches() {
+        const url = `${SERVER_BASE_URL}/api/v1/team?team_id=${team.id}&game=${dataManager.getSettings().game}`
         fetch(url, {
             method: 'GET',
             headers: {
@@ -122,7 +134,7 @@ function TeamPage({ navigation, route }): JSX.Element {
             .catch(error => {
                 setLoading(false)
             });
-    }, [])
+    }
 
     function onShowMatchPreview(match) {
         match.isTeaser = false
@@ -134,6 +146,11 @@ function TeamPage({ navigation, route }): JSX.Element {
         match.isTeaser = true
         setShowMatchPreview(match)
         setPreviewMatch(match)
+    }
+
+    function getPlayerName(player1) {
+        if (player1.number <= 0) return player1.name;
+        return `${player1.number}. ${player1.name}`;
     }
 
     function renderPlayer(player1) {
@@ -181,10 +198,7 @@ function TeamPage({ navigation, route }): JSX.Element {
                 height: imageSize,
                 marginLeft: 5,
             }}>
-                <Image style={{
-                    width: imageSize,
-                    height: imageSize,
-                }} src={`${SERVER_BASE_URL}/data/players/${team.id}/${player1.apiId}.png${dataManager.getImageCacheTime()}`}></Image>
+                <PlayerImage team={team} player={player1} imageSize={imageSize} />
             </View>}
             <View style={{
                 // marginBottom: 20
@@ -195,7 +209,7 @@ function TeamPage({ navigation, route }): JSX.Element {
                     // fontFamily: 'Poppins-Bold',
                     color: Colors.titleColor,
                     fontSize: 16,
-                }}>{player1.number}. {player1.name}</Text>
+                }}>{getPlayerName(player1)}</Text>
                 <Text style={{
                     marginLeft: 10,
                     fontWeight: 'bold',
@@ -221,7 +235,7 @@ function TeamPage({ navigation, route }): JSX.Element {
 
                         }}>{stat ? stat.games : 0}</Text>
                     </View>
-                    <View style={{
+                    {stat?.goals > 0 ? <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                         marginLeft: 20
@@ -234,9 +248,9 @@ function TeamPage({ navigation, route }): JSX.Element {
                             color: Colors.titleColor,
                             fontSize: 16,
                         }}>{stat ? stat.goals : 0}</Text>
-                    </View>
+                    </View> : null}
 
-                    <View style={{
+                    {stat?.assists > 0 ? <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                         marginLeft: 20
@@ -249,7 +263,7 @@ function TeamPage({ navigation, route }): JSX.Element {
                             color: Colors.titleColor,
                             fontSize: 16,
                         }}>{stat ? stat.assists : 0}</Text>
-                    </View>
+                    </View> : null}
                 </View>
             </View>
 
@@ -274,7 +288,8 @@ function TeamPage({ navigation, route }): JSX.Element {
 
     function renderSquad() {
         if (loading) {
-            return <ActivityIndicator size={'large'} color={'#FF2882'} style={{ marginTop: 20 }} />
+            return;
+            // return <ActivityIndicator size={'large'} color={'#FF2882'} style={{ marginTop: 20 }} />
         };
 
         // Group by position
@@ -409,6 +424,11 @@ function TeamPage({ navigation, route }): JSX.Element {
         setShowMatchPreview(false)
     }
 
+    function onChangeGame() {
+        setLoading(true)
+        getMatches()
+    }
+
     return (
         <GestureHandlerRootView style={{
             flex: 1, backgroundColor: Colors.gray800,
@@ -428,6 +448,7 @@ function TeamPage({ navigation, route }): JSX.Element {
                     <ScrollView
                         contentInsetAdjustmentBehavior="automatic"
                         contentContainerStyle={{
+                            paddingBottom: 80
                             // minHeight: '100%'
                         }}
                         style={{ flex: 1 }}>
@@ -493,7 +514,7 @@ function TeamPage({ navigation, route }): JSX.Element {
                                         fontFamily: 'Poppins-Bold'
                                     }}>{team.venue}</Text>
                                 </View>
-                                <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${encodeURIComponent(team.name.replace(/ö/g, 'o'))}_kit.png`} style={{
+                                <Image src={`${SERVER_BASE_URL}/data/teams/150x150/${encodeURIComponent(team.name.replace(/ö/g, 'o'))}_kit.png${dataManager.getImageCacheTime()}`} style={{
                                     width: 80,
                                     height: 80,
                                     marginRight: 10,
@@ -505,8 +526,6 @@ function TeamPage({ navigation, route }): JSX.Element {
                             width: '100%',
                             paddingTop: 25,
                             paddingHorizontal: 20
-                            // height: 400,
-                            // backgroundColor: 'red'
                         }}>
                             <View style={{
                                 width: '100%',
@@ -548,7 +567,9 @@ function TeamPage({ navigation, route }): JSX.Element {
                             {tab == ETAB_MATCHES ? renderMatches() : renderSquad()}
                         </View>
                     </ScrollView>
+                    <Gamepad onShowMenu={onShowGamepadMenu} />
                     <BottomNavBar navigation={navigation} />
+                    {showGamepadMenu ? <GamepadMenu onClose={() => setShowGamepadMenu(false)} onChangeGame={onChangeGame} /> : null}
                 </View>
                 {showMatchPreview ? <MatchPreviewDialog onClose={onClosePreview} match={previewMatch} /> : null}
 

@@ -25,3 +25,13 @@ buildscript {
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.8' // check latest
     }
 }
+
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            // 👇 Force all RN libs to use new Play Review instead of old Play Core
+            force "com.google.android.play:review:2.0.1"
+            force "com.google.android.play:review-ktx:2.0.1"
+        }
+    }
+}

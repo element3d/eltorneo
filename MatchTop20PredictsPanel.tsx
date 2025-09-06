@@ -17,14 +17,14 @@ import FirstIcon2 from './assets/first2.svg';
 
 export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoaded, blockForAd, match, isMatchEnded, navigation }) {
   function getBorderColor(p) {
-    if (p.status == 0) return 'black'//'#8E8E93'
+    if (p.status == 0) return Colors.titleColor;//'#8E8E93'
     if (p.status == 1 || p.status == 5) return '#00C566'
     if (p.status == 2) return '#ff7539'
     if (p.status == 3) return '#FF4747'
   }
 
   function getBgColor(p) {
-    if (p.status == 0) return '#F7F7F7'
+    if (p.status == 0) return Colors.predictBGColor;
     if (p.status == 1 || p.status == 5) return '#00C56619'
     if (p.status == 2) return '#FACC1519'
     if (p.status == 3) return '#FF474719'
@@ -69,11 +69,11 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
   }
 
   function getAwardLeagueText(league) {
-    let txt = strings.place_in_league
-    if (league == 1) txt += " " + strings.legend
-    else if (league == 2) txt += " " + strings.pro
-    else if (league == 3) txt += " " + strings.amateur
-    else if (league == 4) txt += " " + strings.beginner
+    let txt = strings.place_in_el_torneo //strings.place_in_league
+    if (league == 1) txt += " (" + strings.legend
+    else if (league == 2) txt += " (" + strings.pro
+    else if (league == 3) txt += " (" + strings.amateur
+    else if (league == 4) txt += " (" + strings.beginner
 
     return txt
   }
@@ -136,9 +136,11 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
   }
 
   return (
-    <View>
+    <View style={{
+      paddingBottom: 20
+    }}>
       {dataManager.getSettings().enableAds ? <View style={{
-        marginTop: 10
+        marginTop: 10,
       }}>
         <NativeAdComp forceNativeAd={true} />
       </View> : null}
@@ -337,7 +339,7 @@ export default function MatchTop20PredictsPanel({ top20Predicts, onUnlock, adLoa
               color: '#8E8E93',
               marginLeft: 6,
               fontWeight: 'bold'
-            }}>{getAwardText(predict.user, predict.user.awards[0], predict.user.league)} (2024/25)</Text>
+            }}>{getAwardText(predict.user, predict.user.awards[0], predict.user.league)} 2024/25)</Text>
           </View> : null}
         </TouchableOpacity>)
       })}

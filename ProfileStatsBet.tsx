@@ -17,7 +17,7 @@ export default function ProfileStatsBet({predictsJson}) {
             fontWeight: 'bold',
             fontSize: 16,
             marginBottom: 10
-        }}>{strings.in_all_leagues}</Text>
+        }}>{strings.statistics}</Text>
 
         <View style={{
             flexDirection: 'row'

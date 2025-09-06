@@ -13,14 +13,23 @@ import AwardGoldIcon from './assets/award_gold.svg'
 import dataManager from "./DataManager";
 import ButtonPrimary from "./ButtonPrimary";
 import LinkAccountPanel from "./LinkAccountPanel";
+import { EGAME_BEATBET, EGAME_FIREBALL } from "./GamepadMenu";
+import authManager from "./AuthManager";
 
-export default function UserPanel({ navigation, place, user, isMe }) {
+export default function UserPanel({ navigation, user, isMe }) {
+  const game = dataManager.getSettings().game
 
   function onNavEdit() {
     navigation.navigate("ProfileEdit")
   }
 
+  let place = game == EGAME_BEATBET ? user.beatBetPosition : user.position;
+  if (game == EGAME_FIREBALL) place = user.fireballPosition;
+
   function getLeagueText() {
+    if (game == EGAME_FIREBALL) return strings.place_in_fireball;
+    if (game == EGAME_BEATBET) return strings.place_in_beat_bet;
+
     let txt = strings.place_in_league
     if (user.league == 1) txt += " " + strings.legend
     else if (user.league == 2) txt += " " + strings.pro
@@ -173,29 +182,37 @@ export default function UserPanel({ navigation, place, user, isMe }) {
           }}>
             <Text numberOfLines={1} style={{
               // marginTop: 10,
-              marginBottom: 4,
+              marginBottom: 2,
               color: Colors.titleColor,
               fontSize: user.name.length > 20 ? 16 : 18,
               fontFamily: 'NotoSansArmenian-Bold'
             }}>{user.name}</Text>
-            {/* {place > 0 ? <Text style={{
-              // marginTop: 2,
+            {place > 0 ? <Text style={{
+              marginBottom: 2,
               color: '#8E8E93',
               fontSize: 14,
               // lineHeight: 20,
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
             }}>
-              {`${getLeagueText()}:  ${place}`}</Text> : null} */}
-            <Text style={{
+              {`${getLeagueText()}:  ${place}`}</Text> : null}
+            {game == 'eltorneo' ? <Text style={{
               // marginTop: 2,
               color: '#8E8E93',
               fontSize: 14,
               lineHeight: 16,
               fontWeight: 'bold'
               // fontFamily: 'NotoSansArmenian-Bold'
-            }}>{strings.points}:  {user.points}</Text>
-            <View style={{
+            }}>{strings.points}:  {user.points}</Text> : null}
+            {game == EGAME_FIREBALL ? <Text style={{
+              // marginTop: 2,
+              color: '#8E8E93',
+              fontSize: 14,
+              lineHeight: 16,
+              fontWeight: 'bold'
+              // fontFamily: 'NotoSansArmenian-Bold'
+            }}>{strings.points}:  {user.fireballPoints >= 0 ? user.fireballPoints : 0}</Text> : null}
+            {game == 'beatbet' ? <View style={{
               flexDirection: 'row'
             }}>
               <Text style={{
@@ -214,7 +231,7 @@ export default function UserPanel({ navigation, place, user, isMe }) {
                 fontWeight: 'bold'
                 // fontFamily: 'NotoSansArmenian-Bold'
               }}>{user.balance.toFixed(2)}$</Text>
-            </View>
+            </View> : null}
           </View>
           {isMe ? <TouchableOpacity activeOpacity={.6} onPress={onNavEdit} style={{
             width: 50,
@@ -228,34 +245,6 @@ export default function UserPanel({ navigation, place, user, isMe }) {
             <Icon name='chevron-right' size={20} color={'#8E8E93'}></Icon>
           </TouchableOpacity> : null}
         </View>
-        { place > 0 || user.beatBetPosition > 0 ? <View style={{
-          padding: 20,
-          paddingBottom: 10
-          // backgroundColor: 'red'
-        }}>
-          <Text style={{
-            fontSize: 18,
-            marginBottom: 2,
-            color: Colors.titleColor,
-            fontWeight: 'bold'
-          }}>{strings.season} 20{dataManager.getSettings()?.season}</Text>
-          <View>
-            {place > 0 ? <Text style={{
-              color: '#8E8E93',
-              marginTop: 3,
-              fontSize: 14,
-              lineHeight: 16,
-              fontWeight: 'bold'
-            }}>{strings.place_in_el_torneo} ({getLeagueName()}): {place}</Text> : null }
-            { user.beatBetPosition > 0 ? <Text style={{
-              color: '#8E8E93',
-              marginTop: 3,
-              fontSize: 14,
-              lineHeight: 16,
-              fontWeight: 'bold'
-            }}>{strings.place_in_beat_bet} ({strings.legend}): {user.beatBetPosition}</Text> : null }
-          </View>
-        </View> : null }
         {user.awards?.length ? <View style={{
           padding: 20,
           paddingBottom: 0,

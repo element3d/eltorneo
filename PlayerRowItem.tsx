@@ -12,8 +12,9 @@ import BottomIcon from './assets/bottom.svg';
 import Colors from "./Colors";
 import SERVER_BASE_URL from "./AppConfig";
 import dataManager from "./DataManager";
+import PlayerImage from "./PlayerImage";
 
-export default function PlayerRowItem({ player1, team }) {
+export default function PlayerRowItem({ player1, team, selected, onClick }) {
     function positionToString(pos) {
         if (pos == "G") return strings.goalkeeper
         if (pos == "D") return strings.defender
@@ -38,7 +39,7 @@ export default function PlayerRowItem({ player1, team }) {
         if (stats[i].leagueId == team.leagueId) stat = stats[i]
     }
     const imageSize = 60
-    return <TouchableOpacity activeOpacity={.8} style={{
+    return <TouchableOpacity activeOpacity={.8} onPress={() => onClick(player1, team)} style={{
         // flex: 1,
         width: '100%',
         backgroundColor: Colors.gray800,
@@ -46,6 +47,8 @@ export default function PlayerRowItem({ player1, team }) {
         borderRadius: 12,
         height: 80,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: selected ? Colors.primary : Colors.gray800,
         // borderRightWidth: 1,
         // padding: 10,
         // borderRightColor: 'black',
@@ -65,16 +68,8 @@ export default function PlayerRowItem({ player1, team }) {
                 height: imageSize,
             }} src={`https://media.api-sports.io/football/players/${player1.apiId}.png`}></Image>
         </View> :
-            <View style={{
-                width: imageSize,
-                height: imageSize,
-                marginLeft: 5,
-            }}>
-                <Image style={{
-                    width: imageSize,
-                    height: imageSize,
-                }} src={`${SERVER_BASE_URL}/data/players/${team.id}/${player1.apiId}.png${dataManager.getImageCacheTime()}`}></Image>
-            </View>}
+            <PlayerImage team={team} player={player1} imageSize={imageSize} />
+        }
         <View style={{
             // marginBottom: 20
         }}>
@@ -110,7 +105,7 @@ export default function PlayerRowItem({ player1, team }) {
 
                     }}>{player1.minutes} Min</Text>
                 </View>
-                <View style={{
+                {player1.goals > 0 ? <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     marginLeft: 10
@@ -123,9 +118,9 @@ export default function PlayerRowItem({ player1, team }) {
                         color: Colors.titleColor,
                         fontSize: 16,
                     }}>{player1.goals}</Text>
-                </View>
+                </View> : null}
 
-                <View style={{
+                {player1.assists > 0 ? <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     marginLeft: 10
@@ -138,9 +133,9 @@ export default function PlayerRowItem({ player1, team }) {
                         color: Colors.titleColor,
                         fontSize: 16,
                     }}>{player1.assists}</Text>
-                </View>
+                </View> : null}
 
-                { player1.yellow > 0 ? <View style={{
+                {player1.yellow > 0 ? <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     marginLeft: 20
@@ -158,9 +153,9 @@ export default function PlayerRowItem({ player1, team }) {
                         color: Colors.titleColor,
                         fontSize: 16,
                     }}>{player1.yellow}</Text>
-                </View> : null }
+                </View> : null}
 
-                { player1.red > 0 ? <View style={{
+                {player1.red > 0 ? <View style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     marginLeft: 10
@@ -178,7 +173,7 @@ export default function PlayerRowItem({ player1, team }) {
                         color: Colors.titleColor,
                         fontSize: 16,
                     }}>{player1.red}</Text>
-                </View> : null }
+                </View> : null}
             </View>
         </View>
 

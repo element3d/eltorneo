@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import {
   ActivityIndicator,
   Button,
@@ -32,55 +32,35 @@ import MatchPreviewDialog from './MatchPreviewDialog';
 import NativeAdComp from './NativeAdComp';
 import ProfileStats from './ProfileStat';
 import ProfileHeader from './ProfileHeader';
+import Gamepad from './Gamepad';
+import GamepadMenu, { EGAME_BEATBET, EGAME_ELTORNEO, EGAME_FIREBALL } from './GamepadMenu';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 
 export const ESTAT_TOTAL = 0
-const ESTAT_SCORE = 1
-const ESTAT_WINNER = 2
-
-export const ETAB_PREDICTS = 1
-export const ETAB_BETS = 2
-
-function ProfileCheap({ title, selected, onPress, value }) {
-  return (
-    <TouchableOpacity activeOpacity={.8} onPress={onPress} style={{
-      height: 40,
-      paddingLeft: 20,
-      paddingRight: 20,
-      borderRadius: 20,
-      borderWidth: 1,
-      marginRight: 10,
-      backgroundColor: selected ? '#FF2882' : Colors.bgColor,
-      borderColor: selected ? '#FF2882' : Colors.borderColor,
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <Text style={{
-        fontSize: 16,
-        color: selected ? 'white' : '#8E8E93',
-        fontWeight: 'bold'
-      }}>{title}</Text>
-    </TouchableOpacity>
-  )
-}
-
 
 function ProfilePage({ navigation, route }): JSX.Element {
-  const { id } = route.params ? route.params : 0;
+  const { id, routeGame } = route.params;
   const { globalPage } = route.params;
-  const { tab } = route.params;
+
   const { routeSelectedLeague } = route.params;
 
   const isMe = !id;
   const [page, setPage] = useState((globalPage - 1) * 5 + 1)
   const [predictsJson, setPredictsJson] = useState(null)
+
   const [predicts, setPredicts] = useState([])
   const [betsJson, setBetsJson] = useState(null)
+  const [fireballPredictsJson, setFireballPredictsJson] = useState()
+
   const [bets, setBets] = useState([])
+  const [fireballPredicts, setFireballPredicts] = useState([])
+
   const [selectedLeague, setSelectedLeague] = useState(null)
   const [stats, setStats] = useState(null)
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [hasNext, setHasNext] = useState(false)
+  const [showGamepadMenu, setShowGamepadMenu] = useState(false)
 
   const user = isMe ? authManager.getMeSync() : authManager.getActiveUser()
   const place = user ? dataManager.findUserPosition(user.id) : 0
@@ -88,6 +68,9 @@ function ProfilePage({ navigation, route }): JSX.Element {
   const [adLoaded, setAdLoaded] = useState(false)
   const [showMatchPreview, setShowMatchPreview] = useState(false)
   const [previewMatch, setPreviewMatch] = useState(null)
+
+  // const [game, setGame] = useState(dataManager.getSettings().game)
+  const gameState = dataManager.getSettings().game;//routeGame;
 
   useEffect(() => {
     if (!dataManager.getSettings()) return
@@ -106,14 +89,20 @@ function ProfilePage({ navigation, route }): JSX.Element {
   }, [])
 
   useEffect(() => {
-    if (tab == ETAB_PREDICTS)
-      getPredicts()
-    else
-      getBets()
+    if (dataManager.getSettings().game == EGAME_ELTORNEO)
+      getPredicts();
+    else if (dataManager.getSettings().game == EGAME_BEATBET)
+      getBets();
+    else if (dataManager.getSettings().game == EGAME_FIREBALL)
+      getFireballPredicts();
   }, [page]);
 
   function onCloseMatchPreview() {
     setShowMatchPreview(false)
+  }
+
+  function onShowGamepadMenu() {
+    setShowGamepadMenu(true)
   }
 
   function onShowMatchPreview(match) {
@@ -127,6 +116,37 @@ function ProfilePage({ navigation, route }): JSX.Element {
     setShowMatchPreview(true)
     setPreviewMatch(match)
   }
+
+  useFocusEffect(useCallback(() => {
+    if (gameState != dataManager.getSettings().game) {
+      onChangeGame(dataManager.getSettings().game)
+    }
+  }, [gameState]))
+
+  function onChangeGame(game) {
+    navigation.dispatch(state => {
+      const routes = state.routes.filter(r => r.name !== 'Profile');
+
+      return CommonActions.reset({
+        ...state,
+        routes: [
+          ...routes,
+          {
+            name: 'Profile',
+            params: {
+              id: isMe ? null : user.id,
+              globalPage: 1,
+              routeSelectedLeague: -1,
+              selectedStat: ESTAT_TOTAL,
+            },
+            key: `profile_${user.id}_${game}`
+          },
+        ],
+        index: routes.length, // point to the new Tables screen
+      });
+    });
+  }
+
 
   function getBets() {
     if (!user) return
@@ -183,7 +203,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
     })
       .then(response => response.json())
       .then(data => {
-      
+
         if (data.predicts.length <= 0) {
           setPredictsJson(data)
 
@@ -214,16 +234,60 @@ function ProfilePage({ navigation, route }): JSX.Element {
       });
   }
 
+  function getFireballPredicts() {
+    if (!user) return
+
+    setLoading(true)
+    fetch(`${SERVER_BASE_URL}/api/v1/user/fireball?page=${page}&user_id=${user.id}&league_id=${routeSelectedLeague ? routeSelectedLeague : -1}`, {
+      method: 'GET',
+      headers: {
+        // 'Authentication': authManager.getToken()
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+
+        if (data.predicts.length <= 0) {
+          setFireballPredictsJson(data)
+
+          setLoading(false)
+          // setHasMore(false)
+          // setHasNext(false)
+
+          return
+        } else if (data.predicts.length < 20) {
+          // setHasMore(false)
+          // setHasNext(false)
+          setLoading(false)
+        }
+
+        // setLoading(false)
+        setFireballPredicts((prevBets) => [...prevBets, ...data.predicts])
+        setFireballPredictsJson(data)
+        if (page % 5 == 0 && data.predicts.length >= 20) {
+          // setHasNext(true)
+          setLoading(false)
+        }
+      })
+      .catch(error => {
+        setLoading(false)
+        // setHasMore(false)
+        // setHasNext(false)
+        console.error('Error fetching leagues:', error)
+      });
+  }
+
   const renderTopPart = useMemo(() => (
 
     <ProfileHeader navigation={navigation}
       user={user}
       isMe={isMe}
       betsJson={betsJson}
+      fireballPredictsJson={fireballPredictsJson}
       predictsJson={predictsJson}
-      tab={tab} />
+    />
 
-  ), [navigation, user, isMe, predictsJson, betsJson, tab]);
+  ), [navigation, user, isMe, predictsJson, betsJson, fireballPredictsJson]);
 
   function onUnlock() {
     adsManager.showAd()
@@ -248,7 +312,35 @@ function ProfilePage({ navigation, route }): JSX.Element {
       })
     })
   }
+
   const insets = useSafeAreaInsets();
+
+  function showList() {
+    const game = dataManager.getSettings().game;
+    if (game == EGAME_BEATBET) {
+      if (bets.length && betsJson) return true
+    }
+    if (game == EGAME_ELTORNEO) {
+      if (predicts.length && predictsJson) return true;
+    }
+    if (game == EGAME_FIREBALL) {
+      if (fireballPredicts.length && fireballPredictsJson) return true;
+    }
+
+    return false;
+  }
+
+  function getListPredicts() {
+    if (gameState == EGAME_ELTORNEO) return predicts;
+    if (gameState == EGAME_BEATBET) return bets;
+    if (gameState == EGAME_FIREBALL) return fireballPredicts;
+  }
+
+  function getListTotalPredicts() {
+    if (gameState == EGAME_ELTORNEO) return predictsJson.allPredicts;
+    if (gameState == EGAME_BEATBET) return betsJson.allBets;
+    if (gameState == EGAME_FIREBALL) return fireballPredictsJson.allPredicts;
+  }
 
   return (
     <GestureHandlerRootView style={{
@@ -272,17 +364,18 @@ function ProfilePage({ navigation, route }): JSX.Element {
           justifyContent: 'space-between'
         }}>
 
-          {((!predicts.length || !predictsJson) && (!bets.length || !betsJson)) || blockForAd ?
+          {!showList() ?
             <View style={{
               width: '100%',
               flex: 1,
             }}>
-              {<ProfileHeader navigation={navigation}
+              <ProfileHeader navigation={navigation}
                 user={user}
                 isMe={isMe}
                 betsJson={betsJson}
+                fireballPredictsJson={fireballPredictsJson}
                 predictsJson={predictsJson}
-                tab={tab} />}
+              />
               {!blockForAd ? <View style={{
                 flex: 1,
                 height: 200,
@@ -294,7 +387,7 @@ function ProfilePage({ navigation, route }): JSX.Element {
                   fontSize: 14,
                   fontWeight: 'bold',
                   alignSelf: 'center'
-                }}>{tab == ETAB_BETS ? strings.no_bets : strings.no_predicts}</Text>}
+                }}>{gameState == EGAME_BEATBET ? strings.no_bets : strings.no_predicts}</Text>}
               </View> : <View style={{
                 height: 80,
                 alignItems: 'center',
@@ -324,10 +417,12 @@ function ProfilePage({ navigation, route }): JSX.Element {
                 </TouchableOpacity>
               </View>}
             </View> :
-            <UserMatchesList navigation={navigation} tab={tab} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={tab == ETAB_PREDICTS ? predicts : bets} totalPredicts={tab == ETAB_PREDICTS ? predictsJson.allPredicts : betsJson.allBets} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
+            <UserMatchesList navigation={navigation} loading={loading} globalPage={globalPage} hasNext={hasNext} hasMore={hasMore} page={page} setPage={setPage} renderTopPart={renderTopPart} user={user} id={id} predicts={getListPredicts()} totalPredicts={getListTotalPredicts()} selectedLeague={selectedLeague} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} />
           }
 
+          <Gamepad onShowMenu={onShowGamepadMenu} />
           <BottomNavBar page={isMe ? EPAGE_PROFILE : null} navigation={navigation} />
+          {showGamepadMenu ? <GamepadMenu onClose={() => setShowGamepadMenu(false)} onChangeGame={onChangeGame} /> : null}
         </View>
         {showMatchPreview ? <MatchPreviewDialog onClose={onCloseMatchPreview} match={previewMatch} /> : null}
         <View style={{

@@ -2,7 +2,7 @@ import { Text, View } from "react-native";
 import strings from "./Strings";
 import Colors from "./Colors";
 
-export default function ProfileStats({predictsJson}) {
+export default function ProfileStatsFireball({ predictsJson }) {
     return <View style={{
         // marginTop: 20,
         width: '90%',
@@ -38,24 +38,11 @@ export default function ProfileStats({predictsJson}) {
         }}>
             <Text style={{
                 color: '#8E8E93'
-            }}>{strings.score_predicted}: </Text><Text style={{
+            }}>{strings.prediction_was_succ}: </Text><Text style={{
                 color: Colors.titleColor,
                 fontWeight: 'bold'
             }}>
-                {predictsJson.totalScorePredicts} {predictsJson.totalPredicts > 0 ? `(${Number.parseInt(predictsJson.totalScorePredicts / predictsJson.totalPredicts * 100)}%)` : null}
-            </Text>
-        </View>
-
-        <View style={{
-            flexDirection: 'row'
-        }}>
-            <Text style={{
-                color: '#8E8E93'
-            }}>{strings.winner_or_draw_predicted}: </Text><Text style={{
-                color: Colors.titleColor,
-                fontWeight: 'bold'
-            }}>
-                {predictsJson.totalWinnerPredicts} {predictsJson.totalPredicts > 0 ? `(${Number.parseInt(predictsJson.totalWinnerPredicts / predictsJson.totalPredicts * 100)}%)` : null}
+                {predictsJson.totalWinPredicts} {predictsJson.totalPredicts > 0 ? `(${Number.parseInt(predictsJson.totalWinPredicts / predictsJson.totalPredicts * 100)}%)` : null}
             </Text>
         </View>
 
@@ -68,7 +55,7 @@ export default function ProfileStats({predictsJson}) {
                 color: Colors.titleColor,
                 fontWeight: 'bold'
             }}>
-                {predictsJson.totalFailPredicts} {predictsJson.totalPredicts > 0 ? `(${Number.parseInt(predictsJson.totalFailPredicts / predictsJson.totalPredicts * 100)}%)` : null}
+                {predictsJson.totalLoosePredicts} {predictsJson.totalPredicts > 0 ? `(${Number.parseInt(predictsJson.totalLoosePredicts / predictsJson.totalPredicts * 100)}%)` : null}
             </Text>
         </View>
     </View>

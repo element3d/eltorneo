@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, FlatList, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import moment from 'moment';
-import CalendarIcon from './assets/calendar_black.svg';
-import CalendarWhiteIcon from './assets/calendar_white.svg';
 import MatchItem from './MatchItem'; // Ensure you import your component correctly
 import strings from './Strings';
 import dataManager from './DataManager';
 import authManager from './AuthManager';
 import Colors from './Colors';
-import { ETAB_BETS } from './ProfilePage';
 
 
-const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, hasNext1, renderTopPart, page, setPage, predicts, totalPredicts, selectedLeague, onShowMatchPreview, onShowMatchTrailer, tab }) => {
+const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, hasNext1, renderTopPart, page, setPage, predicts, totalPredicts, selectedLeague, onShowMatchPreview, onShowMatchTrailer }) => {
   const numPages = Math.ceil(totalPredicts / 100);
   const hasNext = globalPage < numPages
   const hasMore = (globalPage - 1) * 100 + predicts.length < totalPredicts
@@ -27,7 +23,6 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
       name: 'Profile', params: {
         globalPage: globalPage + 1,
         id: id,
-        tab: tab
       }, key: `profile_page_${globalPage + 1}_${id}`
     })
   }
@@ -156,17 +151,7 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
         // height: 130,
         alignSelf: 'center'
       }}>
-        {/* {renderTime || index == 0 ? (
-          <View style={styles.dateContainer}>
-            { Colors.mode == 1 ? <CalendarIcon width={26} height={26} /> : <CalendarWhiteIcon width={26} height={26} /> }
-            <Text style={{
-              marginLeft: 10,
-              fontWeight: 'bold',
-              color: Colors.titleColor,
-            }}>{moment(currMatchDate).format('DD')} {strings[moment(currMatchDate).format('MMM').toLowerCase()]} {moment(currMatchDate).format('YYYY')}</Text>
-          </View>
-        ) : null} */}
-        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} tab={tab} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} showDate/>
+        <MatchItem showLeague={true} onPress={() => onNavMatch(item)} match={item} onShowMatchPreview={onShowMatchPreview} onShowMatchTrailer={onShowMatchTrailer} showDate />
       </View>
     );
 
@@ -208,6 +193,7 @@ const UserMatchesList = ({ navigation, user, id, hasMore1, globalPage, loading, 
     <FlatList
       contentContainerStyle={{
         width: '100%',
+        paddingBottom: 20
       }}
       data={predicts}
       style={styles.list}
